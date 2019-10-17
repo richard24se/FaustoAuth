@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:10
+    container_name: db_postgres
+    environment:
+      POSTGRES_DB: Fausto
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: ballotpaperdb24$$ # solo con un dolar $
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/postgres_db/initdb/:/docker-entrypoint-initdb.d
+  db_admin:
+    image: dpage/pgadmin4
+    container_name: db_admin_postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@fausto.app
+      PGADMIN_DEFAULT_PASSWORD: dbadmin24$$ # solo con un dolar $
+    ports:
+      - "8080:80"
+    logging:
+      driver: none
+  api:
+    container_name: api
+    build: 
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    volumes:
+      - ./api/src:/api/src
+      - ./api/src/.env:/api/src/.env
+    command: >    
+      sh -c "more .env && python run.py"
+    ports:
+      - "5111:5000"
+  redis:
+    image: redis
+    container_name: cache
+    expose:
+      - 6379
+    depends_on:
+      - api
+

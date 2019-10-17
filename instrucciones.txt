@@ -1,0 +1,29 @@
+#CREAR UN ARCHIVO .env dentro de la carpeta VAGRANT
+#agregar esta línea ----> CUSTOM_IP=192.168.1.224 <--- TIENE QUE SER LA IP DE TU RED O LA QUE DESEES, ESTA TENDRÁ EL VAGRANT
+
+#levantar el vagrant
+vagrant up
+
+#reiniciar el vagrant #SIEMPRE HACER ESTO LUEGO DEL PRIMER UP
+vagrant reload
+
+#apagar el vagrant
+vagrant halt {id}
+
+#provisionar el vagrant ---> INSTALAR SCRIPT
+vagrant provision
+
+#conectar ssh
+vagrant ssh {id}
+
+#listar los vagrant #PARA UBICAR EL ID ÚNICO Y UTILIZAR EL SSH
+vagrant global-status
+
+#conectar ssh CON ID ÚNICO
+vagrant ssh $UNIQUE_ID
+
+#DB to model SQLALCH
+!LINUX
+sqlacodegen postgresql://root:ballotpaperdb24$@192.168.1.225/BallotPaper
+!WINDOWS
+sqlacodegen postgresql://root:ballotpaperdb24$@10.91.11.229/BallotPaper | Out-File -encoding utf8 -FilePath models.py

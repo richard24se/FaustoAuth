@@ -3,7 +3,7 @@ version: '3'
 services:
   db:
     image: postgres:10
-    container_name: db_postgres
+    container_name: auth_db_postgres
     environment:
       POSTGRES_DB: Fausto
       POSTGRES_USER: root
@@ -14,7 +14,7 @@ services:
       - ./docker/postgres_db/initdb/:/docker-entrypoint-initdb.d
   db_admin:
     image: dpage/pgadmin4
-    container_name: db_admin_postgres
+    container_name: auth_db_admin_postgres
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@fausto.app
       PGADMIN_DEFAULT_PASSWORD: dbadmin24$$ # solo con un dolar $
@@ -23,7 +23,7 @@ services:
     logging:
       driver: none
   api:
-    container_name: api
+    container_name: auth_api
     build: 
       context: .
       dockerfile: ./docker/api/Dockerfile
@@ -36,7 +36,7 @@ services:
       - "5111:5000"
   redis:
     image: redis
-    container_name: cache
+    container_name: auth_cache
     expose:
       - 6379
     depends_on:

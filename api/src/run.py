@@ -12,12 +12,13 @@ import logging
 import jwt
 import redis
 
-
+#APP LIBRARY LAYER
+from auth.functions import createUser
+from fausto.utils import tryWrapper, jsonVerify, jsonWrapper
 
 #DB LAYER
-from model.config import SQLACL_BALLOTPAPER
+from model.config import SQLALCH_AUTH
 
-from model.models import Banco
 
 #APP LAYER
 APP = Flask(__name__)
@@ -52,7 +53,18 @@ class Init(Resource):
         return {
             'init': 'flask',
             'msg': 'This is a BallotPaper App'
-        }  
+        }
+
+class ManageUser(Resource):
+    @jsonWrapper
+    def post(self):
+        data=request.json
+        return createUser(data)
+
+        
+
+        
+
 
 #REDIS LAYER
 revoked_store = redis.StrictRedis(host='auth_cache', port=6379, db=0,decode_responses=True)
@@ -187,13 +199,14 @@ class TestAuth(Resource):
 API.add_resource(Init, '/')
 API.add_resource(Auth, '/auth')
 API.add_resource(TestAuth, '/test')
+API.add_resource(ManageUser, '/user')
 
 
 #DEBUG
 from logging.config import dictConfig
 DEBUG = True
 
-FORMAT = '[%(asctime)s] %(levelname)s in %(module)s:%(filename)s on %(lineno)d %(message)s' if DEBUG == True else '[%(asctime)s] %(levelname)s in %(module)s:%(filename)s %(message)s'
+FORMAT = '[%(asctime)s] %(levelname)s in %(module)s:%(filename)s on line ->%(lineno)d %(message)s' if DEBUG == True else '[%(asctime)s] %(levelname)s in %(module)s:%(filename)s %(message)s'
 
 dictConfig({
     'version': 1,
@@ -205,9 +218,17 @@ dictConfig({
         'stream': 'ext://flask.logging.wsgi_errors_stream',
         'formatter': 'default'
     }},
-    'root': {
-        'level': 'DEBUG' if DEBUG == True else 'INFO',
-        'handlers': ['wsgi']
+    'loggers': {
+        '': {  # root logger
+            'level': 'DEBUG' if DEBUG == True else 'INFO',
+            'handlers': ['wsgi'],
+           # 'propagate': False
+        },
+        'sqlalchemy.engine': {
+            'level': 'INFO' if DEBUG == True else 'ERROR',
+            'handlers': ['wsgi'],
+            'propagate': False
+        }
     }
 })
 

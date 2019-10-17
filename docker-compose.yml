@@ -7,9 +7,9 @@ services:
     environment:
       POSTGRES_DB: Fausto
       POSTGRES_USER: root
-      POSTGRES_PASSWORD: ballotpaperdb24$$ # solo con un dolar $
+      POSTGRES_PASSWORD: faustoauthdb24$$ # solo con un dolar $
     ports:
-      - "5432:5432"
+      - "5464:5432"
     volumes:
       - ./docker/postgres_db/initdb/:/docker-entrypoint-initdb.d
   db_admin:
@@ -17,7 +17,7 @@ services:
     container_name: auth_db_admin_postgres
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@fausto.app
-      PGADMIN_DEFAULT_PASSWORD: dbadmin24$$ # solo con un dolar $
+      PGADMIN_DEFAULT_PASSWORD: faustoauthdb24$$ # solo con un dolar $
     ports:
       - "8080:80"
     logging:

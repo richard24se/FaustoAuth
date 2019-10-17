@@ -26,4 +26,4 @@ vagrant ssh $UNIQUE_ID
 !LINUX
 sqlacodegen postgresql://root:ballotpaperdb24$@192.168.1.225/BallotPaper
 !WINDOWS
-sqlacodegen postgresql://root:ballotpaperdb24$@10.91.11.229/BallotPaper | Out-File -encoding utf8 -FilePath models.py
+sqlacodegen postgresql://root:faustoauthdb24$@10.91.11.229:5464/Fausto --schema auth | Out-File -encoding utf8 -FilePath models.py 

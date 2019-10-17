@@ -55,7 +55,7 @@ class Init(Resource):
         }  
 
 #REDIS LAYER
-revoked_store = redis.StrictRedis(host='cache', port=6379, db=0,decode_responses=True)
+revoked_store = redis.StrictRedis(host='auth_cache', port=6379, db=0,decode_responses=True)
 
 
 #JWT LAYER LOGIC 

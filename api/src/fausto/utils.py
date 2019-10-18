@@ -3,7 +3,8 @@ import datetime as dt
 import logging
 from flask import request
 
-def formatting_dict_sqlalch(dictio):
+def format_dict_sqlalch(dictio):
+    logging.debug("Input dictio: "+str(dictio))
     dictio.pop('_sa_instance_state',None)
     logging.debug("Input dictio: "+str(dictio))
     for keys in dictio:
@@ -20,15 +21,21 @@ def formatting_dict_sqlalch(dictio):
             dictio[keys] = string_date  
         if dictio[keys] is None:
             dictio[keys] = "No tiene"
+    return dictio
 
 def get_fields_sqlalch(cols,model):
         return [model.__dict__[k] for k in cols]
 
 def tryWrapper(function):
     def wrapper(*args, **kwargs):
-        try:
-            response, data = function(*args, **kwargs)
-            return { "msg": response, "data": data, "error": False}
+        try:            
+            response = function(*args, **kwargs)
+            if type(response) is tuple:
+                msg, data = response  
+            else:
+                msg = response
+                data = "Data not found!"                     
+            return { "msg": msg, "data": data, "error": False}
         except Exception as error:
             return { "msg": str(error), "data": data, "error": True}
     return wrapper
@@ -54,3 +61,7 @@ def jsonWrapper(fn):
             logging.debug("Hasn't JSON data")
             return { "msg": "Please provide JSON" }
     return wrapper
+
+def sqlaPurge(s):
+    s.rollback()
+    s.close()

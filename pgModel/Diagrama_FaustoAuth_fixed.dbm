@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.1" last-position="0,0" last-zoom="1"
+	 default-owner="postgres">
+<database name="Fausto" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<schema name="auth" rect-visible="true" fill-color="#e1e1e1">
+	<role name="postgres"/>
+</schema>
+
+<table name="User">
+	<schema name="auth"/>
+	<role name="postgres"/>
+	<position x="155" y="182"/>
+	<column name="id" not-null="true" identity-type="ALWAYS">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="username">
+		<type name="text" length="0"/>
+	</column>
+	<column name="password">
+		<type name="text" length="0"/>
+	</column>
+	<column name="names">
+		<type name="text" length="0"/>
+	</column>
+	<column name="surnames">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="User_pk" type="pk-constr" table="auth.&quot;User&quot;">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="Rol">
+	<schema name="auth"/>
+	<role name="postgres"/>
+	<position x="528" y="180"/>
+	<column name="id" not-null="true" identity-type="ALWAYS">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="name">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="rol_pk" type="pk-constr" table="auth.&quot;Rol&quot;">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+</dbmodel>

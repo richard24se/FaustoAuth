@@ -17,9 +17,12 @@ services:
     container_name: auth_db_admin_postgres
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@fausto.app
-      PGADMIN_DEFAULT_PASSWORD: faustoauthdb24$$ # solo con un dolar $
+      PGADMIN_DEFAULT_PASSWORD: admin24$$ # solo con un dolar $
     ports:
       - "8080:80"
+    volumes:
+      - ./data_temp/pgadmin:/var/lib/pgadmin
+      - ./docker/pgadmin/data.json:/pgadmin4/servers.json
     logging:
       driver: none
   api:

@@ -1,6 +1,7 @@
 #LIBRARY LAYER
 import datetime as dt
 import logging
+import traceback
 from flask import request
 
 def format_dict_sqlalch(dictio):
@@ -37,6 +38,8 @@ def tryWrapper(function):
                 data = "Data not found!"                     
             return { "msg": msg, "data": data, "error": False}
         except Exception as error:
+            logging.error("#----------------->ERROR de tryWrapper <----------------------#")
+            logging.debug(traceback.format_exc())
             return { "msg": str(error), "data": data, "error": True}
     return wrapper
 

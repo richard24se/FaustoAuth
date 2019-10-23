@@ -29,13 +29,13 @@ def get_fields_sqlalch(cols,model):
 
 def tryWrapper(function):
     def wrapper(*args, **kwargs):
-        try:            
+        try:
+            data = "Data not found!"             
             response = function(*args, **kwargs)
             if type(response) is tuple:
                 msg, data = response  
             else:
-                msg = response
-                data = "Data not found!"                     
+                msg = response               
             return { "msg": msg, "data": data, "error": False}
         except Exception as error:
             logging.error("#----------------->ERROR de tryWrapper <----------------------#")

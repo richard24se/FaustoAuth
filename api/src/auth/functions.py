@@ -58,9 +58,9 @@ def getUser(id):
     try:
         s = SQLALCH_AUTH()
         user = s.query(User).filter(User.id==id).first()
-        logging.debug("SQLALCH user: "+str(user.__dict__))
         s.close()
         if user:
+            logging.debug("SQLALCH user: "+str(user.__dict__))
             user_dict = format_dict_sqlalch(user.__dict__)
             return "Se encontró el usuario!", user_dict
         else: 

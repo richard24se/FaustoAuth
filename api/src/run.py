@@ -159,8 +159,8 @@ class Auth(Resource):
             return { "msg": "Please provide JSON" }
         
         if option == 'login':
-            if username != 'test' or password != 'test':
-                return { "msg": "Bad username or password" }
+            if username != 'test':
+                return { "msg": "Bad username or password" }, 500
             access_token = create_access_token(identity=username)
             refresh_token = create_refresh_token(identity=username)
 
@@ -179,6 +179,7 @@ class Auth(Resource):
             logging.debug("Cache keys: "+str(cache_token_keys))
             logging.debug("Cache values: "+str(cache_token_value))
             logging.debug("Cache keys/values: "+str(dict(zip(cache_token_keys, cache_token_value))))
+            logging.debug("Response success login: "+str(ret))
             return ret
         elif option == 'refresh':
             return refresh(self)

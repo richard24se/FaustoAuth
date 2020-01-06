@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:10
+    container_name: auth_db_postgres
+    environment:
+      POSTGRES_DB: Fausto
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: faustoauthdb24$$ # solo con un dolar $
+    ports:
+      - "5464:5432"
+    volumes:
+      - ./docker/postgres_db/initdb/:/docker-entrypoint-initdb.d
+  db_admin:
+    image: dpage/pgadmin4
+    container_name: auth_db_admin_postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@fausto.app
+      PGADMIN_DEFAULT_PASSWORD: admin24$$ # solo con un dolar $
+    ports:
+      - "8081:80"
+    volumes:
+      - ./data_temp/pgadmin:/var/lib/pgadmin
+      - ./docker/pgadmin/data.json:/pgadmin4/servers.json
+    logging:
+      driver: none
+  api:
+    container_name: auth_api
+    build: 
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    volumes:
+      - ./api/src:/api/src
+      - ./api/src/.env:/api/src/.env
+    command: >    
+      sh -c "more .env && python run.py"
+    ports:
+      - "5111:5000"
+  redis:
+    image: redis
+    container_name: auth_cache
+    expose:
+      - 6379
+    depends_on:
+      - api
+  nginx:
+    container_name: auth_nginx
+    build: 
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    command: >    
+      bash -c "nginx -g 'daemon off;'"
+    ports:
+      - "5443:5443"
+      - "80:80"
+    volumes:
+      - ./docker/nginx/config:/etc/nginx/conf.d
+    extra_hosts:
+      - "faustoauth.com:127.0.0.1"
+

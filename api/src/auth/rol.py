@@ -1,4 +1,3 @@
-#DB LAYER
 from model.config import SQLALCH_AUTH
 
 from model.models import Rol

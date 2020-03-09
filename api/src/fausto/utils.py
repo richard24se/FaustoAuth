@@ -4,6 +4,9 @@ import logging
 import traceback
 from flask import request
 
+from model.config import SQLALCH_AUTH
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+
 def format_dict_sqlalch(dictio):
     logging.debug("Input dictio: "+str(dictio))
     dictio.pop('_sa_instance_state',None)
@@ -23,6 +26,43 @@ def format_dict_sqlalch(dictio):
         if dictio[keys] is None:
             dictio[keys] = "No tiene"
     return dictio
+
+class ControllerError(Exception):
+    pass
+
+def sqlalchWrapper(func):
+    def inner(*args, **kwargs):
+        session = SQLALCH_AUTH()  # Scoped session
+        try:
+            return func(session, *args, **kwargs)  # Wrapper
+        except IntegrityError as error:
+            logging.exception("SQLAlchemyError: "+str(error))
+            session.rollback()
+            session.close()
+            raise Exception(
+                "SQLAlchemyError: Hay problemas con la integridad de datos, revisa los logs")
+        except SQLAlchemyError as error:
+            logging.exception("SQLAlchemyError: "+str(error))
+            session.rollback()
+            session.close()
+            raise Exception("SQLAlchemyError: "+str(error))
+        except ControllerError as error:
+            logging.debug("ControllerError: "+str(error))
+            size_error = error.args.__len__()
+            if (size_error == 1):
+                raise Exception(error)
+            elif(size_error > 1):
+                raise Exception(error.args[0], error.args[1])
+            else:
+                raise Exception(error)
+        except Exception as error:
+            logging.exception("SyntaxError: "+str(error))
+            session.rollback()
+            session.close()
+            raise Exception("SyntaxError: "+str(error))
+        finally:
+            session.close()
+    return inner
 
 def get_fields_sqlalch(cols,model):
         return [model.__dict__[k] for k in cols]
@@ -64,6 +104,16 @@ def jsonWrapper(fn):
             logging.debug("Hasn't JSON data")
             return { "msg": "Please provide JSON" }
     return wrapper
+
+def dict_sqlalch(alch_object):
+    if hasattr(alch_object, '__dict__'):
+        return alch_object.__dict__
+    elif hasattr(alch_object, '_asdict'):
+        return alch_object._asdict()
+
+
+def quick_format_sqlalch(alch_object):
+    return format_dict_sqlalch(dict_sqlalch(alch_object))
 
 def sqlaPurge(s):
     s.rollback()

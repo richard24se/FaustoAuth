@@ -15,10 +15,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="postgres"/>
 </schema>
 
-<table name="User">
+<table name="user">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="155" y="182"/>
+	<position x="600" y="120"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="smallint" length="0"/>
 	</column>
@@ -34,24 +34,274 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="surnames">
 		<type name="text" length="0"/>
 	</column>
-	<constraint name="User_pk" type="pk-constr" table="auth.&quot;User&quot;">
+	<column name="created_date" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="modificated_date">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="User_pk" type="pk-constr" table="auth.&quot;user&quot;">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="id_rol" index="7"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="rol_fk" index="1"/>
+		<object name="user_uq" index="2"/>
+	</customidxs>
 </table>
 
-<table name="Rol">
+<table name="rol">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="528" y="180"/>
+	<position x="1280" y="140"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="smallint" length="0"/>
 	</column>
 	<column name="name">
 		<type name="text" length="0"/>
 	</column>
-	<constraint name="rol_pk" type="pk-constr" table="auth.&quot;Rol&quot;">
+	<column name="display_name">
+		<type name="varchar" length="50"/>
+	</column>
+	<column name="created_date" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="modificated_date">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="rol_pk" type="pk-constr" table="auth.rol">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="id_permission" index="5"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="permission_fk" index="1"/>
+	</customidxs>
+</table>
+
+<table name="permission">
+	<schema name="auth"/>
+	<role name="postgres"/>
+	<position x="1080" y="320"/>
+	<column name="id" not-null="true" identity-type="ALWAYS">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="name">
+		<type name="varchar" length="50"/>
+	</column>
+	<column name="created_date" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="modificated_date">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="permissions_pk" type="pk-constr" table="auth.permission">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="id_permission_type" index="4"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="permission_type_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="User_has_one_Rol" type="rel11"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#5eb523"
+	 src-table="auth.rol"
+	 dst-table="auth.&quot;user&quot;"
+	 src-required="true" dst-required="false"/>
+
+<relationship name="Permissions_has_many_Rol" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#ff0000"
+	 src-table="auth.permission"
+	 dst-table="auth.rol"
+	 src-required="true" dst-required="false"/>
+
+<table name="auditing">
+	<schema name="auth"/>
+	<role name="postgres"/>
+	<position x="680" y="360"/>
+	<column name="id" not-null="true" identity-type="ALWAYS">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="data">
+		<type name="text" length="0"/>
+	</column>
+	<column name="created_date" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="modificated_date">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="input">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="auditing_pk" type="pk-constr" table="auth.auditing">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="id_auditing_type" index="6"/>
+		<object name="id_user" index="5"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="auditing_type_fk" index="2"/>
+		<object name="user_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="User_has_many_auditing" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#cc557a"
+	 src-table="auth.&quot;user&quot;"
+	 dst-table="auth.auditing"
+	 src-required="true" dst-required="false"/>
+
+<table name="permission_type">
+	<schema name="auth"/>
+	<role name="postgres"/>
+	<position x="1080" y="580"/>
+	<column name="id" not-null="true" identity-type="ALWAYS">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="name">
+		<type name="varchar" length="50"/>
+	</column>
+	<column name="created_date" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="modificated_date">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="permissions_types_pk" type="pk-constr" table="auth.permission_type">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
 </table>
+
+<relationship name="permissions_types_has_many_permissions" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#18b510"
+	 src-table="auth.permission_type"
+	 dst-table="auth.permission"
+	 src-required="true" dst-required="false"/>
+
+<table name="auditing_type">
+	<schema name="auth"/>
+	<role name="postgres"/>
+	<position x="640" y="600"/>
+	<column name="id" not-null="true" identity-type="ALWAYS">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="name">
+		<type name="varchar" length="50"/>
+	</column>
+	<column name="created_date" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="modificated_date">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="auditing_types_pk" type="pk-constr" table="auth.auditing_type">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="auditing_types_has_many_auditing" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#028583"
+	 src-table="auth.auditing_type"
+	 dst-table="auth.auditing"
+	 src-required="true" dst-required="false"/>
+
+<table name="object">
+	<schema name="auth"/>
+	<role name="postgres"/>
+	<position x="1520" y="340"/>
+	<column name="id" not-null="true" identity-type="ALWAYS">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="name">
+		<type name="text" length="0"/>
+	</column>
+	<column name="created_date" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="modificated_date">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="objects_pk" type="pk-constr" table="auth.object">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="id_object_type" index="4"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="object_type_fk" index="1"/>
+	</customidxs>
+</table>
+
+<table name="object_type">
+	<schema name="auth"/>
+	<role name="postgres"/>
+	<position x="1500" y="580"/>
+	<column name="id" not-null="true" identity-type="ALWAYS">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="name">
+		<type name="varchar" length="50"/>
+	</column>
+	<column name="created_date" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="modificated_date">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="object_type_pk" type="pk-constr" table="auth.object_type">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="object_type_has_many_object" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#930366"
+	 src-table="auth.object_type"
+	 dst-table="auth.object"
+	 src-required="true" dst-required="false"/>
+
+<relationship name="object_has_many_permission" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#c1fb2f"
+	 src-table="auth.object"
+	 dst-table="auth.permission"
+	 src-required="true" dst-required="false"/>
 
 </dbmodel>

@@ -13,7 +13,7 @@ import jwt
 import redis
 
 #APP LIBRARY LAYER
-from auth.functions import createUser, updateUser, deleteUser, getUser
+from auth.user import createUser, updateUser, deleteUser, getUser, getUsers
 from fausto.utils import tryWrapper, jsonVerify, jsonWrapper
 
 #DB LAYER
@@ -57,8 +57,11 @@ class Init(Resource):
 
 class ManageUser(Resource):
 
-    def get(self, id):
-        return getUser(id)
+    def get(self, id=None):
+        if id:
+            return getUser(id)
+        else:
+            return getUsers()
 
     @jsonWrapper
     def post(self):
@@ -66,10 +69,8 @@ class ManageUser(Resource):
         return createUser(data)
 
     @jsonWrapper
-    def put(self):
+    def put(self, id=None):
         data=request.json
-        id=data.get('id',None)
-        data.pop('id',None)
         return updateUser(id, data)
 
     def delete(self, id):

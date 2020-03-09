@@ -27,3 +27,9 @@ vagrant ssh $UNIQUE_ID
 sqlacodegen postgresql://root:ballotpaperdb24$@192.168.1.225/BallotPaper
 !WINDOWS
 sqlacodegen postgresql://root:faustoauthdb24$@10.91.11.229:5464/Fausto --schema auth | Out-File -encoding utf8 -FilePath models.py 
+
+#backup de esquema de tablas
+docker exec auth_db_postgres pg_dump -U root -Fp Fausto  --schema-only > 1-schema.sql
+
+#backup de datos
+docker exec auth_db_postgres pg_dump -U root -Fp Fausto  --data-only > 2-data.sql

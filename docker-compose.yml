@@ -12,6 +12,8 @@ services:
       - "5464:5432"
     volumes:
       - ./docker/postgres_db/initdb/:/docker-entrypoint-initdb.d
+      - ./datatemp/pgdb/backup:/pgdb/backup
+      - ./datatemp/pgdb/script:/pgdb/script
   db_admin:
     image: dpage/pgadmin4
     container_name: auth_db_admin_postgres

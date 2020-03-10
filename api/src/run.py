@@ -13,7 +13,7 @@ import jwt
 import redis
 
 #APP LIBRARY LAYER
-from auth.user import createUser, updateUser, deleteUser, getUser, getUsers
+from auth.user import createUser, updateUser, deleteUser, getUser, getUsers, getUserName, validateUser
 from auth.rol import createRol, updateRol, deleteRol, getRol, getRols
 from auth.permission import createPermission, updatePermission, deletePermission, getPermission, getPermissions
 from auth.permission_type import createPermissionType, updatePermissionType, deletePermissionType, getPermissionType, getPermissionTypes
@@ -55,12 +55,12 @@ class Init(Resource):
     def get(self):
         return {
             'init': 'flask',
-            'msg': 'This is a BallotPaper App'
+            'msg': 'This is a Vorlage App'
         }
     def post(self):
         return {
             'init': 'flask',
-            'msg': 'This is a BallotPaper App'
+            'msg': 'This is a Vorlage App'
         }
 
 class ManageUser(Resource):
@@ -308,8 +308,12 @@ class Auth(Resource):
             return { "msg": "Please provide JSON" }
         
         if option == 'login':
-            if username != 'test':
-                return { "msg": "Bad username or password" }, 500
+            user_validade=validateUser(username, password)
+            logging.debug(str(user_validade))
+            # if username != 'test':
+            #     return { "msg": "Bad username or password" }, 500
+            if user_validade.get('error'):
+                return user_validade
             access_token = create_access_token(identity=username)
             refresh_token = create_refresh_token(identity=username)
 
@@ -357,9 +361,14 @@ class Auth(Resource):
 class TestAuth(Resource):
     @jwt_required
     def get(self):
-        return {
-            'username': str(get_jwt_identity())
-        }
+        logging.debug(str(self))
+        return { 'username': str(get_jwt_identity()) }
+
+class TestPermissionUser(Resource):
+    @jwt_required
+    def get(self):
+        logging.debug(str(self))
+        return getUserName(str(get_jwt_identity()))
 
 #URL LAYER
 API.add_resource(Init, '/')
@@ -373,6 +382,7 @@ API.add_resource(ApiObject, '/object', '/object/<int:id>')
 API.add_resource(ApiObjectType, '/object_types', '/object_types/<int:id>')
 API.add_resource(ApiAuditing, '/auditing', '/auditing/<int:id>')
 API.add_resource(ApiAuditingType, '/auditing_types', '/auditing_types/<int:id>')
+API.add_resource(TestPermissionUser, '/permission_user', '/permission_user/<int:id>')
 
 
 #DEBUG

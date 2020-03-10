@@ -64,8 +64,18 @@ def sqlalchWrapper(func):
             session.close()
     return inner
 
+
 def get_fields_sqlalch(cols,model):
         return [model.__dict__[k] for k in cols]
+
+
+def get_columns_sqlalch(model):
+    return model.__table__.columns.keys()
+
+
+def get_prefix_fields_sqlalch(cols, model, prefix):
+    return [model.__dict__[k].label(prefix+k) for k in cols]
+    
 
 def tryWrapper(function):
     def wrapper(*args, **kwargs):

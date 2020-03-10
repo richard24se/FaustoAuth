@@ -37,6 +37,17 @@ class PermissionType(Base):
     modificated_date = Column(DateTime(True))
 
 
+class Rol(Base):
+    __tablename__ = 'rol'
+    __table_args__ = {'schema': 'auth'}
+
+    id = Column(SmallInteger, primary_key=True)
+    name = Column(Text)
+    display_name = Column(String(50))
+    created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
+    modificated_date = Column(DateTime(True))
+
+
 class Object(Base):
     __tablename__ = 'object'
     __table_args__ = {'schema': 'auth'}
@@ -48,6 +59,38 @@ class Object(Base):
     id_object_type = Column(ForeignKey('auth.object_type.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
 
     object_type = relationship('ObjectType')
+
+
+class User(Base):
+    __tablename__ = 'user'
+    __table_args__ = {'schema': 'auth'}
+
+    id = Column(SmallInteger, primary_key=True)
+    username = Column(Text)
+    password = Column(Text)
+    names = Column(Text)
+    surnames = Column(Text)
+    created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
+    modificated_date = Column(DateTime(True))
+    id_rol = Column(ForeignKey('auth.rol.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False, unique=True)
+
+    rol = relationship('Rol', uselist=False)
+
+
+class Auditing(Base):
+    __tablename__ = 'auditing'
+    __table_args__ = {'schema': 'auth'}
+
+    id = Column(BigInteger, primary_key=True)
+    data = Column(Text)
+    created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
+    modificated_date = Column(DateTime(True))
+    input = Column(Text)
+    id_user = Column(ForeignKey('auth.user.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
+    id_auditing_type = Column(ForeignKey('auth.auditing_type.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
+
+    auditing_type = relationship('AuditingType')
+    user = relationship('User')
 
 
 class Permission(Base):
@@ -65,47 +108,14 @@ class Permission(Base):
     permission_type = relationship('PermissionType')
 
 
-class Rol(Base):
-    __tablename__ = 'rol'
-    __table_args__ = {'schema': 'auth'}
-
-    id = Column(SmallInteger, primary_key=True)
-    name = Column(Text)
-    display_name = Column(String(50))
-    created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
-    modificated_date = Column(DateTime(True))
-    id_permission = Column(ForeignKey('auth.permission.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
-
-    permission = relationship('Permission')
-
-
-class User(Base):
-    __tablename__ = 'user'
-    __table_args__ = {'schema': 'auth'}
-
-    id = Column(SmallInteger, primary_key=True)
-    username = Column(Text)
-    password = Column(Text)
-    names = Column(Text)
-    surnames = Column(Text)
-    id_rol = Column(ForeignKey('auth.rol.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False, unique=True)
-    created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
-    modificated_date = Column(DateTime(True))
-
-    rol = relationship('Rol', uselist=False)
-
-
-class Auditing(Base):
-    __tablename__ = 'auditing'
+class RolPermission(Base):
+    __tablename__ = 'rol_permission'
     __table_args__ = {'schema': 'auth'}
 
     id = Column(BigInteger, primary_key=True)
-    data = Column(Text)
-    id_user = Column(ForeignKey('auth.user.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
     created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
-    modificated_date = Column(DateTime(True))
-    input = Column(Text)
-    id_auditing_type = Column(ForeignKey('auth.auditing_type.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
+    id_rol = Column(ForeignKey('auth.rol.id', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
+    id_permission = Column(ForeignKey('auth.permission.id', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
 
-    auditing_type = relationship('AuditingType')
-    user = relationship('User')
+    permission = relationship('Permission')
+    rol = relationship('Rol')

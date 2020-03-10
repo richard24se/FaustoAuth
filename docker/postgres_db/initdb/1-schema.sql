@@ -226,8 +226,7 @@ CREATE TABLE auth.rol (
     name text,
     display_name character varying(50),
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    modificated_date timestamp with time zone,
-    id_permission smallint NOT NULL
+    modificated_date timestamp with time zone
 );
 
 
@@ -239,6 +238,34 @@ ALTER TABLE auth.rol OWNER TO postgres;
 
 ALTER TABLE auth.rol ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME auth.rol_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: rol_permission; Type: TABLE; Schema: auth; Owner: postgres
+--
+
+CREATE TABLE auth.rol_permission (
+    id bigint NOT NULL,
+    created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    id_rol smallint,
+    id_permission smallint
+);
+
+
+ALTER TABLE auth.rol_permission OWNER TO postgres;
+
+--
+-- Name: rol_permission_id_seq; Type: SEQUENCE; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE auth.rol_permission ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME auth.rol_permission_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -336,6 +363,14 @@ ALTER TABLE ONLY auth.permission_type
 
 
 --
+-- Name: rol_permission rol_permission_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth.rol_permission
+    ADD CONSTRAINT rol_permission_pk PRIMARY KEY (id);
+
+
+--
 -- Name: rol rol_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
 --
 
@@ -376,11 +411,11 @@ ALTER TABLE ONLY auth.object
 
 
 --
--- Name: rol permission_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+-- Name: rol_permission permission_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE ONLY auth.rol
-    ADD CONSTRAINT permission_fk FOREIGN KEY (id_permission) REFERENCES auth.permission(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY auth.rol_permission
+    ADD CONSTRAINT permission_fk FOREIGN KEY (id_permission) REFERENCES auth.permission(id) MATCH FULL ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
@@ -397,6 +432,14 @@ ALTER TABLE ONLY auth.permission
 
 ALTER TABLE ONLY auth."user"
     ADD CONSTRAINT rol_fk FOREIGN KEY (id_rol) REFERENCES auth.rol(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: rol_permission rol_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth.rol_permission
+    ADD CONSTRAINT rol_fk FOREIGN KEY (id_rol) REFERENCES auth.rol(id) MATCH FULL ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --

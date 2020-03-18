@@ -92,13 +92,13 @@ def revoke__refresh_token(self):
     return {"msg": "Successfully logged out"}
 
 @jwt_required
-def revokeAccessToken(self):
+def revoke_access_token(self):
     jti = get_raw_jwt()['jti']
     revoked_store.set(jti, 'true', REFRESH_EXPIRES * 1.2)
     return {"msg": "Successfully logged out"}
 
 @jwt_required
-def verifyToken(self):
+def verify_token(self):
     jti = get_raw_jwt()['jti']
     entry = revoked_store.get(jti)
     logging.debug("Token from cache: "+str(entry))
@@ -112,7 +112,7 @@ def verifyToken(self):
 class Auth(Resource):
 
     def get(self):
-        ret = verifyToken(self)
+        ret = verify_token(self)
         if ret:
             return {"msg": "Token is valid!", "valid": ret}
         else:
@@ -172,7 +172,7 @@ class Auth(Resource):
             logging.debug("Hasn't JSON data")
             return { "msg": "Please provide JSON" }
         if option == 'access':
-            return revokeAccessToken(self)
+            return revoke_access_token(self)
         elif option == 'refresh':
             return revoke__refresh_token(self)
         else:

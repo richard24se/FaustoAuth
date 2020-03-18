@@ -6,7 +6,7 @@ import logging
 
 @tryWrapper
 @sqlalchWrapper
-def createAuditingType(s,data):
+def create_auditing_type(s,data):
     new_data = AuditingType(**data)
     s.add(new_data)
     s.commit()
@@ -14,7 +14,7 @@ def createAuditingType(s,data):
 
 @tryWrapper
 @sqlalchWrapper
-def updateAuditingType(s, id, data):
+def update_auditing_type(s, id, data):
     if id is None:
         raise ControllerError("Envíe el id!")
     s.query(AuditingType).filter_by(id=id).update(data)
@@ -23,7 +23,7 @@ def updateAuditingType(s, id, data):
 
 @tryWrapper
 @sqlalchWrapper
-def deleteAuditingType(s, id):
+def delete_auditing_type(s, id):
         state = s.query(AuditingType).filter(AuditingType.id==id).delete()
         logging.debug("SQLALCH state: "+str(state))
         s.commit()
@@ -34,7 +34,7 @@ def deleteAuditingType(s, id):
 
 @tryWrapper
 @sqlalchWrapper
-def getAuditingType(s,id):    
+def get_auditing_type(s,id):    
     auditoria = s.query(AuditingType).filter(AuditingType.id==id).first()        
     if auditoria:
         logging.debug("SQLALCH AuditingType: "+str(quick_format_sqlalch(auditoria)))
@@ -45,7 +45,7 @@ def getAuditingType(s,id):
 
 @tryWrapper
 @sqlalchWrapper
-def getAuditingTypes(s):
+def get_auditing_types(s):
     auditoria = s.query(AuditingType).all()
     if auditoria:
         logging.debug("SQLALCH user: "+str(auditoria))

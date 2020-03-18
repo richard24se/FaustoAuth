@@ -6,7 +6,7 @@ import logging
 
 @tryWrapper
 @sqlalchWrapper
-def createObjectType(s,data):
+def create_object_type(s,data):
     duplicate_object = s.query(ObjectType).filter_by(name=data.get('name')).one_or_none()
     if duplicate_object:
         raise ControllerError("Ya existe tipo de objecto: '"+data.get('name')+"'")
@@ -17,10 +17,10 @@ def createObjectType(s,data):
 
 @tryWrapper
 @sqlalchWrapper
-def updateObjectType(s, id, data):
+def update_object_type(s, id, data):
     if id is None:
         raise ControllerError("Envíe el id!")
-    duplicate_object = s.query(ObjectTypeType).filter(ObjectType.name==data.get('name'), ObjectType.id!=id).one_or_none()
+    duplicate_object = s.query(ObjectType).filter(ObjectType.name==data.get('name'), ObjectType.id!=id).one_or_none()
     if duplicate_object:
         raise ControllerError("Ya existe tipo de objecto: '"+data.get('name')+"'")
     s.query(ObjectType).filter_by(id=id).update(data)
@@ -29,7 +29,7 @@ def updateObjectType(s, id, data):
 
 @tryWrapper
 @sqlalchWrapper
-def deleteObjectType(s, id):
+def delete_object_type(s, id):
         state = s.query(ObjectType).filter(ObjectType.id==id).delete()
         logging.debug("SQLALCH state: "+str(state))
         s.commit()
@@ -40,7 +40,7 @@ def deleteObjectType(s, id):
 
 @tryWrapper
 @sqlalchWrapper
-def getObjectType(s,id):    
+def get_object_type(s,id):    
     objecto = s.query(ObjectType).filter(ObjectType.id==id).first()        
     if objecto:
         logging.debug("SQLALCH ObjectTypeType: "+str(quick_format_sqlalch(objecto)))
@@ -51,7 +51,7 @@ def getObjectType(s,id):
 
 @tryWrapper
 @sqlalchWrapper
-def getObjectTypes(s):
+def get_object_types(s):
     objecto = s.query(ObjectType).all()
     if objecto:
         logging.debug("SQLALCH user: "+str(objecto))

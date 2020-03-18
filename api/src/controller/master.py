@@ -5,179 +5,179 @@ import logging
 from fausto.utils import tryWrapper, jsonVerify, jsonWrapper   
 
 #APP LIBRARY LAYER
-from auth.user import createUser, updateUser, deleteUser, getUser, getUsers, getUserName, validateUser
-from auth.rol import createRol, updateRol, deleteRol, getRol, getRols
-from auth.permission import createPermission, updatePermission, deletePermission, getPermission, getPermissions
-from auth.permission_type import createPermissionType, updatePermissionType, deletePermissionType, getPermissionType, getPermissionTypes
-from auth.object import createObject, updateObject, deleteObject, getObject, getObjects
-from auth.object_type import createObjectType, updateObjectType, deleteObjectType, getObjectType, getObjectTypes
-from auth.auditing import createAuditing, updateAuditing, deleteAuditing, getAuditing, getAuditings
-from auth.auditing_type import createAuditingType, updateAuditingType, deleteAuditingType, getAuditingType, getAuditingTypes
+from auth.user import create_user, update_user, delete_user, get_user, get_users, get_user_name, validate_user
+from auth.rol import create_rol, update_rol, delete_rol, get_rol, get_rols
+from auth.permission import create_permission, update_permission, delete_permission, get_permission, get_permissions
+from auth.permission_type import create_permission_type, update_permission_type, delete_permission_type, get_permission_type, get_permission_types
+from auth.object import create_object, update_object, delete_object, get_object, get_objects
+from auth.object_type import create_object_type, update_object_type, delete_object_type, get_object_type, get_object_types
+from auth.auditing import create_auditing, update_auditing, delete_auditing, get_auditing, get_auditings
+from auth.auditing_type import create_auditing_type, update_auditing_type, delete_auditing_type, get_auditing_type, get_auditing_types
 
 class ApiUser(Resource):
 
     def get(self, id=None):
         if id:
-            return getUser(id)
+            return get_user(id)
         else:
-            return getUsers()
+            return get_users()
 
     @jsonWrapper
     def post(self):
         data=request.json
-        return createUser(data)
+        return create_user(data)
 
     @jsonWrapper
     def put(self, id=None):
         data=request.json
-        return updateUser(id, data)
+        return update_user(id, data)
 
     def delete(self, id):
-        return deleteUser(id)
+        return delete_user(id)
 
 class ApiRol(Resource):
 
     def get(self, id=None):
         if id:
-            return getRol(id)
+            return get_rol(id)
         else:
-            return getRols()
+            return get_rols()
 
     @jsonWrapper
     def post(self):
         data=request.json
-        return createRol(data)
+        return create_rol(data)
 
     @jsonWrapper
     def put(self, id=None):
         data=request.json
-        return updateRol(id, data)
+        return update_rol(id, data)
 
     def delete(self, id):
-        return deleteRol(id)
+        return delete_rol(id)
 
 class ApiPermission(Resource):
 
     def get(self, id=None):
         if id:
-            return getPermission(id)
+            return get_permission(id)
         else:
-            return getPermissions()
+            return get_permissions()
 
     @jsonWrapper
     def post(self):
         data=request.json
-        return createPermission(data)
+        return create_permission(data)
 
     @jsonWrapper
     def put(self, id=None):
         data=request.json
-        return updatePermission(id, data)
+        return update_permission(id, data)
 
     def delete(self, id):
-        return deletePermission(id)
+        return delete_permission(id)
 
 class ApiPermissionType(Resource):
 
     def get(self, id=None):
         if id:
-            return getPermissionType(id)
+            return get_permission_type(id)
         else:
-            return getPermissionTypes()
+            return get_permission_types()
 
     @jsonWrapper
     def post(self):
         data=request.json
-        return createPermissionType(data)
+        return create_permission_type(data)
 
     @jsonWrapper
     def put(self, id=None):
         data=request.json
-        return updatePermissionType(id, data)
+        return update_permission_type(id, data)
 
     def delete(self, id):
-        return deletePermissionType(id)
+        return delete_permission_type(id)
 
 class ApiObject(Resource):
 
     def get(self, id=None):
         if id:
-            return getObject(id)
+            return get_object(id)
         else:
-            return getObjects()
+            return get_objects()
 
     @jsonWrapper
     def post(self):
         data=request.json
-        return createObject(data)
+        return create_object(data)
 
     @jsonWrapper
     def put(self, id=None):
         data=request.json
-        return updateObject(id, data)
+        return update_object(id, data)
 
     def delete(self, id):
-        return deleteObject(id)
+        return delete_object(id)
 
 class ApiObjectType(Resource):
 
     def get(self, id=None):
         if id:
-            return getObjectType(id)
+            return get_object_type(id)
         else:
-            return getObjectTypes()
+            return get_object_types()
 
     @jsonWrapper
     def post(self):
         data=request.json
-        return createObjectType(data)
+        return create_object_type(data)
 
     @jsonWrapper
     def put(self, id=None):
         data=request.json
-        return updateObjectType(id, data)
+        return update_object_type(id, data)
 
     def delete(self, id):
-        return deleteObjectType(id)
+        return delete_object_type(id)
 
 class ApiAuditing(Resource):
 
     def get(self, id=None):
         if id:
-            return getAuditing(id)
+            return get_auditing(id)
         else:
-            return getAuditings()
+            return get_auditings()
 
     @jsonWrapper
     def post(self):
         data=request.json
-        return createAuditing(data)
+        return create_auditing(data)
 
     @jsonWrapper
     def put(self, id=None):
         data=request.json
-        return updateAuditing(id, data)
+        return update_auditing(id, data)
 
     def delete(self, id):
-        return deleteAuditing(id)
+        return delete_auditing(id)
 
 class ApiAuditingType(Resource):
 
     def get(self, id=None):
         if id:
-            return getAuditingType(id)
+            return get_auditing_type(id)
         else:
-            return getAuditingTypes()
+            return get_auditing_types()
 
     @jsonWrapper
     def post(self):
         data=request.json
-        return createAuditingType(data)
+        return create_auditing_type(data)
 
     @jsonWrapper
     def put(self, id=None):
         data=request.json
-        return updateAuditingType(id, data)
+        return update_auditing_type(id, data)
 
     def delete(self, id):
-        return deleteAuditingType(id)
+        return delete_auditing_type(id)

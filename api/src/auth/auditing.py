@@ -6,7 +6,7 @@ import logging
 
 @tryWrapper
 @sqlalchWrapper
-def createAuditing(s,data):
+def create_auditing(s,data):
     new_data = Auditing(**data)
     s.add(new_data)
     s.commit()
@@ -14,7 +14,7 @@ def createAuditing(s,data):
 
 @tryWrapper
 @sqlalchWrapper
-def updateAuditing(s, id, data):
+def update_auditing(s, id, data):
     if id is None:
         raise ControllerError("Envíe el id!")
     s.query(Auditing).filter_by(id=id).update(data)
@@ -23,7 +23,7 @@ def updateAuditing(s, id, data):
 
 @tryWrapper
 @sqlalchWrapper
-def deleteAuditing(s, id):
+def delete_auditing(s, id):
         state = s.query(Auditing).filter(Auditing.id==id).delete()
         logging.debug("SQLALCH state: "+str(state))
         s.commit()
@@ -34,7 +34,7 @@ def deleteAuditing(s, id):
 
 @tryWrapper
 @sqlalchWrapper
-def getAuditing(s,id):    
+def get_auditing(s,id):    
     auditoria = s.query(Auditing).filter(Auditing.id==id).first()        
     if auditoria:
         logging.debug("SQLALCH Auditing: "+str(quick_format_sqlalch(auditoria)))
@@ -45,7 +45,7 @@ def getAuditing(s,id):
 
 @tryWrapper
 @sqlalchWrapper
-def getAuditings(s):
+def get_auditings(s):
     auditoria = s.query(Auditing).all()
     if auditoria:
         logging.debug("SQLALCH user: "+str(auditoria))

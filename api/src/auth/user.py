@@ -7,7 +7,7 @@ import logging
 
 @tryWrapper
 @sqlalchWrapper
-def createUser(s,data):
+def create_user(s,data):
     duplicate_username = s.query(User).filter_by(username=data.get('username')).one_or_none()
     if duplicate_username:
         raise ControllerError("Ya existe usuario: '"+data.get('username')+"'")
@@ -18,7 +18,7 @@ def createUser(s,data):
 
 @tryWrapper
 @sqlalchWrapper
-def updateUser(s, id, data):
+def update_user(s, id, data):
     if id is None:
         raise ControllerError("Envíe el id!")
     duplicate_username = s.query(User).filter(User.username==data.get('username'), User.id!=id).one_or_none()
@@ -30,7 +30,7 @@ def updateUser(s, id, data):
 
 @tryWrapper
 @sqlalchWrapper
-def deleteUser(s, id):
+def delete_user(s, id):
         state = s.query(User).filter(User.id==id).delete()
         logging.debug("SQLALCH state: "+str(state))
         s.commit()
@@ -41,7 +41,7 @@ def deleteUser(s, id):
 
 @tryWrapper
 @sqlalchWrapper
-def getUser(s,id):    
+def get_user(s,id):    
     user = s.query(User).filter(User.id==id).first()        
     if user:
         logging.debug("SQLALCH user: "+str(quick_format_sqlalch(user)))
@@ -52,7 +52,7 @@ def getUser(s,id):
 
 @tryWrapper
 @sqlalchWrapper
-def getUserName(s,username):
+def get_user_name(s,username):
     logging.debug(str(username))
     user_fields= get_prefix_fields_sqlalch(['id','username'], User, 'user_')    
     rol_fields= get_prefix_fields_sqlalch(['id','name'], Rol, 'rol_')
@@ -83,20 +83,19 @@ def getUserName(s,username):
 
 @tryWrapper
 @sqlalchWrapper
-def validateUser(s, username, password):
+def validate_user(s, username, password):
     logging.debug(str(username))    
     user = s.query(User).filter(User.username== username).first()        
     if not user:
         raise ControllerError("No existe username!")
     elif user.password != password:
-        user_dict = quick_format_sqlalch(user)
         raise ControllerError("Contraseña Incorrecta!")
     else:
         return user
 
 @tryWrapper
 @sqlalchWrapper
-def getUsers(s):
+def get_users(s):
     user = s.query(User).all()
     if user:
         logging.debug("SQLALCH user: "+str(user))

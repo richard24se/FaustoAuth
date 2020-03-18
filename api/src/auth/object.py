@@ -6,7 +6,7 @@ import logging
 
 @tryWrapper
 @sqlalchWrapper
-def createObject(s,data):
+def create_object(s,data):
     duplicate_object = s.query(Object).filter_by(name=data.get('name')).one_or_none()
     if duplicate_object:
         raise ControllerError("Ya existe objecto: '"+data.get('name')+"'")
@@ -17,7 +17,7 @@ def createObject(s,data):
 
 @tryWrapper
 @sqlalchWrapper
-def updateObject(s, id, data):
+def update_object(s, id, data):
     if id is None:
         raise ControllerError("Envíe el id!")
     duplicate_object = s.query(Object).filter(Object.name==data.get('name'), Object.id!=id).one_or_none()
@@ -29,7 +29,7 @@ def updateObject(s, id, data):
 
 @tryWrapper
 @sqlalchWrapper
-def deleteObject(s, id):
+def delete_object(s, id):
         state = s.query(Object).filter(Object.id==id).delete()
         logging.debug("SQLALCH state: "+str(state))
         s.commit()
@@ -40,7 +40,7 @@ def deleteObject(s, id):
 
 @tryWrapper
 @sqlalchWrapper
-def getObject(s,id):    
+def get_object(s,id):    
     objecto = s.query(Object).filter(Object.id==id).first()        
     if objecto:
         logging.debug("SQLALCH Object: "+str(quick_format_sqlalch(objecto)))
@@ -51,7 +51,7 @@ def getObject(s,id):
 
 @tryWrapper
 @sqlalchWrapper
-def getObjects(s):
+def get_objects(s):
     objecto = s.query(Object).all()
     if objecto:
         logging.debug("SQLALCH user: "+str(objecto))

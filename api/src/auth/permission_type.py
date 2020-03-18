@@ -6,7 +6,7 @@ import logging
 
 @tryWrapper
 @sqlalchWrapper
-def createPermissionType(s,data):
+def create_permission_type(s,data):
     duplicate_permission = s.query(PermissionType).filter_by(name=data.get('name')).one_or_none()
     if duplicate_permission:
         raise ControllerError("Ya existe tipo de permiso: '"+data.get('name')+"'")
@@ -17,7 +17,7 @@ def createPermissionType(s,data):
 
 @tryWrapper
 @sqlalchWrapper
-def updatePermissionType(s, id, data):
+def update_permission_type(s, id, data):
     if id is None:
         raise ControllerError("Envíe el id!")
     duplicate_permission = s.query(PermissionType).filter(PermissionType.name==data.get('name'), PermissionType.id!=id).one_or_none()
@@ -29,7 +29,7 @@ def updatePermissionType(s, id, data):
 
 @tryWrapper
 @sqlalchWrapper
-def deletePermissionType(s, id):
+def delete_permission_type(s, id):
         state = s.query(PermissionType).filter(PermissionType.id==id).delete()
         logging.debug("SQLALCH state: "+str(state))
         s.commit()
@@ -40,7 +40,7 @@ def deletePermissionType(s, id):
 
 @tryWrapper
 @sqlalchWrapper
-def getPermissionType(s,id):    
+def get_permission_type(s,id):    
     permiso = s.query(PermissionType).filter(PermissionType.id==id).first()        
     if permiso:
         logging.debug("SQLALCH PermissionType: "+str(quick_format_sqlalch(permiso)))
@@ -51,7 +51,7 @@ def getPermissionType(s,id):
 
 @tryWrapper
 @sqlalchWrapper
-def getPermissionTypes(s):
+def get_permission_types(s):
     permiso = s.query(PermissionType).all()
     if permiso:
         logging.debug("SQLALCH user: "+str(permiso))

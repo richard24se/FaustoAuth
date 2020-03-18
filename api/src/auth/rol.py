@@ -6,7 +6,7 @@ import logging
 
 @tryWrapper
 @sqlalchWrapper
-def createRol(s,data):
+def create_rol(s,data):
     duplicate_rol = s.query(Rol).filter_by(name=data.get('name')).one_or_none()
     if duplicate_rol:
         raise ControllerError("Ya existe rol: '"+data.get('name')+"'")
@@ -17,7 +17,7 @@ def createRol(s,data):
 
 @tryWrapper
 @sqlalchWrapper
-def updateRol(s, id, data):
+def update_rol(s, id, data):
     if id is None:
         raise ControllerError("Envíe el id!")
     duplicate_rol = s.query(Rol).filter(Rol.name==data.get('name'), Rol.id!=id).one_or_none()
@@ -29,7 +29,7 @@ def updateRol(s, id, data):
 
 @tryWrapper
 @sqlalchWrapper
-def deleteRol(s, id):
+def delete_rol(s, id):
         state = s.query(Rol).filter(Rol.id==id).delete()
         logging.debug("SQLALCH state: "+str(state))
         s.commit()
@@ -40,7 +40,7 @@ def deleteRol(s, id):
 
 @tryWrapper
 @sqlalchWrapper
-def getRol(s,id):    
+def get_rol(s,id):    
     rol = s.query(Rol).filter(Rol.id==id).first()        
     if rol:
         logging.debug("SQLALCH Rol: "+str(quick_format_sqlalch(rol)))
@@ -51,7 +51,7 @@ def getRol(s,id):
 
 @tryWrapper
 @sqlalchWrapper
-def getRols(s):
+def get_rols(s):
     rol = s.query(Rol).all()
     if rol:
         logging.debug("SQLALCH user: "+str(rol))

@@ -17,7 +17,7 @@ from fausto.utils import tryWrapper, jsonVerify, jsonWrapper
 #DB LAYER
 from model.config import SQLALCH_AUTH
 
-from auth.user import getUserName, validateUser
+from auth.user import get_user_name, validate_user
 
 from controller.master import  ApiUser, ApiRol, ApiPermission, ApiPermissionType, ApiObject, ApiObjectType, ApiAuditing, ApiAuditingType
 
@@ -52,7 +52,7 @@ class Init(Resource):
     def post(self):
         return {
             'init': 'flask',
-            'msg': 'This is a Vorlage App'
+            'msg': 'This is a post Vorlage App'
         }
 
 #REDIS LAYER
@@ -86,7 +86,7 @@ def refresh(self):
 
 
 @jwt_refresh_token_required
-def revokeRefreshToken(self):
+def revoke__refresh_token(self):
     jti = get_raw_jwt()['jti']
     revoked_store.set(jti, 'true', REFRESH_EXPIRES * 1.2)
     return {"msg": "Successfully logged out"}
@@ -132,10 +132,8 @@ class Auth(Resource):
             return { "msg": "Please provide JSON" }
         
         if option == 'login':
-            user_validade=validateUser(username, password)
+            user_validade=validate_user(username, password)
             logging.debug(str(user_validade))
-            # if username != 'test':
-            #     return { "msg": "Bad username or password" }, 500
             if user_validade.get('error'):
                 return user_validade
             access_token = create_access_token(identity=username)
@@ -176,7 +174,7 @@ class Auth(Resource):
         if option == 'access':
             return revokeAccessToken(self)
         elif option == 'refresh':
-            return revokeRefreshToken(self)
+            return revoke__refresh_token(self)
         else:
             return { "msg": "Please provide valid option!" }
         
@@ -192,7 +190,7 @@ class TestPermissionUser(Resource):
     @jwt_required
     def get(self):
         logging.debug(str(self))
-        return getUserName(str(get_jwt_identity()))
+        return get_user_name(str(get_jwt_identity()))
 
 #URL LAYER
 API.add_resource(Init, '/')

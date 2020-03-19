@@ -66,8 +66,9 @@ COPY auth.object_type (id, name, created_date, modificated_date) FROM stdin;
 -- Data for Name: object; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth.object (id, name, created_date, modificated_date, id_object_type) FROM stdin;
-2	Crear Proyecto	2020-03-09 16:10:11.043754+00	\N	1
+COPY auth.object (id, name, created_date, modificated_date, id_object_type, display_name) FROM stdin;
+2	crear_proyecto	2020-03-09 16:10:11.043754+00	\N	1	CREAR PROYECTO
+4	crear_elemento	2020-03-19 16:36:10.245773+00	\N	1	CREAR ELEMENTO
 \.
 
 
@@ -77,7 +78,8 @@ COPY auth.object (id, name, created_date, modificated_date, id_object_type) FROM
 
 COPY auth.permission_type (id, name, created_date, modificated_date) FROM stdin;
 1	Crear	2020-03-09 16:10:51.525856+00	\N
-2	Consultar	2020-03-19 15:16:31.90481+00	\N
+2	Modificar 	2020-03-19 15:16:31.90481+00	\N
+3	Eiminar	2020-03-19 16:38:56.749364+00	\N
 \.
 
 
@@ -86,7 +88,8 @@ COPY auth.permission_type (id, name, created_date, modificated_date) FROM stdin;
 --
 
 COPY auth.permission (id, name, created_date, modificated_date, id_permission_type, id_object) FROM stdin;
-2	Create Proyecto	2020-03-09 16:12:03.931409+00	\N	1	2
+2	Crear Proyecto	2020-03-09 16:12:03.931409+00	\N	1	2
+3	Modificar Proyecto	2020-03-19 16:38:31.069915+00	\N	2	2
 \.
 
 
@@ -96,6 +99,7 @@ COPY auth.permission (id, name, created_date, modificated_date, id_permission_ty
 
 COPY auth.rol_permission (id, created_date, id_rol, id_permission) FROM stdin;
 1	2020-03-10 16:54:51.233219+00	1	2
+2	2020-03-19 16:40:34.345846+00	1	3
 \.
 
 
@@ -117,7 +121,7 @@ SELECT pg_catalog.setval('auth.auditing_type_id_seq', 1, true);
 -- Name: object_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.object_id_seq', 2, true);
+SELECT pg_catalog.setval('auth.object_id_seq', 4, true);
 
 
 --
@@ -131,14 +135,14 @@ SELECT pg_catalog.setval('auth.object_type_id_seq', 2, true);
 -- Name: permission_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.permission_id_seq', 2, true);
+SELECT pg_catalog.setval('auth.permission_id_seq', 3, true);
 
 
 --
 -- Name: permission_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.permission_type_id_seq', 2, true);
+SELECT pg_catalog.setval('auth.permission_type_id_seq', 3, true);
 
 
 --
@@ -152,7 +156,7 @@ SELECT pg_catalog.setval('auth.rol_id_seq', 1, true);
 -- Name: rol_permission_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.rol_permission_id_seq', 1, true);
+SELECT pg_catalog.setval('auth.rol_permission_id_seq', 2, true);
 
 
 --

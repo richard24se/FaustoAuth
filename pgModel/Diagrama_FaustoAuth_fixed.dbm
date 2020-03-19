@@ -41,7 +41,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="auditing">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="60" y="60"/>
+	<position x="80" y="240"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="bigint" length="0"/>
 	</column>
@@ -79,7 +79,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="auditing_type">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="380" y="60"/>
+	<position x="80" y="500"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="smallint" length="0"/>
 	</column>
@@ -108,12 +108,15 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="object">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="700" y="60"/>
+	<position x="860" y="460"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="smallint" length="0"/>
 	</column>
 	<column name="name">
 		<type name="text" length="0"/>
+	</column>
+	<column name="display_name">
+		<type name="text" length="100"/>
 	</column>
 	<column name="created_date" default-value="CURRENT_TIMESTAMP">
 		<type name="timestamp with time zone" length="0" with-timezone="true"/>
@@ -140,7 +143,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="object_type">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="1020" y="60"/>
+	<position x="860" y="740"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="smallint" length="0"/>
 	</column>
@@ -169,7 +172,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="permission">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="1340" y="60"/>
+	<position x="1300" y="460"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="smallint" length="0"/>
 	</column>
@@ -204,7 +207,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="permission_type">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="60" y="300"/>
+	<position x="1300" y="740"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="smallint" length="0"/>
 	</column>
@@ -233,7 +236,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="rol">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="380" y="300"/>
+	<position x="940" y="240"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="smallint" length="0"/>
 	</column>
@@ -265,7 +268,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="user">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="700" y="300"/>
+	<position x="540" y="240"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="smallint" length="0"/>
 	</column>
@@ -301,7 +304,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="rol_permission">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="1040" y="300"/>
+	<position x="1320" y="240"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="bigint" length="0"/>
 	</column>

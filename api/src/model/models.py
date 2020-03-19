@@ -57,6 +57,7 @@ class Object(Base):
     created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
     modificated_date = Column(DateTime(True))
     id_object_type = Column(ForeignKey('auth.object_type.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
+    display_name = Column(Text)
 
     object_type = relationship('ObjectType')
 

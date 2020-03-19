@@ -111,7 +111,8 @@ CREATE TABLE auth.object (
     name text,
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     modificated_date timestamp with time zone,
-    id_object_type smallint NOT NULL
+    id_object_type smallint NOT NULL,
+    display_name text
 );
 
 

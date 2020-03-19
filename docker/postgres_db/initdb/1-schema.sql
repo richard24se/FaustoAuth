@@ -165,7 +165,7 @@ ALTER TABLE auth.object_type ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 --
 
 CREATE TABLE auth.permission (
-    id smallint NOT NULL,
+    id bigint NOT NULL,
     name character varying(50),
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     modificated_date timestamp with time zone,
@@ -254,8 +254,8 @@ ALTER TABLE auth.rol ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 CREATE TABLE auth.rol_permission (
     id bigint NOT NULL,
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    id_rol smallint,
-    id_permission smallint
+    id_rol smallint NOT NULL,
+    id_permission bigint NOT NULL
 );
 
 
@@ -416,7 +416,7 @@ ALTER TABLE ONLY auth.object
 --
 
 ALTER TABLE ONLY auth.rol_permission
-    ADD CONSTRAINT permission_fk FOREIGN KEY (id_permission) REFERENCES auth.permission(id) MATCH FULL ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT permission_fk FOREIGN KEY (id_permission) REFERENCES auth.permission(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -440,7 +440,7 @@ ALTER TABLE ONLY auth."user"
 --
 
 ALTER TABLE ONLY auth.rol_permission
-    ADD CONSTRAINT rol_fk FOREIGN KEY (id_rol) REFERENCES auth.rol(id) MATCH FULL ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT rol_fk FOREIGN KEY (id_rol) REFERENCES auth.rol(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --

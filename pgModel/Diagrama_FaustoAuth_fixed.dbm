@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.1" last-position="0,0" last-zoom="1"
+<dbmodel pgmodeler-ver="0.9.1" last-position="0,159" last-zoom="1"
 	 default-schema="public" default-owner="postgres">
 <role name="root"
       superuser="true"
@@ -172,9 +172,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="permission">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="1300" y="460"/>
+	<position x="1300" y="480"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
-		<type name="smallint" length="0"/>
+		<type name="bigint" length="0"/>
 	</column>
 	<column name="name">
 		<type name="character varying" length="50"/>
@@ -236,7 +236,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="rol">
 	<schema name="auth"/>
 	<role name="postgres"/>
-	<position x="940" y="240"/>
+	<position x="920" y="240"/>
 	<column name="id" not-null="true" identity-type="ALWAYS">
 		<type name="smallint" length="0"/>
 	</column>
@@ -311,12 +311,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="created_date" default-value="CURRENT_TIMESTAMP">
 		<type name="timestamp with time zone" length="0" with-timezone="true"/>
 	</column>
-	<column name="id_rol">
-		<type name="smallint" length="0"/>
-	</column>
-	<column name="id_permission">
-		<type name="smallint" length="0"/>
-	</column>
 	<constraint name="rol_permission_pk" type="pk-constr" table="auth.rol_permission">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
@@ -329,6 +323,24 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="auth"/>
 	<role name="postgres"/>
 </sequence>
+
+<relationship name="rol_has_many_rol_permission" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#ad0f37"
+	 src-table="auth.rol"
+	 dst-table="auth.rol_permission"
+	 src-required="true" dst-required="false"/>
+
+<relationship name="permission_has_many_rol_permission" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#0b48da"
+	 src-table="auth.permission"
+	 dst-table="auth.rol_permission"
+	 src-required="true" dst-required="false"/>
 
 <constraint name="auditing_type_fk" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="CASCADE" del-action="RESTRICT" ref-table="auth.auditing_type" table="auth.auditing">
@@ -366,18 +378,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="rol_fk" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="CASCADE" del-action="SET NULL" ref-table="auth.rol" table="auth.rol_permission">
-	<columns names="id_rol" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
-<constraint name="permission_fk" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="CASCADE" del-action="SET NULL" ref-table="auth.permission" table="auth.rol_permission">
-	<columns names="id_permission" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
 <relationship name="rel_auditing_auditing_type" type="relfk"
 	 custom-color="#82a20b"
 	 src-table="auth.auditing"
@@ -412,18 +412,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#caf590"
 	 src-table="auth.&quot;user&quot;"
 	 dst-table="auth.rol" reference-fk="rol_fk"
-	 src-required="false" dst-required="false"/>
-
-<relationship name="rel_rol_permission_rol" type="relfk"
-	 custom-color="#04ffe7"
-	 src-table="auth.rol_permission"
-	 dst-table="auth.rol" reference-fk="rol_fk"
-	 src-required="false" dst-required="false"/>
-
-<relationship name="rel_rol_permission_permission" type="relfk"
-	 custom-color="#a826fe"
-	 src-table="auth.rol_permission"
-	 dst-table="auth.permission" reference-fk="permission_fk"
 	 src-required="false" dst-required="false"/>
 
 </dbmodel>

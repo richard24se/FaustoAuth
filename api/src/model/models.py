@@ -98,7 +98,7 @@ class Permission(Base):
     __tablename__ = 'permission'
     __table_args__ = {'schema': 'auth'}
 
-    id = Column(SmallInteger, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     name = Column(String(50))
     created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
     modificated_date = Column(DateTime(True))
@@ -115,8 +115,8 @@ class RolPermission(Base):
 
     id = Column(BigInteger, primary_key=True)
     created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
-    id_rol = Column(ForeignKey('auth.rol.id', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
-    id_permission = Column(ForeignKey('auth.permission.id', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
+    id_rol = Column(ForeignKey('auth.rol.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
+    id_permission = Column(ForeignKey('auth.permission.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
 
     permission = relationship('Permission')
     rol = relationship('Rol')

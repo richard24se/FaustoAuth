@@ -2,7 +2,8 @@ from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
 import logging
 
-from fausto.utils import tryWrapper, jsonVerify, jsonWrapper   
+from fausto.utils import tryWrapper, jsonVerify, jsonWrapper
+from flask_jwt_extended import get_jwt_identity, jwt_required
 
 #APP LIBRARY LAYER
 from auth.user import create_user, update_user, delete_user, get_user, get_users, get_user_name, validate_user
@@ -57,9 +58,12 @@ class ApiRol(Resource):
         return delete_rol(id)
 
 class ApiPermission(Resource):
-
+    @jwt_required
     def get(self, id=None):
-        if id:
+        user = str(get_jwt_identity())
+        if user and id:
+            return get_permission(id, user)
+        elif id and not user:
             return get_permission(id)
         else:
             return get_permissions()

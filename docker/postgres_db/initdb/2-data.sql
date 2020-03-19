@@ -57,7 +57,8 @@ COPY auth.auditing (id, data, created_date, modificated_date, input, id_user, id
 --
 
 COPY auth.object_type (id, name, created_date, modificated_date) FROM stdin;
-1	OBJECT_TYPE TEST 1	2020-03-09 16:09:34.867461+00	\N
+1	Web	2020-03-09 16:09:34.867461+00	\N
+2	Movil	2020-03-19 15:15:08.143407+00	\N
 \.
 
 
@@ -66,7 +67,7 @@ COPY auth.object_type (id, name, created_date, modificated_date) FROM stdin;
 --
 
 COPY auth.object (id, name, created_date, modificated_date, id_object_type) FROM stdin;
-2	OBJECT TEST 1	2020-03-09 16:10:11.043754+00	\N	1
+2	Crear Proyecto	2020-03-09 16:10:11.043754+00	\N	1
 \.
 
 
@@ -75,7 +76,8 @@ COPY auth.object (id, name, created_date, modificated_date, id_object_type) FROM
 --
 
 COPY auth.permission_type (id, name, created_date, modificated_date) FROM stdin;
-1	PERMISSION_TYPE TEST 1	2020-03-09 16:10:51.525856+00	\N
+1	Crear	2020-03-09 16:10:51.525856+00	\N
+2	Consultar	2020-03-19 15:16:31.90481+00	\N
 \.
 
 
@@ -84,7 +86,7 @@ COPY auth.permission_type (id, name, created_date, modificated_date) FROM stdin;
 --
 
 COPY auth.permission (id, name, created_date, modificated_date, id_permission_type, id_object) FROM stdin;
-2	PERMISSION TEST 1	2020-03-09 16:12:03.931409+00	\N	1	2
+2	Create Proyecto	2020-03-09 16:12:03.931409+00	\N	1	2
 \.
 
 
@@ -122,7 +124,7 @@ SELECT pg_catalog.setval('auth.object_id_seq', 2, true);
 -- Name: object_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.object_type_id_seq', 1, true);
+SELECT pg_catalog.setval('auth.object_type_id_seq', 2, true);
 
 
 --
@@ -136,7 +138,7 @@ SELECT pg_catalog.setval('auth.permission_id_seq', 2, true);
 -- Name: permission_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.permission_type_id_seq', 1, true);
+SELECT pg_catalog.setval('auth.permission_type_id_seq', 2, true);
 
 
 --

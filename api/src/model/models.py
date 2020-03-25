@@ -73,9 +73,9 @@ class User(Base):
     surnames = Column(Text)
     created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
     modificated_date = Column(DateTime(True))
-    id_rol = Column(ForeignKey('auth.rol.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False, unique=True)
+    id_rol = Column(ForeignKey('auth.rol.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
 
-    rol = relationship('Rol', uselist=False)
+    rol = relationship('Rol')
 
 
 class Auditing(Base):

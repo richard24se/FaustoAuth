@@ -380,14 +380,6 @@ ALTER TABLE ONLY auth.rol
 
 
 --
--- Name: user user_uq; Type: CONSTRAINT; Schema: auth; Owner: postgres
---
-
-ALTER TABLE ONLY auth."user"
-    ADD CONSTRAINT user_uq UNIQUE (id_rol);
-
-
---
 -- Name: auditing auditing_type_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
 --
 

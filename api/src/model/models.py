@@ -7,8 +7,8 @@ Base = declarative_base()
 metadata = Base.metadata
 
 
-class AuditingType(Base):
-    __tablename__ = 'auditing_type'
+class AuditType(Base):
+    __tablename__ = 'audit_type'
     __table_args__ = {'schema': 'auth'}
 
     id = Column(SmallInteger, primary_key=True)
@@ -37,8 +37,8 @@ class PermissionType(Base):
     modificated_date = Column(DateTime(True))
 
 
-class Rol(Base):
-    __tablename__ = 'rol'
+class Role(Base):
+    __tablename__ = 'role'
     __table_args__ = {'schema': 'auth'}
 
     id = Column(SmallInteger, primary_key=True)
@@ -73,13 +73,13 @@ class User(Base):
     surnames = Column(Text)
     created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
     modificated_date = Column(DateTime(True))
-    id_rol = Column(ForeignKey('auth.rol.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
+    id_role = Column(ForeignKey('auth.role.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
 
-    rol = relationship('Rol')
+    role = relationship('Role')
 
 
-class Auditing(Base):
-    __tablename__ = 'auditing'
+class Audit(Base):
+    __tablename__ = 'audit'
     __table_args__ = {'schema': 'auth'}
 
     id = Column(BigInteger, primary_key=True)
@@ -88,9 +88,9 @@ class Auditing(Base):
     modificated_date = Column(DateTime(True))
     input = Column(Text)
     id_user = Column(ForeignKey('auth.user.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
-    id_auditing_type = Column(ForeignKey('auth.auditing_type.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
+    id_audit_type = Column(ForeignKey('auth.audit_type.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
 
-    auditing_type = relationship('AuditingType')
+    audit_type = relationship('AuditType')
     user = relationship('User')
 
 
@@ -109,14 +109,14 @@ class Permission(Base):
     permission_type = relationship('PermissionType')
 
 
-class RolPermission(Base):
-    __tablename__ = 'rol_permission'
+class RolePermission(Base):
+    __tablename__ = 'role_permission'
     __table_args__ = {'schema': 'auth'}
 
     id = Column(BigInteger, primary_key=True)
     created_date = Column(DateTime(True), server_default=text("CURRENT_TIMESTAMP"))
-    id_rol = Column(ForeignKey('auth.rol.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
     id_permission = Column(ForeignKey('auth.permission.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
+    id_role = Column(ForeignKey('auth.role.id', ondelete='RESTRICT', onupdate='CASCADE', match='FULL'), nullable=False)
 
     permission = relationship('Permission')
-    rol = relationship('Rol')
+    role = relationship('Role')

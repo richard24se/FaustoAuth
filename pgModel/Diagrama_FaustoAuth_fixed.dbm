@@ -38,7 +38,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="postgres"/>
 </sequence>
 
-<table name="auditing">
+<table name="audit">
 	<schema name="auth"/>
 	<role name="postgres"/>
 	<position x="80" y="240"/>
@@ -57,15 +57,17 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="input">
 		<type name="text" length="0"/>
 	</column>
-	<column name="id_user" not-null="true">
-		<type name="smallint" length="0"/>
-	</column>
-	<column name="id_auditing_type" not-null="true">
-		<type name="smallint" length="0"/>
-	</column>
-	<constraint name="auditing_pk" type="pk-constr" table="auth.auditing">
+	<constraint name="auditing_pk" type="pk-constr" table="auth.audit">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="id_audit_type" index="5"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="audit_type_fk" index="1"/>
+	</customidxs>
 </table>
 
 <sequence name="auditing_type_id_seq"
@@ -76,7 +78,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="postgres"/>
 </sequence>
 
-<table name="auditing_type">
+<table name="audit_type">
 	<schema name="auth"/>
 	<role name="postgres"/>
 	<position x="80" y="500"/>
@@ -92,7 +94,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="modificated_date">
 		<type name="timestamp with time zone" length="0" with-timezone="true"/>
 	</column>
-	<constraint name="auditing_types_pk" type="pk-constr" table="auth.auditing_type">
+	<constraint name="auditing_types_pk" type="pk-constr" table="auth.audit_type">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
 </table>
@@ -233,7 +235,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="postgres"/>
 </sequence>
 
-<table name="rol">
+<table name="role">
 	<schema name="auth"/>
 	<role name="postgres"/>
 	<position x="920" y="240"/>
@@ -252,7 +254,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="modificated_date">
 		<type name="timestamp with time zone" length="0" with-timezone="true"/>
 	</column>
-	<constraint name="rol_pk" type="pk-constr" table="auth.rol">
+	<constraint name="rol_pk" type="pk-constr" table="auth.role">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
 </table>
@@ -290,15 +292,20 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="modificated_date">
 		<type name="timestamp with time zone" length="0" with-timezone="true"/>
 	</column>
-	<column name="id_rol" not-null="true">
-		<type name="smallint" length="0"/>
-	</column>
 	<constraint name="User_pk" type="pk-constr" table="auth.&quot;user&quot;">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="id_role" index="7"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="role_fk" index="1"/>
+	</customidxs>
 </table>
 
-<table name="rol_permission">
+<table name="role_permission">
 	<schema name="auth"/>
 	<role name="postgres"/>
 	<position x="1320" y="240"/>
@@ -308,9 +315,17 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="created_date" default-value="CURRENT_TIMESTAMP">
 		<type name="timestamp with time zone" length="0" with-timezone="true"/>
 	</column>
-	<constraint name="rol_permission_pk" type="pk-constr" table="auth.rol_permission">
+	<constraint name="rol_permission_pk" type="pk-constr" table="auth.role_permission">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="id_permission" index="2"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="permission_fk" index="1"/>
+	</customidxs>
 </table>
 
 <sequence name="rol_permission_id_seq"
@@ -321,35 +336,50 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="postgres"/>
 </sequence>
 
-<relationship name="rol_has_many_rol_permission" type="rel1n"
-	 src-col-pattern="{sc}_{st}"
-	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
-	 src-fk-pattern="{st}_fk"
-	 custom-color="#ad0f37"
-	 src-table="auth.rol"
-	 dst-table="auth.rol_permission"
-	 src-required="true" dst-required="false"/>
-
 <relationship name="permission_has_many_rol_permission" type="rel1n"
 	 src-col-pattern="{sc}_{st}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#0b48da"
 	 src-table="auth.permission"
-	 dst-table="auth.rol_permission"
+	 dst-table="auth.role_permission"
 	 src-required="true" dst-required="false"/>
 
-<constraint name="auditing_type_fk" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="CASCADE" del-action="RESTRICT" ref-table="auth.auditing_type" table="auth.auditing">
-	<columns names="id_auditing_type" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
+<relationship name="audit_type_has_many_audit" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#489c40"
+	 src-table="auth.audit_type"
+	 dst-table="auth.audit"
+	 src-required="true" dst-required="false"/>
 
-<constraint name="user_fk" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="CASCADE" del-action="RESTRICT" ref-table="auth.&quot;user&quot;" table="auth.auditing">
-	<columns names="id_user" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
+<relationship name="role_has_many_user" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#574662"
+	 src-table="auth.role"
+	 dst-table="auth.&quot;user&quot;"
+	 src-required="true" dst-required="false"/>
+
+<relationship name="user_has_many_audit" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#d11a00"
+	 src-table="auth.&quot;user&quot;"
+	 dst-table="auth.audit"
+	 src-required="true" dst-required="false"/>
+
+<relationship name="role_has_many_role_permission" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#d7630d"
+	 src-table="auth.role"
+	 dst-table="auth.role_permission"
+	 src-required="true" dst-required="false"/>
 
 <constraint name="object_type_fk" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="CASCADE" del-action="RESTRICT" ref-table="auth.object_type" table="auth.object">
@@ -369,24 +399,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="rol_fk" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="CASCADE" del-action="RESTRICT" ref-table="auth.rol" table="auth.&quot;user&quot;">
-	<columns names="id_rol" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
-<relationship name="rel_auditing_auditing_type" type="relfk"
-	 custom-color="#82a20b"
-	 src-table="auth.auditing"
-	 dst-table="auth.auditing_type" reference-fk="auditing_type_fk"
-	 src-required="false" dst-required="false"/>
-
-<relationship name="rel_auditing_user" type="relfk"
-	 custom-color="#5e040c"
-	 src-table="auth.auditing"
-	 dst-table="auth.&quot;user&quot;" reference-fk="user_fk"
-	 src-required="false" dst-required="false"/>
-
 <relationship name="rel_object_object_type" type="relfk"
 	 custom-color="#91bbe2"
 	 src-table="auth.object"
@@ -403,12 +415,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#3067d5"
 	 src-table="auth.permission"
 	 dst-table="auth.permission_type" reference-fk="permission_type_fk"
-	 src-required="false" dst-required="false"/>
-
-<relationship name="rel_user_rol" type="relfk"
-	 custom-color="#caf590"
-	 src-table="auth.&quot;user&quot;"
-	 dst-table="auth.rol" reference-fk="rol_fk"
 	 src-required="false" dst-required="false"/>
 
 </dbmodel>

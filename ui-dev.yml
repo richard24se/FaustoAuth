@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  react:
+    container_name: ui_auth_dev
+    build: 
+      context: .
+      dockerfile: ./docker/react_auth/react.Dockerfile
+    #stdin_open: true
+    #tty: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: >    
+      sh -c "ls -ls && yarn start" 
+    volumes:
+      - ./ui/public:/ui/public
+      - ./ui/src:/ui/src
+      - ./ui/.env:/ui/.env.development
+    ports:
+      - "3081:3000"

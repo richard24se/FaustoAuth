@@ -44,28 +44,28 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: auditing; Type: TABLE; Schema: auth; Owner: postgres
+-- Name: audit; Type: TABLE; Schema: auth; Owner: postgres
 --
 
-CREATE TABLE auth.auditing (
+CREATE TABLE auth.audit (
     id bigint NOT NULL,
     data text,
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     modificated_date timestamp with time zone,
     input text,
     id_user smallint NOT NULL,
-    id_auditing_type smallint NOT NULL
+    id_audit_type smallint NOT NULL
 );
 
 
-ALTER TABLE auth.auditing OWNER TO postgres;
+ALTER TABLE auth.audit OWNER TO postgres;
 
 --
--- Name: auditing_id_seq; Type: SEQUENCE; Schema: auth; Owner: postgres
+-- Name: audit_id_seq; Type: SEQUENCE; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE auth.auditing ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME auth.auditing_id_seq
+ALTER TABLE auth.audit ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME auth.audit_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -75,10 +75,10 @@ ALTER TABLE auth.auditing ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
--- Name: auditing_type; Type: TABLE; Schema: auth; Owner: postgres
+-- Name: audit_type; Type: TABLE; Schema: auth; Owner: postgres
 --
 
-CREATE TABLE auth.auditing_type (
+CREATE TABLE auth.audit_type (
     id smallint NOT NULL,
     name character varying(50),
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
@@ -86,14 +86,14 @@ CREATE TABLE auth.auditing_type (
 );
 
 
-ALTER TABLE auth.auditing_type OWNER TO postgres;
+ALTER TABLE auth.audit_type OWNER TO postgres;
 
 --
--- Name: auditing_type_id_seq; Type: SEQUENCE; Schema: auth; Owner: postgres
+-- Name: audit_type_id_seq; Type: SEQUENCE; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE auth.auditing_type ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME auth.auditing_type_id_seq
+ALTER TABLE auth.audit_type ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME auth.audit_type_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -219,10 +219,10 @@ ALTER TABLE auth.permission_type ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTIT
 
 
 --
--- Name: rol; Type: TABLE; Schema: auth; Owner: postgres
+-- Name: role; Type: TABLE; Schema: auth; Owner: postgres
 --
 
-CREATE TABLE auth.rol (
+CREATE TABLE auth.role (
     id smallint NOT NULL,
     name text,
     display_name character varying(50),
@@ -231,14 +231,14 @@ CREATE TABLE auth.rol (
 );
 
 
-ALTER TABLE auth.rol OWNER TO postgres;
+ALTER TABLE auth.role OWNER TO postgres;
 
 --
--- Name: rol_id_seq; Type: SEQUENCE; Schema: auth; Owner: postgres
+-- Name: role_id_seq; Type: SEQUENCE; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE auth.rol ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME auth.rol_id_seq
+ALTER TABLE auth.role ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME auth.role_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -248,25 +248,25 @@ ALTER TABLE auth.rol ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
--- Name: rol_permission; Type: TABLE; Schema: auth; Owner: postgres
+-- Name: role_permission; Type: TABLE; Schema: auth; Owner: postgres
 --
 
-CREATE TABLE auth.rol_permission (
+CREATE TABLE auth.role_permission (
     id bigint NOT NULL,
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    id_rol smallint NOT NULL,
-    id_permission bigint NOT NULL
+    id_permission bigint NOT NULL,
+    id_role smallint NOT NULL
 );
 
 
-ALTER TABLE auth.rol_permission OWNER TO postgres;
+ALTER TABLE auth.role_permission OWNER TO postgres;
 
 --
--- Name: rol_permission_id_seq; Type: SEQUENCE; Schema: auth; Owner: postgres
+-- Name: role_permission_id_seq; Type: SEQUENCE; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE auth.rol_permission ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME auth.rol_permission_id_seq
+ALTER TABLE auth.role_permission ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME auth.role_permission_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -287,7 +287,7 @@ CREATE TABLE auth."user" (
     surnames text,
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     modificated_date timestamp with time zone,
-    id_rol smallint NOT NULL
+    id_role smallint NOT NULL
 );
 
 
@@ -316,18 +316,18 @@ ALTER TABLE ONLY auth."user"
 
 
 --
--- Name: auditing auditing_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
+-- Name: audit auditing_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE ONLY auth.auditing
+ALTER TABLE ONLY auth.audit
     ADD CONSTRAINT auditing_pk PRIMARY KEY (id);
 
 
 --
--- Name: auditing_type auditing_types_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
+-- Name: audit_type auditing_types_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE ONLY auth.auditing_type
+ALTER TABLE ONLY auth.audit_type
     ADD CONSTRAINT auditing_types_pk PRIMARY KEY (id);
 
 
@@ -364,27 +364,27 @@ ALTER TABLE ONLY auth.permission_type
 
 
 --
--- Name: rol_permission rol_permission_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
+-- Name: role_permission rol_permission_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE ONLY auth.rol_permission
+ALTER TABLE ONLY auth.role_permission
     ADD CONSTRAINT rol_permission_pk PRIMARY KEY (id);
 
 
 --
--- Name: rol rol_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
+-- Name: role rol_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE ONLY auth.rol
+ALTER TABLE ONLY auth.role
     ADD CONSTRAINT rol_pk PRIMARY KEY (id);
 
 
 --
--- Name: auditing auditing_type_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+-- Name: audit audit_type_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE ONLY auth.auditing
-    ADD CONSTRAINT auditing_type_fk FOREIGN KEY (id_auditing_type) REFERENCES auth.auditing_type(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY auth.audit
+    ADD CONSTRAINT audit_type_fk FOREIGN KEY (id_audit_type) REFERENCES auth.audit_type(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -404,10 +404,10 @@ ALTER TABLE ONLY auth.object
 
 
 --
--- Name: rol_permission permission_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+-- Name: role_permission permission_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE ONLY auth.rol_permission
+ALTER TABLE ONLY auth.role_permission
     ADD CONSTRAINT permission_fk FOREIGN KEY (id_permission) REFERENCES auth.permission(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
@@ -420,26 +420,26 @@ ALTER TABLE ONLY auth.permission
 
 
 --
--- Name: user rol_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+-- Name: role_permission role_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth.role_permission
+    ADD CONSTRAINT role_fk FOREIGN KEY (id_role) REFERENCES auth.role(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: user role_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
 --
 
 ALTER TABLE ONLY auth."user"
-    ADD CONSTRAINT rol_fk FOREIGN KEY (id_rol) REFERENCES auth.rol(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
+    ADD CONSTRAINT role_fk FOREIGN KEY (id_role) REFERENCES auth.role(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
--- Name: rol_permission rol_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+-- Name: audit user_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
 --
 
-ALTER TABLE ONLY auth.rol_permission
-    ADD CONSTRAINT rol_fk FOREIGN KEY (id_rol) REFERENCES auth.rol(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
---
--- Name: auditing user_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
---
-
-ALTER TABLE ONLY auth.auditing
+ALTER TABLE ONLY auth.audit
     ADD CONSTRAINT user_fk FOREIGN KEY (id_user) REFERENCES auth."user"(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
 
 

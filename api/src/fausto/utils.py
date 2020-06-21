@@ -24,7 +24,7 @@ def format_dict_sqlalch(dictio):
             string_date = date.strftime('%Y-%m-%d %H:%M:%S')
             dictio[keys] = string_date  
         if dictio[keys] is None:
-            dictio[keys] = "No tiene"
+            dictio[keys] = "No Data"
     return dictio
 
 class ControllerError(Exception):
@@ -39,8 +39,7 @@ def sqlalchWrapper(func):
             logging.exception("SQLAlchemyError: "+str(error))
             session.rollback()
             session.close()
-            raise Exception(
-                "SQLAlchemyError: Hay problemas con la integridad de datos, revisa los logs")
+            raise Exception("SQLAlchemyError : Hay problemas con la integridad de datos, revisa los logs")
         except SQLAlchemyError as error:
             logging.exception("SQLAlchemyError: "+str(error))
             session.rollback()

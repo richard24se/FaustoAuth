@@ -153,7 +153,7 @@ class createPermission_ extends Component {
                 format_objects = objects.map(item => ({
                     ...item,
                     id: item.id,
-                    value: capitalize(item.name)
+                    value: item.name
                 }));
                 this.getPermissionTypes()
             } else {
@@ -188,7 +188,7 @@ class createPermission_ extends Component {
 
     getPermissions = () => {
         // Change id_object_ty for the name
-        var obtainObjectName = (id_object) => { for (var object of this.state.objects_list) if (id_object === object.id) return capitalize(object.name) }
+        var obtainObjectName = (id_object) => { for (var object of this.state.objects_list) if (id_object === object.id) return object.name }
         var obtainPermissionTypeName = (id_permission_type) => { for (var permission_type of this.state.permission_types_list) if (id_permission_type === permission_type.id) return capitalize(permission_type.name) }
         this.props.dispatch(fotchActions.processing("Getting Permissions..."))
         fotchAuth.get("/permission", obj => {

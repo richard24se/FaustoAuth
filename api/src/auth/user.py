@@ -55,9 +55,9 @@ def get_user(s,id):
 def get_user_name(s,username):
     logging.debug(str(username))
     user_fields= get_prefix_fields_sqlalch(['id','username'], User, 'user_')    
-    role_fields= get_prefix_fields_sqlalch(['id','name'], Role, 'rol_')
+    role_fields= get_prefix_fields_sqlalch(['id','name'], Role, 'role_')
     user = (s.query(*user_fields, *role_fields)
-            .join(User,(User.id_rol==Role.id))
+            .join(User,(User.id_role==Role.id))
             .filter(User.username==username).one_or_none())
     if user:
         user_dict = quick_format_sqlalch(user)       
@@ -71,7 +71,7 @@ def get_user_name(s,username):
                 .join(PermissionType,(PermissionType.id==Permission.id_permission_type))
                 .join(Object,(Object.id==Permission.id_object))
                 .join(ObjectType,(ObjectType.id==Object.id_object_type))
-                .filter(RolePermission.id_rol==user.rol_id).all())        
+                .filter(RolePermission.id_role==user.role_id).all())
         
         if permission:
             user_dict['permission']= [quick_format_sqlalch(i) for i in permission]

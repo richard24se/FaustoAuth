@@ -173,7 +173,6 @@ class createObject_ extends Component {
                 var objects = obj.response.data;
                 format_objects = objects.map(item => ({
                     ...item,
-                    name: capitalize(item.name),
                     display_name: capitalize(item.display_name),
                     object_type: obtainObjectTypeName(item.id_object_type),
                 }));
@@ -210,7 +209,7 @@ class createObject_ extends Component {
             },
                 {
                     data: {
-                        name: (this.state.object_name).toUpperCase(),
+                        name: (this.state.object_name),
                         display_name: capitalize(this.state.object_display_name),
                         id_object_type: this.state.object_type.value
                     },
@@ -259,7 +258,7 @@ class createObject_ extends Component {
             },
                 {
                     data: {
-                        name: (this.state.object_name).toUpperCase(),
+                        name: (this.state.object_name),
                         display_name: capitalize(this.state.object_display_name),
                         id_object_type: this.state.object_type.value
                     },

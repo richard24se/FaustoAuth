@@ -116,13 +116,13 @@ class EasyTextField_ extends Component {
     constructor(props) {
         super(props);
         this.listRef = React.createRef();
-        this.state ={
+        this.state = {
             showPassword: false
         }
         this.handleClickShowPassword = this.handleClickShowPassword.bind(this)
-        
+
     }
-      
+
     shouldComponentUpdate(nextProps, nextState) {
         // if (this.props.state !== nextProps.state) {
         //     console.log("EasyTextfield changing...")
@@ -131,18 +131,18 @@ class EasyTextField_ extends Component {
         //     console.log("#----------->Next Props<------------#")
         //     console.log(nextProps)
         // }
-        
+
         return this.props !== nextProps || this.state !== nextState; //props que cambian, sólo con esas se renderiza
-        
+
     }
 
     handleClickShowPassword = () => {
         console.log("Visibility change")
         console.log(this.state.showPassword)
         this.setState({ showPassword: !this.state.showPassword });
-      };
-    
-      
+    };
+
+
 
     render() {
 
@@ -224,14 +224,14 @@ class EasyTextField_ extends Component {
                             fullWidth={true}
                             endAdornment={
                                 !this.props.hiddenPassword ?
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        aria-label="toggle password visibility"
-                                        onClick={this.handleClickShowPassword}
-                                    >
-                                        {this.state.showPassword ? <Visibility /> : <VisibilityOff />}
-                                    </IconButton>
-                                </InputAdornment> : null
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={this.handleClickShowPassword}
+                                        >
+                                            {this.state.showPassword ? <Visibility /> : <VisibilityOff />}
+                                        </IconButton>
+                                    </InputAdornment> : null
                             }
                         />
                         <FormHelperText id="component-helper-text">{this.props.helperText}</FormHelperText>
@@ -569,7 +569,7 @@ class EasyMuiDataTable_ extends Component {
         // console.log("#----------------END----------------#")
         const msg = (this.props.state !== nextProps.state) ? "Render MuiDatatable!" : "No Render MuiDatatable"
         console.log(msg);
-        return this.props !== nextProps;
+        return this.props.state !== nextProps.state;
     }
     abortController = new AbortController();
 

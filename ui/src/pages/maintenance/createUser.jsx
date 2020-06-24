@@ -144,7 +144,7 @@ class createUser_ extends Component {
             value = "";
             this.setState({ [name]: value });
         }
-        this.comparePasword(name,value)
+        // this.comparePasword(name,value)
     }
 
     comparePasword = (name, value) => {

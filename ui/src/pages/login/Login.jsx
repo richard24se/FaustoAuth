@@ -20,7 +20,8 @@ import useStyles from "./styles";
 import {hooksStyles} from '../../themes/colors';
 
 // logo
-// import logo from "../../themes/logo.png";
+import logo from "../../themes/logo.png";
+import fausto from "../../themes/fausto.png";
 //import google from "../../images/google.svg";
 
 // context
@@ -79,8 +80,9 @@ function Login(props) {
   return (
     <Grid container className={classes.container}>
       <div className={classes.logotypeContainer}>
-        {/* <img src={logo} alt="logo" className={classes.logotypeImage} /> */}
-        <Typography className={classes.logotypeText}>Fausto Auth</Typography>
+        <img src={logo} alt="logo" className={classes.logotypeImage} />
+        <img src={fausto} alt="fausto" style={{width: 200}} />
+        {/* <Typography className={classes.logotypeText}>Fausto Auth</Typography> */}
       </div>
       <div className={classes.formContainer}>
         <div className={classes.form}>
@@ -96,8 +98,8 @@ function Login(props) {
           </Tabs>
           {activeTabId === 0 && (
             <React.Fragment>
-              <Typography variant="h4" className={classes.greeting}>
-                Bienvenido, ingresa tus credenciales para acceder al sistema 
+              <Typography variant="h5" className={classes.greeting}>
+                Ingresa tus credenciales para acceder a Auth
                 
               </Typography>
               <Grow in={ alert.message ? true : false}>
@@ -142,7 +144,7 @@ function Login(props) {
                   }
                 }}
               />
-              <TextField
+              {/* <TextField
                 id="ip_address"
                 label="Dirección IP"
                 value={IPValue}
@@ -153,7 +155,7 @@ function Login(props) {
                 InputProps={{
                   readOnly: true,
                 }}
-              />
+              /> */}
               <div className={classes.formButtonsCenter}>
                 {loggingIn ? (
                   <CircularProgress size={26} className={classes.loginLoader} />
@@ -192,7 +194,7 @@ function Login(props) {
           )}
         </div>
         <Typography color="primary" className={classes.copyright}>
-          © 2019 Fausto. All rights reserved.
+          © 2020 Fausto. All rights reserved.
         </Typography>
       </div>
     </Grid>

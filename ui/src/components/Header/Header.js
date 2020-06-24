@@ -26,7 +26,7 @@ import classNames from "classnames";
 
 // styles
 import useStyles from "./styles";
-// import logo from "../../themes/logo.png";
+import logo from "../../themes/logo2.png";
 // components
 import { Badge, Typography } from "../Wrappers/Wrappers";
 import Notification from "../Notification/Notification";
@@ -168,10 +168,10 @@ function Header(props) {
             />
           )}
         </IconButton>
-        <Typography variant="h1" weight="medium" className={classes.logotype}>
+        {/* <Typography variant="h1" weight="medium" className={classes.logotype}>
           Fausto Auth
-        </Typography>
-        {/* <img src={logo} alt="logo" className={classes.logotypeImage} /> */}
+        </Typography> */}
+        <img src={logo} alt="logo" className={classes.logotypeImage} />
         {/*
         <Chip
           icon={<SimCardIcon />}

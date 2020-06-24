@@ -3,7 +3,7 @@ import tinycolor from "tinycolor2";
 // ROJO: #cc232a
 
 const primary = "#2D2D2D";
-const secondary = "#cc232a"; //#FF5C93
+const secondary = "#1b1b1b"; //#FF5C93
 const warning = "#FFC260";
 const success = "#3CD4A0";
 const info = "#9013FE";
@@ -95,6 +95,15 @@ export default {
         color: "#B9B9B9",
       },
     },
+    MUIDataTableSelectCell: {
+      fixedHeaderCommon: {
+        position: "unset !important",
+        backgroundColor: "unset !important",
+      },
+      expandDisabled: {
+        visibility: "hidden"
+      }
+    },
     MuiListItem: {
       root: {
         "&$selected": {
@@ -117,7 +126,7 @@ export default {
     },
     MuiTableRow: {
       root: {
-        height: 56,
+        height: 24,
       },
     },
     MuiTableCell: {

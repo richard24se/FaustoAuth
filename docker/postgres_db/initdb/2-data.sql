@@ -42,7 +42,7 @@ COPY auth.role (id, name, display_name, created_date, modificated_date) FROM std
 --
 
 COPY auth."user" (id, username, password, names, surnames, created_date, modificated_date, id_role) FROM stdin;
-2	USER TEST 1	TEST	TEST	1	2020-03-09 16:14:59.665753+00	\N	1
+2	test	test	TEST	1	2020-03-09 16:14:59.665753+00	\N	1
 7	asdasdas@hotmail.com	test4	Anthony	Dsadsada	2020-06-21 05:06:59.036615+00	\N	2
 9	test@test.com	testleon	Anthony	Leon 	2020-06-23 21:40:27.191727+00	\N	7
 \.

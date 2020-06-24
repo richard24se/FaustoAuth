@@ -17,22 +17,23 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Data for Name: auditing_type; Type: TABLE DATA; Schema: auth; Owner: postgres
+-- Data for Name: audit_type; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth.auditing_type (id, name, created_date, modificated_date) FROM stdin;
-1	AUDITING_TYPE TEST 1	2020-03-09 16:13:33.063784+00	\N
+COPY auth.audit_type (id, name, created_date, modificated_date) FROM stdin;
 \.
 
 
 --
--- Data for Name: rol; Type: TABLE DATA; Schema: auth; Owner: postgres
+-- Data for Name: role; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth.rol (id, name, display_name, created_date, modificated_date) FROM stdin;
-1	admin	Administrador	2020-03-09 16:12:55.648846+00	\N
-2	creator	Creador de Proyecto	2020-03-19 20:59:01.582256+00	\N
-3	report	Generador de Reportes	2020-03-19 20:59:01.582256+00	\N
+COPY auth.role (id, name, display_name, created_date, modificated_date) FROM stdin;
+2	query	Gerente de Produccion	2020-06-19 07:34:00.019756+00	\N
+5	testt	test	2020-06-19 20:09:04.394359+00	\N
+6	Testts-update	Test	2020-06-19 20:11:34.616881+00	\N
+1	Admin	Administrador	2020-06-19 07:34:00.019756+00	\N
+7	Admin sole	Administrador	2020-06-23 21:39:40.495268+00	\N
 \.
 
 
@@ -40,19 +41,18 @@ COPY auth.rol (id, name, display_name, created_date, modificated_date) FROM stdi
 -- Data for Name: user; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth."user" (id, username, password, names, surnames, created_date, modificated_date, id_rol) FROM stdin;
+COPY auth."user" (id, username, password, names, surnames, created_date, modificated_date, id_role) FROM stdin;
 2	USER TEST 1	TEST	TEST	1	2020-03-09 16:14:59.665753+00	\N	1
-5	USER TEST 2	TEST	TEST	1	2020-03-25 01:21:11.715958+00	\N	1
-6	USER TEST 3	TEST	TEST	1	2020-03-25 01:21:11.715958+00	\N	1
+7	asdasdas@hotmail.com	test4	Anthony	Dsadsada	2020-06-21 05:06:59.036615+00	\N	2
+9	test@test.com	testleon	Anthony	Leon 	2020-06-23 21:40:27.191727+00	\N	7
 \.
 
 
 --
--- Data for Name: auditing; Type: TABLE DATA; Schema: auth; Owner: postgres
+-- Data for Name: audit; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth.auditing (id, data, created_date, modificated_date, input, id_user, id_auditing_type) FROM stdin;
-1	DATA TEST 1	2020-03-09 16:15:35.47442+00	\N	INPUT TEST 1	2	1
+COPY auth.audit (id, data, created_date, modificated_date, input, id_user, id_audit_type) FROM stdin;
 \.
 
 
@@ -71,7 +71,6 @@ COPY auth.object_type (id, name, created_date, modificated_date) FROM stdin;
 --
 
 COPY auth.object (id, name, created_date, modificated_date, id_object_type, display_name) FROM stdin;
-2	crear_proyecto	2020-03-09 16:10:11.043754+00	\N	1	CREAR PROYECTO
 4	crear_elemento	2020-03-19 16:36:10.245773+00	\N	1	CREAR ELEMENTO
 7	crear_actividad	2020-03-19 20:09:26.87339+00	\N	1	CREAR ACTIVIDAD
 8	crear_elemento_masivo	2020-03-19 20:09:26.87339+00	\N	1	CREAR ELEMENTO MASIVO
@@ -89,6 +88,16 @@ COPY auth.object (id, name, created_date, modificated_date, id_object_type, disp
 20	crear_personal	2020-03-19 20:09:26.87339+00	\N	1	CREAR PERSONAL
 21	crear_preguntas	2020-03-19 20:09:26.87339+00	\N	1	CREAR PREGUNTAS
 22	crear_tipo_elementos	2020-03-19 20:09:26.87339+00	\N	1	CREAR TIPO ELEMENTO
+30	TEST	2020-06-18 21:34:37.213467+00	2020-06-18 21:34:50.956799+00	2	Test
+2	consultarNotificacion	2020-03-09 16:10:11.043754+00	2020-06-23 15:31:49.871613+00	1	Consultar notificación
+32	forecastVentas	2020-06-23 21:27:47.728153+00	\N	1	Forecast ventas
+33	capacidadPlanta	2020-06-23 21:28:46.810833+00	\N	1	Capacidad de plantas
+34	registrarNotificacion	2020-06-23 21:29:26.87272+00	\N	1	Registrar notificacion
+35	margenVentas	2020-06-23 21:30:05.65051+00	\N	1	Margen de ventas
+36	planificacion	2020-06-23 21:30:33.210602+00	\N	1	Planificación
+37	ingresoMasivo	2020-06-23 21:30:55.554834+00	\N	1	Ingreso masivo
+38	sincronizacion	2020-06-23 21:31:37.748526+00	\N	1	Sincronización de datos
+39	controlUsuario	2020-06-24 19:39:03.467214+00	\N	1	Control de usuario
 \.
 
 
@@ -101,6 +110,7 @@ COPY auth.permission_type (id, name, created_date, modificated_date) FROM stdin;
 2	Modificar 	2020-03-19 15:16:31.90481+00	\N
 3	Eiminar	2020-03-19 16:38:56.749364+00	\N
 4	Reporte	2020-03-19 20:16:46.408496+00	\N
+5	Control total	2020-06-23 21:34:31.197202+00	\N
 \.
 
 
@@ -181,128 +191,61 @@ COPY auth.permission (id, name, created_date, modificated_date, id_permission_ty
 71	Modificar Tipo Elemento	2020-03-19 20:43:51.706697+00	\N	2	22
 72	Eliminar Tipo Elemento	2020-03-19 20:43:51.706697+00	\N	3	22
 73	Reporte Tipo Elemento	2020-03-19 20:43:51.706697+00	\N	4	22
+76	Reporte Crear proyecto	2020-06-16 18:21:22.879429+00	\N	4	2
+77	Reporte Crear elemento	2020-06-16 18:21:22.935268+00	\N	4	4
+78	Crear Crear proyecto	2020-06-16 19:16:42.860273+00	\N	1	2
+79	Crear Crear elemento	2020-06-16 19:16:42.917909+00	\N	1	4
+80	Crear Avance de obra	2020-06-16 19:20:32.016003+00	\N	1	10
+81	Crear Crear tipo elemento	2020-06-16 19:20:32.083707+00	\N	1	22
+84	Testt	2020-06-19 06:33:08.944577+00	2020-06-19 06:33:18.74281+00	1	30
+85	Ingreso masivo	2020-06-23 21:35:01.380048+00	\N	5	37
+86	Sincronizacion de datos	2020-06-23 21:35:27.354536+00	\N	5	38
+87	Planificacion	2020-06-23 21:36:18.00789+00	\N	5	36
+88	Margen de ventas	2020-06-23 21:36:48.637779+00	\N	5	35
+89	Forecast de ventas	2020-06-23 21:37:27.169644+00	\N	5	32
+90	Registrar notificacion	2020-06-23 21:37:48.221657+00	\N	5	34
+91	Control de usuario	2020-06-24 19:40:33.627179+00	\N	5	39
 \.
 
 
 --
--- Data for Name: rol_permission; Type: TABLE DATA; Schema: auth; Owner: postgres
+-- Data for Name: role_permission; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth.rol_permission (id, created_date, id_rol, id_permission) FROM stdin;
-1	2020-03-10 16:54:51.233219+00	1	2
-2	2020-03-19 16:40:34.345846+00	1	3
-145	2020-03-19 21:17:31.904428+00	1	4
-146	2020-03-19 21:17:31.904428+00	1	5
-147	2020-03-19 21:17:31.904428+00	1	6
-148	2020-03-19 21:17:31.904428+00	1	7
-149	2020-03-19 21:17:31.904428+00	1	8
-150	2020-03-19 21:17:31.904428+00	1	9
-151	2020-03-19 21:17:31.904428+00	1	10
-152	2020-03-19 21:17:31.904428+00	1	11
-153	2020-03-19 21:17:31.904428+00	1	12
-154	2020-03-19 21:17:31.904428+00	1	13
-155	2020-03-19 21:17:31.904428+00	1	14
-156	2020-03-19 21:17:31.904428+00	1	15
-157	2020-03-19 21:17:31.904428+00	1	16
-158	2020-03-19 21:17:31.904428+00	1	17
-159	2020-03-19 21:17:31.904428+00	1	18
-160	2020-03-19 21:17:31.904428+00	1	19
-161	2020-03-19 21:17:31.904428+00	1	20
-162	2020-03-19 21:17:31.904428+00	1	21
-163	2020-03-19 21:17:31.904428+00	1	22
-164	2020-03-19 21:17:31.904428+00	1	23
-165	2020-03-19 21:17:31.904428+00	1	24
-166	2020-03-19 21:17:31.904428+00	1	25
-167	2020-03-19 21:17:31.904428+00	1	26
-168	2020-03-19 21:17:31.904428+00	1	27
-169	2020-03-19 21:17:31.904428+00	1	28
-170	2020-03-19 21:17:31.904428+00	1	29
-171	2020-03-19 21:17:31.904428+00	1	30
-172	2020-03-19 21:17:31.904428+00	1	31
-173	2020-03-19 21:17:31.904428+00	1	32
-174	2020-03-19 21:17:31.904428+00	1	33
-175	2020-03-19 21:17:31.904428+00	1	34
-176	2020-03-19 21:17:31.904428+00	1	35
-177	2020-03-19 21:17:31.904428+00	1	36
-178	2020-03-19 21:17:31.904428+00	1	37
-179	2020-03-19 21:17:31.904428+00	1	38
-180	2020-03-19 21:17:31.904428+00	1	39
-181	2020-03-19 21:17:31.904428+00	1	40
-182	2020-03-19 21:17:31.904428+00	1	41
-183	2020-03-19 21:17:31.904428+00	1	42
-184	2020-03-19 21:17:31.904428+00	1	43
-185	2020-03-19 21:17:31.904428+00	1	44
-186	2020-03-19 21:17:31.904428+00	1	45
-187	2020-03-19 21:17:31.904428+00	1	46
-188	2020-03-19 21:17:31.904428+00	1	47
-189	2020-03-19 21:17:31.904428+00	1	48
-190	2020-03-19 21:17:31.904428+00	1	49
-191	2020-03-19 21:17:31.904428+00	1	50
-192	2020-03-19 21:17:31.904428+00	1	51
-193	2020-03-19 21:17:31.904428+00	1	52
-194	2020-03-19 21:17:31.904428+00	1	53
-195	2020-03-19 21:17:31.904428+00	1	54
-196	2020-03-19 21:17:31.904428+00	1	55
-197	2020-03-19 21:17:31.904428+00	1	56
-198	2020-03-19 21:17:31.904428+00	1	57
-199	2020-03-19 21:17:31.904428+00	1	58
-200	2020-03-19 21:17:31.904428+00	1	59
-201	2020-03-19 21:17:31.904428+00	1	60
-202	2020-03-19 21:17:31.904428+00	1	61
-203	2020-03-19 21:17:31.904428+00	1	62
-204	2020-03-19 21:17:31.904428+00	1	63
-205	2020-03-19 21:17:31.904428+00	1	64
-206	2020-03-19 21:17:31.904428+00	1	65
-207	2020-03-19 21:17:31.904428+00	1	66
-208	2020-03-19 21:17:31.904428+00	1	67
-209	2020-03-19 21:17:31.904428+00	1	68
-210	2020-03-19 21:17:31.904428+00	1	69
-211	2020-03-19 21:17:31.904428+00	1	70
-212	2020-03-19 21:17:31.904428+00	1	71
-213	2020-03-19 21:17:31.904428+00	1	72
-214	2020-03-19 21:17:31.904428+00	1	73
-216	2020-03-19 21:17:31.904428+00	2	2
-217	2020-03-19 21:17:31.904428+00	2	3
-218	2020-03-19 21:17:31.904428+00	2	4
-219	2020-03-19 21:17:31.904428+00	2	6
-220	2020-03-19 21:17:31.904428+00	2	7
-221	2020-03-19 21:17:31.904428+00	2	8
-222	2020-03-19 21:17:31.904428+00	2	10
-223	2020-03-19 21:17:31.904428+00	2	11
-224	2020-03-19 21:17:31.904428+00	2	12
-225	2020-03-19 21:17:31.904428+00	2	14
-226	2020-03-19 21:17:31.904428+00	2	15
-227	2020-03-19 21:17:31.904428+00	2	16
-228	2020-03-19 21:17:31.904428+00	2	18
-229	2020-03-19 21:17:31.904428+00	2	19
-230	2020-03-19 21:17:31.904428+00	2	20
-231	2020-03-19 21:23:26.261886+00	3	5
-232	2020-03-19 21:23:26.261886+00	3	9
-233	2020-03-19 21:23:26.261886+00	3	13
-234	2020-03-19 21:23:26.261886+00	3	17
-235	2020-03-19 21:23:26.261886+00	3	21
+COPY auth.role_permission (id, created_date, id_permission, id_role) FROM stdin;
+1	2020-06-19 20:11:34.631014+00	60	6
+2	2020-06-19 20:11:34.654954+00	14	6
+3	2020-06-19 20:11:34.67006+00	16	6
+5	2020-06-19 22:29:35.51688+00	2	1
+6	2020-06-23 21:39:40.516065+00	85	7
+7	2020-06-23 21:39:40.544868+00	86	7
+8	2020-06-23 21:39:40.56001+00	90	7
+9	2020-06-23 21:39:40.573097+00	89	7
+10	2020-06-23 21:39:40.587197+00	88	7
+11	2020-06-23 21:39:40.599516+00	87	7
+12	2020-06-24 19:40:52.49043+00	91	7
 \.
 
 
 --
--- Name: auditing_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+-- Name: audit_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.auditing_id_seq', 1, true);
+SELECT pg_catalog.setval('auth.audit_id_seq', 1, false);
 
 
 --
--- Name: auditing_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+-- Name: audit_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.auditing_type_id_seq', 1, true);
+SELECT pg_catalog.setval('auth.audit_type_id_seq', 1, false);
 
 
 --
 -- Name: object_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.object_id_seq', 22, true);
+SELECT pg_catalog.setval('auth.object_id_seq', 39, true);
 
 
 --
@@ -316,35 +259,35 @@ SELECT pg_catalog.setval('auth.object_type_id_seq', 2, true);
 -- Name: permission_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.permission_id_seq', 73, true);
+SELECT pg_catalog.setval('auth.permission_id_seq', 91, true);
 
 
 --
 -- Name: permission_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.permission_type_id_seq', 4, true);
+SELECT pg_catalog.setval('auth.permission_type_id_seq', 5, true);
 
 
 --
--- Name: rol_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+-- Name: role_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.rol_id_seq', 3, true);
+SELECT pg_catalog.setval('auth.role_id_seq', 7, true);
 
 
 --
--- Name: rol_permission_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+-- Name: role_permission_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.rol_permission_id_seq', 235, true);
+SELECT pg_catalog.setval('auth.role_permission_id_seq', 12, true);
 
 
 --
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.user_id_seq', 6, true);
+SELECT pg_catalog.setval('auth.user_id_seq', 9, true);
 
 
 --

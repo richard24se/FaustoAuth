@@ -1,4 +1,5 @@
-#LIBRARY LAYER
+# LIBRARY LAYER
+from logging.config import dictConfig
 from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
 from flask_cors import CORS
@@ -14,63 +15,80 @@ import redis
 
 from fausto.utils import tryWrapper, jsonVerify, jsonWrapper
 
-#DB LAYER
+# DB LAYER
 from model.config import SQLALCH_AUTH
+from config.jwt import JWT_KEY
 
 from auth.user import get_user_name, validate_user
+r
+from controller.master import ApiUser, ApiRol, ApiPermission, ApiPermissionType, ApiObject, ApiObjectType, ApiAuditing, ApiAuditingType
 
-from controller.master import  ApiUser, ApiRol, ApiPermission, ApiPermissionType, ApiObject, ApiObjectType, ApiAuditing, ApiAuditingType
 
-
-#APP LAYER
+# APP LAYER
 APP = Flask(__name__)
 APP.config.from_object(__name__)
-CORS(APP) #EXPLICAR CON REACT
+CORS(APP)  # EXPLICAR CON REACT
 API = Api(APP)
 
 blacklist = set()
 
 
-#JWT LAYER
-APP.config['JWT_SECRET_KEY'] = 'super-secret'
+# JWT LAYER
+APP.config['JWT_SECRET_KEY'] = JWT_KEY
 APP.config['JWT_BLACKLIST_ENABLED'] = True
 APP.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
-#JWT EXPIRES!
+# JWT EXPIRES!
 ACCESS_EXPIRES = timedelta(minutes=15)
 REFRESH_EXPIRES = timedelta(days=1)
 APP.config['JWT_ACCESS_TOKEN_EXPIRES'] = ACCESS_EXPIRES
 APP.config['JWT_REFRESH_TOKEN_EXPIRES'] = REFRESH_EXPIRES
 jwt = JWTManager(APP)
 
-#LOGIC LAYER
+# LOGIC LAYER
+
+
 class Init(Resource):
     def get(self):
         return {
             'init': 'flask',
             'msg': 'This is a Vorlage App'
         }
+
     def post(self):
         return {
             'init': 'flask',
             'msg': 'This is a post Vorlage App'
         }
 
-#REDIS LAYER
-revoked_store = redis.StrictRedis(host='auth_cache', port=6379, db=0,decode_responses=True)
+
+# REDIS LAYER
+revoked_store = redis.StrictRedis(
+    host='auth_cache', port=6379, db=0, decode_responses=True)
 
 
-#JWT LAYER LOGIC 
+# JWT LAYER LOGIC
+
+#-----> Change default
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
     entry = revoked_store.get(jti)
-    logging.debug("Token from cache: "+str(entry))
+    logging.debug("Token from redis cache: "+str(entry))
     if entry is None:
         return True
     return entry == 'true'
 
+@jwt.invalid_token_loader
+def invalid_token(current_reason):
+    return {"msg": current_reason, 'error': True}
+
+@jwt.revoked_token_loader
+def revoked_token():
+    return {"msg": "Token has been revoked", 'error': True}
+#----->
+
 @jwt_refresh_token_required
-def refresh(self):
+def refresh_token(self):
     current_user = get_jwt_identity()
     access_token = create_access_token(identity=current_user)
     access_jti = get_jti(encoded_token=access_token)
@@ -81,7 +99,8 @@ def refresh(self):
     }
     cache_token_keys = revoked_store.keys()
     cache_token_value = revoked_store.mget(cache_token_keys)
-    logging.debug("Cache keys/values: "+str(dict(zip(cache_token_keys, cache_token_value))))
+    logging.debug("Cache keys/values: " +
+                  str(dict(zip(cache_token_keys, cache_token_value))))
     return ret
 
 
@@ -91,11 +110,13 @@ def revoke__refresh_token(self):
     revoked_store.set(jti, 'true', REFRESH_EXPIRES * 1.2)
     return {"msg": "Successfully logged out"}
 
+
 @jwt_required
 def revoke_access_token(self):
     jti = get_raw_jwt()['jti']
     revoked_store.set(jti, 'true', REFRESH_EXPIRES * 1.2)
     return {"msg": "Successfully logged out"}
+
 
 @jwt_required
 def verify_token(self):
@@ -109,18 +130,20 @@ def verify_token(self):
     else:
         return True
 
+
 class Auth(Resource):
 
     def get(self):
         ret = verify_token(self)
+        logging.debug(ret)
         if ret:
             return {"msg": "Token is valid!", "valid": ret}
         else:
             return {"msg": "Token is invalid!", "valid": ret}
-            
+
     def post(self):
         logging.info(request)
-        #VERIFY DATA
+        # VERIFY DATA
         if request.data:
             logging.debug("Has data: "+str(request.data))
             logging.debug("Has JSON data")
@@ -129,10 +152,10 @@ class Auth(Resource):
             option = request.json.get('option', None)
         else:
             logging.debug("Hasn't JSON data")
-            return { "msg": "Please provide JSON" }
-        
+            return {"msg": "Please provide JSON"}
+
         if option == 'login':
-            user_validade=validate_user(username, password)
+            user_validade = validate_user(username, password)
             logging.debug(str(user_validade))
             if user_validade.get('error'):
                 return user_validade
@@ -140,10 +163,11 @@ class Auth(Resource):
             refresh_token = create_refresh_token(identity=username)
 
             ret = {
-            'access_token': access_token,
-            'refresh_token': refresh_token
+                'access_token': access_token,
+                'refresh_token': refresh_token,
+                'error': False
             }
-            #save to cache
+            # save to cache
             access_jti = get_jti(encoded_token=access_token)
             refresh_jti = get_jti(encoded_token=refresh_token)
             revoked_store.set(access_jti, 'false', ACCESS_EXPIRES * 1.2)
@@ -153,38 +177,39 @@ class Auth(Resource):
 
             logging.debug("Cache keys: "+str(cache_token_keys))
             logging.debug("Cache values: "+str(cache_token_value))
-            logging.debug("Cache keys/values: "+str(dict(zip(cache_token_keys, cache_token_value))))
+            logging.debug("Cache keys/values: " +
+                          str(dict(zip(cache_token_keys, cache_token_value))))
             logging.debug("Response success login: "+str(ret))
             return ret
         elif option == 'refresh':
-            return refresh(self)
+            return refresh_token(self)
         else:
-            return { "msg": "Please provide valid option!" }
-
+            return {"msg": "Please provide valid option!"}
+    @jwt_required
     def delete(self):
         logging.info(request)
-        #VERIFY DATA
+        # VERIFY DATA
         if request.data:
             logging.debug("Has data: "+str(request.data))
             logging.debug("Has JSON data")
             option = request.json.get('option', None)
         else:
             logging.debug("Hasn't JSON data")
-            return { "msg": "Please provide JSON" }
+            return {"msg": "Please provide JSON"}
         if option == 'access':
             return revoke_access_token(self)
         elif option == 'refresh':
             return revoke__refresh_token(self)
         else:
-            return { "msg": "Please provide valid option!" }
-        
+            return {"msg": "Please provide valid option!"}
 
 
 class TestAuth(Resource):
     @jwt_required
     def get(self):
         logging.debug(str(self))
-        return { 'username': str(get_jwt_identity()) }
+        return {'username': str(get_jwt_identity())}
+
 
 class TestPermissionUser(Resource):
     @jwt_required
@@ -192,23 +217,26 @@ class TestPermissionUser(Resource):
         logging.debug(str(self))
         return get_user_name(str(get_jwt_identity()))
 
-#URL LAYER
+
+# URL LAYER
 API.add_resource(Init, '/')
 API.add_resource(Auth, '/auth')
 API.add_resource(TestAuth, '/test')
 API.add_resource(ApiUser, '/user', '/user/<int:id>')
 API.add_resource(ApiRol, '/rol', '/rol/<int:id>')
 API.add_resource(ApiPermission, '/permission', '/permission/<int:id>')
-API.add_resource(ApiPermissionType, '/permission_types', '/permission_types/<int:id>')
+API.add_resource(ApiPermissionType, '/permission_types',
+                 '/permission_types/<int:id>')
 API.add_resource(ApiObject, '/object', '/object/<int:id>')
 API.add_resource(ApiObjectType, '/object_types', '/object_types/<int:id>')
 API.add_resource(ApiAuditing, '/auditing', '/auditing/<int:id>')
-API.add_resource(ApiAuditingType, '/auditing_types', '/auditing_types/<int:id>')
-API.add_resource(TestPermissionUser, '/permission_user', '/permission_user/<int:id>')
+API.add_resource(ApiAuditingType, '/auditing_types',
+                 '/auditing_types/<int:id>')
+API.add_resource(TestPermissionUser, '/permission_user',
+                 '/permission_user/<int:id>')
 
 
-#DEBUG
-from logging.config import dictConfig
+# DEBUG
 DEBUG = True
 
 FORMAT = '[%(asctime)s] %(levelname)s in %(module)s:%(filename)s on line ->%(lineno)d %(message)s' if DEBUG == True else '[%(asctime)s] %(levelname)s in %(module)s:%(filename)s %(message)s'
@@ -227,10 +255,10 @@ dictConfig({
         '': {  # root logger
             'level': 'DEBUG' if DEBUG == True else 'INFO',
             'handlers': ['wsgi'],
-           # 'propagate': False
+            # 'propagate': False
         },
         'sqlalchemy.engine': {
-            'level': 'INFO' if DEBUG == True else 'ERROR',
+            'level': 'ERROR' if DEBUG == True else 'ERROR',
             'handlers': ['wsgi'],
             'propagate': False
         }
@@ -238,8 +266,7 @@ dictConfig({
 })
 
 
-#SERVE LAYER
+# SERVE LAYER
 if __name__ == '__main__':
     APP.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
-
 

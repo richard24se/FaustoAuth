@@ -42,7 +42,7 @@ COPY auth.rol (id, name, display_name, created_date, modificated_date) FROM stdi
 
 COPY auth."user" (id, username, password, names, surnames, created_date, modificated_date, id_rol) FROM stdin;
 2	USER TEST 1	TEST	TEST	1	2020-03-09 16:14:59.665753+00	\N	1
-5	USER TEST 2	TEST	TEST	1	2020-03-25 01:21:11.715958+00	\N	1
+5	test	test	TEST	1	2020-03-25 01:21:11.715958+00	\N	1
 6	USER TEST 3	TEST	TEST	1	2020-03-25 01:21:11.715958+00	\N	1
 \.
 

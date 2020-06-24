@@ -12,10 +12,12 @@ services:
       - "5464:5432"
     volumes:
       - ./docker/postgres_db/initdb/:/docker-entrypoint-initdb.d
-      - ./datatemp/pgdb/backup:/pgdb/backup
-      - ./datatemp/pgdb/script:/pgdb/script
+      - ./data_temp/pgdb/backup:/pgdb/backup
+      - ./data_temp/pgdb/script:/pgdb/script
   db_admin:
-    image: dpage/pgadmin4
+    build:
+      context: .
+      dockerfile: ./docker/pgadmin/Dockerfile
     container_name: auth_db_admin_postgres
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@fausto.app
@@ -37,6 +39,7 @@ services:
       - ./api/src/.env:/api/src/.env
     command: >    
       sh -c "more .env && python run.py"
+    restart: always
     ports:
       - "5111:5000"
   redis:

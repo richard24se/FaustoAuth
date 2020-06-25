@@ -186,6 +186,8 @@ export default function MaterialTable_({ ...props }) {
 
   const [index, setIndex] = useState(null)
 
+  const [rows, setRows] = useState([]) //rows handle
+
   var timeout;
 
   useEffect(() => {
@@ -196,6 +198,11 @@ export default function MaterialTable_({ ...props }) {
       abortController.abort()
     }
   }, []);
+
+  useEffect(() => {
+    setRows([])//rows handle
+    console.log("Updating rows data...")
+  }, [props.state.data]);
 
   useEffect(() => {
     console.log("se está actualizando el estado... HOOKS!")
@@ -224,6 +231,11 @@ export default function MaterialTable_({ ...props }) {
     filter: true,
     filterType: 'dropdown',
     responsive: 'stacked',
+    rowsSelected: rows, //se obtiene desde un estado hooks //rows handle
+    onRowSelectionChange: (currentRowsSelected, allRowsSelected, rowsSelected) => {
+      console.log(rowsSelected)
+      setRows(rowsSelected)
+    },//rows handle
     //page: 2,
     onColumnSortChange: (changedColumn, direction) => console.log('changedColumn: ', changedColumn, 'direction: ', direction),
     onChangeRowsPerPage: numberOfRows => console.log('numberOfRows: ', numberOfRows),
@@ -307,6 +319,7 @@ export default function MaterialTable_({ ...props }) {
   };
 
   const handleDialogDelete = (arrow) => {
+    //Index o dato que llamado del delete del toolbar
     console.log(arrow)
     setArrowDelete(arrow)
   }

@@ -4,6 +4,8 @@ from model.models import ObjectType
 from fausto.utils import tryWrapper, sqlaPurge, format_dict_sqlalch, quick_format_sqlalch, sqlalchWrapper, ControllerError
 import logging
 
+from sqlalchemy import desc
+
 @tryWrapper
 @sqlalchWrapper
 def create_object_type(s,data):
@@ -52,7 +54,7 @@ def get_object_type(s,id):
 @tryWrapper
 @sqlalchWrapper
 def get_object_types(s):
-    object_types = s.query(ObjectType).order_by(ObjectType.id).all()
+    object_types = s.query(ObjectType).order_by(desc(ObjectType.id)).all()
     if object_types:
         logging.debug("SQLALCH ObjectType: "+str(object_types))
         object_types_dict = [ quick_format_sqlalch(i) for i in object_types]

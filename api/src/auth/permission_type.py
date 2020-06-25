@@ -4,6 +4,8 @@ from model.models import PermissionType
 from fausto.utils import tryWrapper, sqlaPurge, format_dict_sqlalch, quick_format_sqlalch, sqlalchWrapper, ControllerError
 import logging
 
+from sqlalchemy import desc
+
 @tryWrapper
 @sqlalchWrapper
 def create_permission_type(s,data):
@@ -52,7 +54,7 @@ def get_permission_type(s,id):
 @tryWrapper
 @sqlalchWrapper
 def get_permission_types(s):
-    permission_types = s.query(PermissionType).order_by(PermissionType.id).all()
+    permission_types = s.query(PermissionType).order_by(desc(PermissionType.id)).all()
     if permission_types:
         logging.debug("SQLALCH user: "+str(permission_types))
         permission_types_dict = [ quick_format_sqlalch(i) for i in permission_types]

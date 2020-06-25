@@ -4,6 +4,8 @@ from model.models import Object, Permission, RolePermission
 from fausto.utils import tryWrapper, sqlaPurge, format_dict_sqlalch, quick_format_sqlalch, sqlalchWrapper, ControllerError
 import logging
 
+from sqlalchemy import desc
+
 from datetime import datetime
 import datetime as dt
 
@@ -69,7 +71,7 @@ def get_object_role(s,role):
 @tryWrapper
 @sqlalchWrapper
 def get_objects(s):
-    objects = s.query(Object).order_by(Object.id).all()
+    objects = s.query(Object).order_by(desc(Object.id)).all()
     if objects:
         logging.debug("SQLALCH Object: "+str(objects))
         objects_dict = [ quick_format_sqlalch(i) for i in objects]

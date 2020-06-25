@@ -3,6 +3,7 @@ from model.config import SQLALCH_AUTH
 from model.models import Permission, RolePermission, Role, User, Object
 from fausto.utils import tryWrapper, sqlaPurge, format_dict_sqlalch, quick_format_sqlalch, sqlalchWrapper, ControllerError, get_fields_sqlalch
 from sqlalchemy import func
+from sqlalchemy import desc
 import logging
 
 from datetime import datetime
@@ -58,7 +59,7 @@ def get_permissions(s, _object, user, role):
                                     .filter(Object.name== _object, User.username== user).all())
     elif role:
         permission = (s.query(Permission).join(RolePermission, RolePermission.id_permission == Permission.id)
-                                            .filter(RolePermission.id_role==role).order_by(Permission.id).all())
+                                            .filter(RolePermission.id_role==role).order_by(desc(Permission.id)).all())
     else:
         permission= s.query(Permission).order_by(Permission.id).all()
     if permission:  

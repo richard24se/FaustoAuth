@@ -4,6 +4,11 @@ from model.models import Role, RolePermission, Permission
 from fausto.utils import tryWrapper, sqlaPurge, format_dict_sqlalch, quick_format_sqlalch, sqlalchWrapper, ControllerError
 import logging
 
+from sqlalchemy import desc
+
+from datetime import datetime
+import datetime as dt
+
 @tryWrapper
 @sqlalchWrapper
 def create_role(s,data):
@@ -42,6 +47,7 @@ def update_role(s, id, data):
     #permission received
     permissions_received = data.get("permissions")
     data.pop('permissions')
+    data['modificated_date'] = datetime.utcnow()
     s.query(Role).filter_by(id=id).update(data)
     s.commit()
 
@@ -96,10 +102,10 @@ def get_role(s,id):
 @tryWrapper
 @sqlalchWrapper
 def get_roles(s):
-    roles = s.query(Role).order_by(Role.id).all()
+    roles = s.query(Role).order_by(desc(Role.id)).all()
     if roles:
         logging.debug("SQLALCH user: "+str(roles))
         roles_dict = [ quick_format_sqlalch(i) for i in roles]
         return "Roles were found!", roles_dict
     else: 
-        raise ControllerError("No Roles found!", [])
+        raise ControllerError("No Roles found!")

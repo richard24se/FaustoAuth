@@ -5,6 +5,11 @@ from model.models import User, Role, Permission, PermissionType, Object, ObjectT
 from fausto.utils import tryWrapper, sqlaPurge, format_dict_sqlalch, quick_format_sqlalch, sqlalchWrapper, ControllerError, get_fields_sqlalch, get_columns_sqlalch, get_prefix_fields_sqlalch
 import logging
 
+from sqlalchemy import desc
+
+from datetime import datetime
+import datetime as dt
+
 @tryWrapper
 @sqlalchWrapper
 def create_user(s,data):
@@ -21,9 +26,13 @@ def create_user(s,data):
 def update_user(s, id, data):
     if id is None:
         raise ControllerError("Send id!")
+    super_user = s.query(User).filter(User.id ==id).first()
+    if super_user.username == "admin@faustoauth.app":
+        raise ControllerError("Cannot update super-user")
     duplicate_username = s.query(User).filter(User.username==data.get('username'), User.id!=id).one_or_none()
     if duplicate_username:
         raise ControllerError("the username already exists: '"+data.get('username')+"'")
+    data['modificated_date'] = datetime.utcnow()
     s.query(User).filter_by(id=id).update(data)
     s.commit()
     return "Update successful!"
@@ -31,13 +40,16 @@ def update_user(s, id, data):
 @tryWrapper
 @sqlalchWrapper
 def delete_user(s, id):
-        state = s.query(User).filter(User.id==id).delete()
-        logging.debug("SQLALCH state: "+str(state))
-        s.commit()
-        if state:
-            return "Deleted successful!"
-        else: 
-            return "The record has already been deleted!"
+    super_user = s.query(User).filter(User.id==id).first()
+    if super_user and super_user.username == "admin@faustoauth.app":
+        raise ControllerError("Cannot delete super-user")
+    state = s.query(User).filter(User.id==id).delete()
+    logging.debug("SQLALCH state: "+str(state))
+    s.commit()
+    if state:
+        return "Deleted successful!"
+    else: 
+        raise ControllerError("The record has already been deleted!")
 
 @tryWrapper
 @sqlalchWrapper
@@ -96,7 +108,7 @@ def validate_user(s, username, password):
 @tryWrapper
 @sqlalchWrapper
 def get_users(s):
-    users = s.query(User).all()
+    users = s.query(User).order_by(desc(User.id)).all()
     if users:
         logging.debug("SQLALCH user: "+str(users))
         users_dict = [ quick_format_sqlalch(i) for i in users]

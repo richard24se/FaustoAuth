@@ -124,7 +124,7 @@ class createRole_ extends Component {
             { label: "Role", name: "name", options: { filter: true, }, },
             { label: "Display name", name: "display_name", options: { filter: true, }, },
             { label: "Created date", name: "created_date", options: { filter: true, }, },
-            { label: "Modificated date", name: "mmodificated_date", options: { filter: true, }, },
+            { label: "Modificated date", name: "modificated_date", options: { filter: true, }, },
         ];
 
         this.state = {

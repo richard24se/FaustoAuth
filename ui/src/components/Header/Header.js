@@ -371,7 +371,7 @@ function Header(props) {
               onClick={() => handleLogout()}
               to="/login"
             >
-              Cerrar Sesión
+              Log out
             </Typography>
           </div>
         </Menu>

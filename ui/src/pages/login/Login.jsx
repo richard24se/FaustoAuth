@@ -71,7 +71,6 @@ function Login(props) {
   var handleLogin = (e) =>{
     const { dispatch } = props;
     dispatch(userActions.login(loginValue, passwordValue));
-    
   };
 
   const { loggingIn } = props;
@@ -99,7 +98,7 @@ function Login(props) {
           {activeTabId === 0 && (
             <React.Fragment>
               <Typography variant="h5" className={classes.greeting}>
-                Ingresa tus credenciales para acceder a Auth
+                Enter your credentials to access Auth
                 
               </Typography>
               <Grow in={ alert.message ? true : false}>
@@ -120,7 +119,7 @@ function Login(props) {
                 value={loginValue}
                 onChange={e => setLoginValue(e.target.value)}
                 margin="normal"
-                placeholder="Nombre de usuario"
+                placeholder="Username"
                 type="text"
                 fullWidth
               />
@@ -135,7 +134,7 @@ function Login(props) {
                 value={passwordValue}
                 onChange={e => setPasswordValue(e.target.value)}
                 margin="normal"
-                placeholder="Contraseña"
+                placeholder="Password"
                 type="password"
                 fullWidth
                 onKeyPress={(ev) => {
@@ -178,7 +177,7 @@ function Login(props) {
                       }
                     }}
                   >
-                    Ingresar
+                    Sign in
                   </Button>
                 )}
                 {/* 

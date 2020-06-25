@@ -9,7 +9,8 @@ import { sleeper_action } from '../../fausto';
 export const userActions = {
     login,
     logout,
-    getAll
+    getAll,
+    validate_role
 };
 
 
@@ -21,13 +22,10 @@ function login(username, password) {
             if (!obj.error) {
                 const { response } = obj;
                 console.log(obj)
-                dispatch(alertActions.success('Autentificación satisfactoria!'))
-                dispatch(success(response))
-                setTimeout(() => history.push('/'), 500)
 
                 localStorage.setItem('user_tokens', JSON.stringify(response));
+                dispatch(validate_role())
                 //sleeper_action(500, () => {})
-                
 
             } else {
                 //dispatch(failure(obj.response));
@@ -44,6 +42,40 @@ function login(username, password) {
     };
 
     function request(user) { return { type: userConstants.LOGIN_REQUEST, user } }
+    // function success(user) { return { type: userConstants.LOGIN_SUCCESS, user } }
+    function failure(error) { return { type: userConstants.LOGIN_FAILURE, error } }
+}
+
+function validate_role() {
+    return dispatch => {
+        // dispatch(request({ token }));
+        userService.permissions((obj) => {
+            if (!obj.error && obj.response.data.role_name === "Admin") {
+                const { response } = obj;
+                console.log(obj)
+                dispatch(alertActions.success('Successful authentication'))
+                dispatch(success(response))
+                setTimeout(() => history.push('/'), 500)
+
+                // localStorage.setItem('user_tokens', JSON.stringify(response));
+                //sleeper_action(500, () => {})
+                
+
+            } else {
+                //dispatch(failure(obj.response));
+                console.log("Error from actions:")
+                console.log(obj)
+                setTimeout(() => {
+                    dispatch(failure(obj.response))
+                    dispatch(alertActions.error("You aren't an administrator"))
+                }, 500)
+
+            }
+
+        })
+    };
+
+    // function request(user) { return { type: userConstants.LOGIN_REQUEST, user } }
     function success(user) { return { type: userConstants.LOGIN_SUCCESS, user } }
     function failure(error) { return { type: userConstants.LOGIN_FAILURE, error } }
 }

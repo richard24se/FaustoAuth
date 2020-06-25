@@ -33,6 +33,14 @@ const login = (username, password, fn) => {
     fotchAuth.post('/auth', fn, {data: {username: username, password: password, option: "login"} })
 }
 
+const permissions = (fn) => {
+    fotchAuth.get('/permission_user', fn, { headers: authHeader() })
+}
+
+// const testPermissions = (token,fn) => {
+//     fotchAuth.get('/permission_user', fn, { headers: { 'Authorization': 'Bearer ' + token } })
+// }
+
 function login1(username, password) {
     const requestOptions = {
         method: 'POST',
@@ -72,6 +80,7 @@ function login1(username, password) {
 function logout() {
     // remove user from local storage to log user out
     localStorage.removeItem('user');
+    localStorage.removeItem('user_tokens');
 }
 
 function getAll() {
@@ -117,5 +126,6 @@ function handleResponse(response) {
 export const userService = {
     login,
     logout,
-    getAll
+    getAll,
+    permissions
 };

@@ -218,7 +218,7 @@ class EasyTextField_ extends Component {
                         <Input className={classes.textField}
                             id="standard-adornment-password"
                             type={this.state.showPassword ? 'text' : 'password'}
-                            margin="normal"
+                            // margin="normal"
                             value={this.props.state}
                             onChange={this.props.name ? (e) => this.props.handle(e.target.value, this.props.name) : this.props.handle}
                             fullWidth={true}

@@ -54,7 +54,7 @@ const FormButton = (props) => {
             <>
                 <Grid item xs={12}>
                     <Grid container justify="space-between">
-                        <Grid xs={5} >
+                        <Grid item xs={5} >
                             <EasyButton
                                 label="Update"
                                 type="contained"
@@ -64,7 +64,7 @@ const FormButton = (props) => {
                                 fullWidth={true}
                             />
                         </Grid>
-                        <Grid xs={5} >
+                        <Grid item xs={5} >
                             <EasyButton
                                 label="Cancel"
                                 type="contained"
@@ -149,7 +149,7 @@ class createUser_ extends Component {
 
     comparePasword = (name, value) => {
         console.log("validate COMPARE")
-        console.log(name , value)
+        console.log(name, value)
         if (this.state.updatePassword) {
             switch (name) {
                 case 'validate_user_password':
@@ -228,25 +228,32 @@ class createUser_ extends Component {
         this.props.dispatch(fotchActions.processing("Getting users..."))
         fotchAuth.get("/user", obj => {
             console.log(obj);
-            var format_users = []
             if (!obj.error) {
                 var users = obj.response.data;
-                format_users = users.map(item => ({
+                let format_users = users.map(item => ({
                     ...item,
                     names: capitalize(item.names),
                     surnames: capitalize(item.surnames),
                     role_name: obtainRoleName(item.id_role)
                 }));
-                this.props.dispatch(fotchActions.success(obj.response.msg))
+                // this.setState(prevState => ({
+                //     user_table: {
+                //         ...prevState.user_table,
+                //         data: [users[1]],
+                //     },
+                // }));
+                this.setState(prevState => ({
+                    user_table: {
+                        ...prevState.user_table,
+                        data: format_users,
+                    },
+                }));
+                // this.props.dispatch(fotchActions.success(obj.response.msg))
+                this.props.dispatch(fotchActions.clear_processing())
             } else {
                 this.props.dispatch(fotchActions.error(obj.response.msg))
             }
-            this.setState(prevState => ({
-                user_table: {
-                    ...prevState.user_table,
-                    data: format_users,
-                },
-            }));
+
         });
     };
 
@@ -304,9 +311,9 @@ class createUser_ extends Component {
                 user_username: user.username,
                 user_role: obtainRoleName(user.id_role),
                 user_password_backup: user.password,
-                user_password : "",
-                new_user_password:"",
-                validate_user_password:""
+                user_password: "",
+                new_user_password: "",
+                validate_user_password: ""
             })
         }
         else {
@@ -473,7 +480,7 @@ class createUser_ extends Component {
                                         </Grid>
                                     </> :
                                     <>
-                                        <Grid container xs={12} sm={8} justify="center" >
+                                        <Grid container justify="center" >
                                             <Grid item xs={8} sm={7} md={6} lg={4}>
                                                 <EasyButton
                                                     label={this.state.updatePassword ? "Cancel" : "Update password"}

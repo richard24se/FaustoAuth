@@ -20,8 +20,18 @@ from model.config import SQLALCH_AUTH
 from config.jwt import JWT_KEY
 
 from auth.user import get_user_name, validate_user
-r
-from controller.master import ApiUser, ApiRol, ApiPermission, ApiPermissionType, ApiObject, ApiObjectType, ApiAuditing, ApiAuditingType
+
+from controller.master import  (
+    ApiUser, 
+    ApiRole, 
+    ApiPermission, 
+    ApiPermissionType,
+    ApiObject, 
+    ApiObjectType, 
+    ApiAudit, 
+    ApiAuditType,
+    ApiRolePermission
+)
 
 
 # APP LAYER
@@ -223,17 +233,16 @@ API.add_resource(Init, '/')
 API.add_resource(Auth, '/auth')
 API.add_resource(TestAuth, '/test')
 API.add_resource(ApiUser, '/user', '/user/<int:id>')
-API.add_resource(ApiRol, '/rol', '/rol/<int:id>')
+API.add_resource(ApiRole, '/role', '/role/<int:id>')
+API.add_resource(ApiRolePermission, '/role_permission', '/role_permission/<int:id>')
 API.add_resource(ApiPermission, '/permission', '/permission/<int:id>')
 API.add_resource(ApiPermissionType, '/permission_types',
                  '/permission_types/<int:id>')
 API.add_resource(ApiObject, '/object', '/object/<int:id>')
 API.add_resource(ApiObjectType, '/object_types', '/object_types/<int:id>')
-API.add_resource(ApiAuditing, '/auditing', '/auditing/<int:id>')
-API.add_resource(ApiAuditingType, '/auditing_types',
-                 '/auditing_types/<int:id>')
-API.add_resource(TestPermissionUser, '/permission_user',
-                 '/permission_user/<int:id>')
+API.add_resource(ApiAudit, '/audit', '/audit/<int:id>')
+API.add_resource(ApiAuditType, '/audit_types', '/audit_types/<int:id>')
+API.add_resource(TestPermissionUser, '/permission_user', '/permission_user/<int:id>')
 
 
 # DEBUG

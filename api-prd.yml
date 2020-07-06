@@ -29,19 +29,6 @@ services:
       - ./docker/pgadmin/data.json:/pgadmin4/servers.json
     logging:
       driver: none
-  api:
-    container_name: auth_api
-    build: 
-      context: .
-      dockerfile: ./docker/api/api.Dockerfile
-    volumes:
-      - ./api/src:/api/src
-      - ./api/src/.env:/api/src/.env
-    command: >    
-      sh -c "more .env && python run.py"
-    restart: always
-    ports:
-      - "5111:5000"
   redis:
     image: redis
     container_name: auth_cache
@@ -49,4 +36,17 @@ services:
       - 6379
     depends_on:
       - api
+  api:
+    image: richard24se/api_faustoauth
+    restart: always
+  nginx:
+    build: 
+      context: .
+      dockerfile: ./docker/nginx/nginx.Dockerfile
+      args:
+        hostname_app: api
+        port_app: 5000
+    ports:
+      - "5111:5000"
+    restart: always
 

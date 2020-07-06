@@ -61,13 +61,13 @@ class Init(Resource):
     def get(self):
         return {
             'init': 'flask',
-            'msg': 'This is a Vorlage App'
+            'msg': 'This is a get FaustoAuth App'
         }
 
     def post(self):
         return {
             'init': 'flask',
-            'msg': 'This is a post Vorlage App'
+            'msg': 'This is a post FaustoAuth App'
         }
 
 

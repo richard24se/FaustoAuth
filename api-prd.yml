@@ -27,8 +27,8 @@ services:
     volumes:
       - ./data_temp/pgadmin:/var/lib/pgadmin
       - ./docker/pgadmin/data.json:/pgadmin4/servers.json
-    logging:
-      driver: none
+    # logging:
+    #   driver: none
   redis:
     image: redis
     container_name: auth_cache
@@ -39,7 +39,7 @@ services:
   api:
     image: richard24se/api_faustoauth
     restart: always
-  nginx:
+  api_nginx:
     build: 
       context: .
       dockerfile: ./docker/nginx/nginx.Dockerfile

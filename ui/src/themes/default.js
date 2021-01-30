@@ -100,6 +100,9 @@ export default {
         position: "unset !important",
         backgroundColor: "unset !important",
       },
+      fixedLeft:{
+        backgroundColor: "#fff" //nuevo fix replicar
+      },
       expandDisabled: {
         visibility: "hidden"
       }
@@ -160,7 +163,7 @@ export default {
         },
         '*::-webkit-scrollbar-thumb': {
           backgroundColor: '#ccc',//primary,//tinycolor(primary).darken(darkenRate).toHexString(),
-          outline: '1px solid slategrey',
+          // outline: '1px solid slategrey',
           borderRadius: "6px",
         }
       },

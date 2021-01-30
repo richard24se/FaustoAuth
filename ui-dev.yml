@@ -17,4 +17,4 @@ services:
       - ./ui/src:/ui/src
       - ./ui/.env:/ui/.env.development
     ports:
-      - "3081:3000"
+      - "8024:3000"

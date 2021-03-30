@@ -338,14 +338,18 @@ class MenuList extends React.Component {
   render() {
     const { options, children, maxHeight, getValue } = this.props;
     const [value] = getValue();
-    const initialOffset = options.indexOf(value) * height;
+    const real_value = value === undefined ? 0 : value.value;//me da el verdadero valor
+    const initialOffset = options.findIndex((o) => o.value === real_value) * height; //me da la posición inicial del valor elegido
+    const childrenHeight = height * children.length;
+    const calculatedMaxHeight = childrenHeight > maxHeight ? maxHeight : childrenHeight + 1; //permite que se automático el menu #necesita ser forkeado en todo
+    const calculatedInitialScrollOffset = childrenHeight > maxHeight ? initialOffset : 0
 
     return (
       <List
-        height={maxHeight}
+        height={calculatedMaxHeight}
         itemCount={children.length}
         itemSize={height}
-        initialScrollOffset={initialOffset}
+        initialScrollOffset={calculatedInitialScrollOffset}
         className={this.props.selectProps.classes.paper}
       >
         {({ index, style }) => <div style={style}>{children[index]}</div>}

@@ -15,7 +15,7 @@ import {
 } from "../../components/EasyMaterial/EasyMaterialComponents"
 
 //FOTCH
-import { Fotch, capitalize } from '../../fausto'
+import { Fotch, capitalize, authHeader } from '../../fausto'
 
 //Redux
 import { connect } from 'react-redux';
@@ -220,6 +220,25 @@ class createRole_ extends Component {
             });
         });
     }
+    getObjectType = () => {
+        fotchAuth.get("/object_types", obj => {
+            console.log(obj);
+            var format_object_types = []
+            if (!obj.error) {
+                var object_types = obj.response.data;
+                format_object_types = object_types.reduce((o, item)=> { 
+                    return {...o, [item.id]: item.name}
+                }, {})
+                this.setState({
+                    object_types: format_object_types
+                });
+                this.getObjects()
+            } else {
+                this.props.dispatch(fotchActions.error(obj.response.msg))
+            }
+            
+        });
+    };
 
     getObjects = () => {
         fotchAuth.get("/object", obj => {
@@ -230,7 +249,7 @@ class createRole_ extends Component {
                 format_objects = objects.map(item => ({
                     ...item,
                     id: item.id,
-                    value: capitalize(item.display_name)
+                    value: `${item.name} (${this.state.object_types[item.id_object_type]})`
                 }));
             } else {
                 this.props.dispatch(fotchActions.error(obj.response.msg))
@@ -422,10 +441,11 @@ class createRole_ extends Component {
     
 
     componentDidMount() {
+        fotchAuth.updateDefaultOptions({ headers: authHeader() })
         this.getPermissionTypes()
         this.getPermissions()
         this.getRoles()
-        this.getObjects()
+        this.getObjectType()
     }
 
     render() {
@@ -480,7 +500,7 @@ class createRole_ extends Component {
                                     label="Object"
                                     dataset={this.state.objects_list}
                                     type="single"
-                                    maxMenu={100}
+                                    maxMenu={300}
                                 />
                             </Grid>
 

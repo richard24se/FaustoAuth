@@ -12,7 +12,7 @@ import {
 } from "../../components/EasyMaterial/EasyMaterialComponents"
 
 //FOTCH
-import { Fotch, capitalize } from '../../fausto'
+import { Fotch, capitalize, authHeader } from '../../fausto'
 
 //Redux
 import { connect } from 'react-redux';
@@ -114,6 +114,7 @@ class createPermission_ extends Component {
         this.handleDelete = this.handleDelete.bind(this)
 
         this.getObjects = this.getObjects.bind(this)
+        this.getObjectType = this.getObjectType.bind(this)
         this.getPermissionTypes = this.getPermissionTypes.bind(this)
         this.getPermissions = this.getPermissions.bind(this)
         this.postPermission = this.postPermission.bind(this)
@@ -143,6 +144,25 @@ class createPermission_ extends Component {
         })
     }
 
+    getObjectType = () => {
+        fotchAuth.get("/object_types", obj => {
+            console.log(obj);
+            var format_object_types = []
+            if (!obj.error) {
+                var object_types = obj.response.data;
+                format_object_types = object_types.reduce((o, item)=> { 
+                    return {...o, [item.id]: item.name}
+                }, {})
+                this.setState({
+                    object_types: format_object_types
+                });
+                this.getObjects()
+            } else {
+                this.props.dispatch(fotchActions.error(obj.response.msg))
+            }
+            
+        });
+    };
 
     getObjects = () => {
         fotchAuth.get("/object", obj => {
@@ -153,7 +173,7 @@ class createPermission_ extends Component {
                 format_objects = objects.map(item => ({
                     ...item,
                     id: item.id,
-                    value: item.name
+                    value: `${item.name} (${this.state.object_types[item.id_object_type]})`
                 }));
                 this.getPermissionTypes()
             } else {
@@ -198,7 +218,8 @@ class createPermission_ extends Component {
                 var permissions = obj.response.data;
                 format_permissions = permissions.map(item => ({
                     ...item,
-                    name: capitalize(item.name),
+                    // name: capitalize(item.name),
+                    name: item.name,
                     object: obtainObjectName(item.id_object),
                     permission_type: obtainPermissionTypeName(item.id_permission_type),
                 }));
@@ -237,7 +258,8 @@ class createPermission_ extends Component {
             },
                 {
                     data: {
-                        name: capitalize(this.state.permission_name),
+                        name: this.state.permission_name,
+                        // name: capitalize(this.state.permission_name),
                         id_object: this.state.object.value,
                         id_permission_type: this.state.permission_type.value
                     },
@@ -289,7 +311,7 @@ class createPermission_ extends Component {
             },
                 {
                     data: {
-                        name: capitalize(this.state.permission_name),
+                        name: this.state.permission_name,
                         id_object: this.state.object.value,
                         id_permission_type: this.state.permission_type.value
                     },
@@ -323,7 +345,8 @@ class createPermission_ extends Component {
     }
 
     componentDidMount() {
-        this.getObjects()
+        fotchAuth.updateDefaultOptions({ headers: authHeader() })
+        this.getObjectType()
     }
 
     render() {

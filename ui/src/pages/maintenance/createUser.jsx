@@ -20,7 +20,8 @@ import {
 //FOTCH
 import {
     Fotch,
-    capitalize
+    capitalize,
+    authHeader
 } from "../../fausto";
 
 //COMPONENTS
@@ -390,6 +391,7 @@ class createUser_ extends Component {
     }
 
     componentDidMount() {
+        fotchAuth.updateDefaultOptions({ headers: authHeader() })
         this.getRoles()
     }
 

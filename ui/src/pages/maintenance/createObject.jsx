@@ -12,7 +12,7 @@ import {
 } from "../../components/EasyMaterial/EasyMaterialComponents"
 
 //FOTCH
-import { Fotch, capitalize } from '../../fausto'
+import { Fotch, capitalize, authHeader } from '../../fausto'
 
 //Redux
 import { connect } from 'react-redux';
@@ -292,6 +292,7 @@ class createObject_ extends Component {
     }
 
     componentDidMount() {
+        fotchAuth.updateDefaultOptions({ headers: authHeader() })
         this.getObjectType()
     }
 

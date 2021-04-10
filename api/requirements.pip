@@ -8,5 +8,5 @@ sqlalchemy
 psycopg2-binary
 sqlacodegen
 python-dotenv
-flask-jwt-extended
+flask-jwt-extended==3.25.1
 redis

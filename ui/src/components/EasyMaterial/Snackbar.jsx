@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
-import Button from "@material-ui/core/Button";
+// import Button from "@material-ui/core/Button";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import ErrorIcon from "@material-ui/icons/Error";
 import InfoIcon from "@material-ui/icons/Info";
@@ -21,11 +21,11 @@ function SlideTransition(props) {
   return <Slide {...props} direction="up" />;
 }
 
-const ColorCircularProgress = withStyles({
-    root: {
-        color: "#ccc"
-    }
-})(CircularProgress);
+// const ColorCircularProgress = withStyles({
+//     root: {
+//         color: "#ccc"
+//     }
+// })(CircularProgress);
 
 const IconCircularProgress = withStyles({
     root: {
@@ -117,14 +117,14 @@ MySnackbarContentWrapper.propTypes = {
         .isRequired
 };
 
-const useStyles2 = makeStyles(theme => ({
-    margin: {
-        margin: theme.spacing(1)
-    }
-}));
+// const useStyles2 = makeStyles(theme => ({
+//     margin: {
+//         margin: theme.spacing(1)
+//     }
+// }));
 
 export default function EasySnackbar(props) {
-    const classes = useStyles2();
+    // const classes = useStyles2();
     const [open, setOpen] = React.useState(false);
 
     const handleClose = (event, reason) => {
@@ -135,7 +135,7 @@ export default function EasySnackbar(props) {
         if (reason === "clickaway") {
             return;
         }
-
+        console.log(open)
         setOpen(false);
     };
     switch (props.type) {

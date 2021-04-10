@@ -437,7 +437,7 @@ const SingleSelect = memo(function ReactSingleSelect({ ...props }) {
           maxMenuHeight={props.maxMenu ? props.maxMenu : 100}
           isClearable
           filterOption={createFilter({ ignoreAccents: false })}
-
+          isOptionDisabled={(option) => option.disabled === true}
         />
       </NoSsr>
     </div>
@@ -497,6 +497,7 @@ const MultiSelect = function ReactMultiSelect({ ...props }) {
           maxMenuHeight={props.maxMenu ? props.maxMenu : 100}
           isClearable
           isMulti
+          isOptionDisabled={(option) => option.disabled === true}
         />
       </NoSsr>
     </div>

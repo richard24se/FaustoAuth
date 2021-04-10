@@ -8,7 +8,7 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
-import clsx from 'clsx';
+// import clsx from 'clsx';
 import Input from '@material-ui/core/Input';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
@@ -494,7 +494,7 @@ class EasyButton_ extends PureComponent {
 class EasyAutoSelect_ extends Component { //RSE Pendiente revisión de performance
     constructor(props) {
         super(props);
-        this.dataset = [{ id: 0, label: "No records" }]
+        this.dataset = [{ id: 0, label: "No records" , disabled: true}]
     }
     mappingDataset = () => {
         return this.props.dataset.map(item => ({ value: item.id, label: item.value }))
@@ -512,11 +512,11 @@ class EasyAutoSelect_ extends Component { //RSE Pendiente revisión de performan
         switch (this.props.type) {
             case 'single':
                 return (
-                    <ReactSingleSelect name={this.props.name} state={this.props.state} handle={this.props.handle} label={this.props.label} placeholder="Write..." dataset={this.props.dataset.length !== 0 ? this.mappingDataset() : this.dataset} className={classes.autoSelect} maxMenu={this.props.maxMenu} />
+                    <ReactSingleSelect name={this.props.name} state={this.props.state} handle={this.props.handle} label={this.props.label} placeholder="Write..." dataset={ this.props.dataset && this.props.dataset.length !== 0 ? this.mappingDataset() : this.dataset} className={classes.autoSelect} maxMenu={this.props.maxMenu} />
                 );
             case 'multi':
                 return (
-                    <ReactMultiSelect name={this.props.name} state={this.props.state} handle={this.props.handle} label={this.props.label} placeholder="Write..." dataset={this.props.dataset.length !== 0 ? this.mappingDataset() : this.dataset} className={classes.autoSelect} maxMenu={this.props.maxMenu} />
+                    <ReactMultiSelect name={this.props.name} state={this.props.state} handle={this.props.handle} label={this.props.label} placeholder="Write..." dataset={this.props.dataset && this.props.dataset.length !== 0 ? this.mappingDataset() : this.dataset} className={classes.autoSelect} maxMenu={this.props.maxMenu} />
                 );
             default:
                 return "Auto Select type doesn't exist";
@@ -582,7 +582,6 @@ class EasyMuiDataTable_ extends Component {
             <MUIDataTable
                 title={this.props.title}
                 state={this.props.state}
-                delete={this.props.delete}
                 handle={this.props.handle}
                 name={this.props.name}
                 loading={this.props.loading}

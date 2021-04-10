@@ -18,7 +18,7 @@ import { store } from './redux/store';
 //import { configureFakeBackend } from './redux/testing/fake-backend.js';
 //configureFakeBackend();
 
-ReactDOM.render(
+ReactDOM.hydrate(
   <Provider store={store}>
   <LayoutProvider>
     {/*<UserProvider>*/}

@@ -70,7 +70,8 @@ function Login(props) {
   //Handle login
   var handleLogin = (e) =>{
     const { dispatch } = props;
-    dispatch(userActions.login(loginValue, passwordValue));
+    const previousLocation = props.location.state && props.location.state.from ?  props.location.state.from.pathname : null
+    dispatch(userActions.login(loginValue, passwordValue, previousLocation));
   };
 
   const { loggingIn } = props;

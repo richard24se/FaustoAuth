@@ -33,3 +33,4 @@ docker exec auth_db_postgres pg_dump -U root -Fp Fausto  --schema-only > 1-schem
 
 #backup de datos
 docker exec auth_db_postgres pg_dump -U root -Fp Fausto  --data-only > 2-data.sql
+docker exec auth_db_postgres pg_dump -U root -Fp Fausto  --data-only > 4-enterprise-edemsa-data.sql

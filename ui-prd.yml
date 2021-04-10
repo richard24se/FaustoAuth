@@ -3,13 +3,11 @@ version: '3'
 services:
   ui:
     image: richard24se/ui_faustoauth
-    volumes:
-      - ./ui/.env:/ui/.env
     restart: always
   ui_nginx:
     build: 
       context: .
-      dockerfile: ./docker/nginx/nginx.Dockerfile
+      dockerfile: ./docker/ui_nginx/nginx.Dockerfile
       args:
         hostname_app: ui
         port_app: 3000

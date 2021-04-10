@@ -37,20 +37,20 @@ services:
     expose:
       - 6379
     depends_on:
-      - api
+      - api-flask
     restart: always
-  api:
-    image: richard24se/fastapi_faustoauth
-    # build: 
-    #   context: .
-    #   dockerfile: ./docker/fastapi/fastapi_prd.Dockerfile
+  api-flask:
+    # image: richard24se/api_faustoauth
+    build: 
+      context: .
+      dockerfile: ./docker/api/api_prd.Dockerfile
     restart: always
   api_nginx:
     build: 
       context: .
       dockerfile: ./docker/nginx/nginx.Dockerfile
       args:
-        hostname_app: api
+        hostname_app: api-flask
         port_app: 5000
     ports:
       - "9024:5000"

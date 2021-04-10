@@ -29,24 +29,38 @@ services:
       - ./docker/pgadmin/data.json:/pgadmin4/servers.json
     logging:
       driver: none
-  api:
-    container_name: auth_api
+  # api:
+  #   container_name: auth_api
+  #   build: 
+  #     context: .
+  #     dockerfile: ./docker/api/api.Dockerfile
+  #   volumes:
+  #     - ./api/src:/api/src
+  #     - ./api/src/.env:/api/src/.env
+  #   command: >    
+  #     sh -c "more .env && python run.py"
+  #   restart: always
+  #   ports:
+  #     - "5111:5000"
+  fastapi:
+    container_name: auth_fastapi
     build: 
       context: .
-      dockerfile: ./docker/api/api.Dockerfile
+      dockerfile: ./docker/fastapi/fastapi.Dockerfile
     volumes:
-      - ./api/src:/api/src
-      - ./api/src/.env:/api/src/.env
-    command: >    
-      sh -c "more .env && python run.py"
+      - ./fastapi/:/fastapi/
+      - ./fastapi/.env:/fastapi/.env
+    command: uvicorn run:app --reload  --host 0.0.0.0 --port 5000  --log-level 'debug'
     restart: always
     ports:
-      - "5111:5000"
+      - "9024:5000"
+    depends_on:
+      - db
+      - db_admin
+      - redis
   redis:
     image: redis
     container_name: auth_cache
     expose:
       - 6379
-    depends_on:
-      - api
 

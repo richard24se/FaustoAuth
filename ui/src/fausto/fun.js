@@ -2,12 +2,12 @@
 import XLSX from 'xlsx';
 
 function sleeper(ms) {
-    return function(x) {
-      return new Promise(resolve => setTimeout(() => resolve(x), ms));
-    };
+  return function (x) {
+    return new Promise(resolve => setTimeout(() => resolve(x), ms));
+  };
 }
 function sleeper_action(ms, action) {
-    setTimeout(() => {action()}, ms)
+  setTimeout(() => { action() }, ms)
 }
 
 const capitalize = (s) => {
@@ -16,7 +16,7 @@ const capitalize = (s) => {
   return s.charAt(0).toUpperCase() + s.slice(1).toLocaleLowerCase()
 }
 
-const getJSONExcel = (target, fun, headers=1) =>{
+const getJSONExcel = (target, fun, headers = 1) => {
   const fileReader = new FileReader();
   //verify if binary or buffer
   const rABS = !!fileReader.readAsBinaryString;
@@ -28,30 +28,46 @@ const getJSONExcel = (target, fun, headers=1) =>{
     //console.log(e.target.result)
     /* Parse data */
     const bstr = e.target.result;
-    const wb = XLSX.read(bstr, {type:rABS ? 'binary' : 'array'});
+    const wb = XLSX.read(bstr, { type: rABS ? 'binary' : 'array' });
     /* Get first worksheet */
     const wsname = wb.SheetNames[0];
     const ws = wb.Sheets[wsname];
     //console.log(ws)
     /* Convert array of arrays */
     var data = [];
-    if(headers !== 1){
-      data = XLSX.utils.sheet_to_json(ws, {range:1, header:headers});
-    }else{
-      data = XLSX.utils.sheet_to_json(ws, {header:headers});
+    if (headers !== 1) {
+      data = XLSX.utils.sheet_to_json(ws, { range: 1, header: headers });
+    } else {
+      data = XLSX.utils.sheet_to_json(ws, { header: headers });
     }
-    
+
     /* Update state */
     console.log(data)
     /* Execute function */
-    if(typeof fun === "function"){
+    if (typeof fun === "function") {
       fun(data)
     }
-    
+
   };
   //fileReader.readAsArrayBuffer(file.target.files[0]);
-  if(rABS) fileReader.readAsBinaryString(target.files[0]); else fileReader.readAsArrayBuffer(target.files[0]);
+  if (rABS) fileReader.readAsBinaryString(target.files[0]); else fileReader.readAsArrayBuffer(target.files[0]);
+}
+
+function authHeader() {
+  // return authorization header with jwt token
+  let user = JSON.parse(localStorage.getItem('user_tokens'));
+
+  if (user && user.access_token) {
+    return { 'Authorization': 'Bearer ' + user.access_token };
+  } else {
+    return {};
+  }
+}
+function auth_header_JWT(token) {
+  // return authorization header with jwt token
+  return { 'Authorization': 'Bearer ' + token };
+
 }
 
 
-export { sleeper, sleeper_action, capitalize, getJSONExcel }
+export { sleeper, sleeper_action, capitalize, getJSONExcel, authHeader, auth_header_JWT }

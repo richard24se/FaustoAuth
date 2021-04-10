@@ -1,4 +1,4 @@
-import { sleeper } from './fun'
+
 const requestOptions = {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
@@ -11,7 +11,15 @@ const handleResponseFetch = (response) => {
         if (!response.ok) {
             if (response.status === 401) {
                 // auto logout if 401 response returned from api
-                window.location.reload(true);
+                // window.location.reload(true);
+                console.log("401 ", data)
+                let data_full = Object.assign({}, data, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    msg: data.msg,
+                    ok: response.ok
+                })
+                return Promise.reject(data_full);
             }
             if (response.status === 404) {
                 //404
@@ -19,6 +27,17 @@ const handleResponseFetch = (response) => {
                     status: response.status,
                     statusText: response.statusText,
                     msg: "Error 404, not found service",
+                    ok: response.ok
+                })
+                return Promise.reject(data_full);
+            }
+            if (response.status === 405) {
+                //404
+                let data_full = Object.assign({}, data, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    msg: "Error 405, El método no está permitido para la URL solicitada.",
+                    ok: response.ok
                 })
                 return Promise.reject(data_full);
             }
@@ -30,13 +49,15 @@ const handleResponseFetch = (response) => {
             //console.log("Error text from server: "+response.statusText);
             let data_full = Object.assign({}, data, {
                 status: response.status,
-                statusText: response.statusText
+                statusText: response.statusText,
+                ok: response.ok
             })
             return Promise.reject(data_full);
         }
         let data_full = Object.assign({}, data, {
             status: response.status,
-            statusText: response.statusText
+            statusText: response.statusText,
+            ok: response.ok
         })
         return data_full;
     });
@@ -72,7 +93,25 @@ class Fotch {
         //super()
 
         this.baseUrl = baseUrl
+        //merge de headers required by authorization
+        if (defaultOptions.hasOwnProperty('headers')) {
+            const headers = Object.assign({}, OPTIONS.headers, defaultOptions.headers)
+            defaultOptions.headers = headers
+        }
         this.defaultOptions = Object.assign({}, OPTIONS, defaultOptions)
+    }
+    /**
+     * Perform update default options
+     *
+     * @param {Object}   options  Options to use in fetch request
+     */
+    updateDefaultOptions(options) {
+        //merge de headers required by authorization
+        if (options.hasOwnProperty('headers')) {
+            const headers = Object.assign({}, this.defaultOptions.headers, options.headers)
+            options.headers = headers
+        }
+        this.defaultOptions = Object.assign({}, this.defaultOptions, options)
     }
     /**
      * Perform request
@@ -82,13 +121,18 @@ class Fotch {
      * @param {Object}   options  Options to use in fetch request
      */
     request(url, callback, options) {
+        //merge de headers required by authorization
+        if (options.hasOwnProperty('headers')) {
+            const headers = Object.assign({}, this.defaultOptions.headers, options.headers)
+            options.headers = headers
+        }
         options = Object.assign({}, this.defaultOptions, options)
         options.method = options.method.toUpperCase()
         //Validate URL
         try {
             var neo_url = new URL(url)
 
-        } catch{
+        } catch {
             alert("Error with URL, please check .env or syntax")
             console.log("Error with URL, please check .env or syntax")
         }
@@ -96,29 +140,39 @@ class Fotch {
         //query params object
         const { queryParams: params } = options
         //add query params to neo url
-        Object.keys(params).forEach(key => neo_url.searchParams.append(key, params[key]))
+        Object.keys(params).forEach(key => {
+            if (Array.isArray(params[key])) {
+                params[key].forEach(x => neo_url.searchParams.append(key, x))
+            } else {
+                neo_url.searchParams.append(key, params[key])
+            }
+
+        })
         if (options.body) {
             delete options.headers;
             //options.headers = { 'Content-Type': 'multipart/form-data' }
         }
         if (options.method !== 'GET' && options.body === null)
             options.body = options.data ? JSON.stringify(options.data) : null
+        else if (options.method === 'GET' && options.body === null)
+            options.body = null
         console.log("#------>Debug request options<------#")
         console.log(options)
-        fetch(neo_url, options)
+        return fetch(neo_url, options)
             .then(handleResponseFetch)
             //.then(sleeper(1))
             .then((response) => {
                 return response
             })
             .then((response) => {
-                const { status, statusText, ...rest } = response
+                const { status, statusText, ok, ...rest } = response
 
                 let args = Object.assign({
                     status: status,
                     statusText: statusText,
                     response: rest,
-                    error: response.error ? response.error : false
+                    error: response.error ? response.error : false,
+                    ok
                 }, options.extraCallbackParams)
 
                 if (callback) {
@@ -128,6 +182,7 @@ class Fotch {
                 if (options.callback) {
                     options.callback(args)
                 }
+                return args
             })
             .catch((error) => {
                 let args
@@ -135,16 +190,29 @@ class Fotch {
                 if (error.message === 'Failed to fetch') {
 
                     args = {
-                        response: { msg: "Error en el servidor, tiempo de espera expirado!" },
-                        error: true
+                        response: { msg: "Error on server, timeout expired!" },
+                        error: true,
+                        ok: error.ok
                     }
+                }
+                else if (error.message === 'NetworkError when attempting to fetch resource.') {
+                    args = {
+                        status: null,
+                        statusText: null,
+                        response: { msg: `Error on server ${url}, timeout expired!` },
+                        error: true,
+                        ok: error.ok
+                    }
+                    console.log("#------>Debug Error Args TypeError Fetch Resource<------#")
+                    console.log(args)
                 }
                 else if (error instanceof TypeError) {
                     args = Object.assign({
                         status: null,
                         statusText: null,
                         response: { msg: error.message },
-                        error: true
+                        error: true,
+                        ok: error.ok
                     }, options.extraCallbackParams)
                     console.log("#------>Debug Error Args TypeError<------#")
                     console.log(args)
@@ -155,7 +223,8 @@ class Fotch {
                         status: status,
                         statusText: statusText,
                         response: rest,
-                        error: true
+                        error: true,
+                        ok: error.ok
                     }, options.extraCallbackParams)
                     console.log("#------>Debug Error Args<------#")
                     console.log(args)
@@ -167,6 +236,8 @@ class Fotch {
                 if (options.callback && options.alwaysTriggerCallback) {
                     options.callback(args)
                 }
+                // return Promise.reject(args);
+                return args
             })
     }
     /**
@@ -179,7 +250,7 @@ class Fotch {
     get(url, callback, options) {
         options = Object.assign({ method: 'get' }, options)
 
-        this.request(`${this.baseUrl}${url}`, callback, options)
+        return this.request(`${this.baseUrl}${url}`, callback, options)
     }
     /**
      * Perform POST request
@@ -191,7 +262,7 @@ class Fotch {
     post(url, callback, options) {
         options = Object.assign({ method: 'post' }, options)
 
-        this.request(`${this.baseUrl}${url}`, callback, options)
+        return this.request(`${this.baseUrl}${url}`, callback, options)
     }
     /**
      * Perform PUT request
@@ -203,7 +274,7 @@ class Fotch {
     put(url, callback, options) {
         options = Object.assign({ method: 'put' }, options)
 
-        this.request(`${this.baseUrl}${url}`, callback, options)
+        return this.request(`${this.baseUrl}${url}`, callback, options)
     }
 
     /**
@@ -216,7 +287,7 @@ class Fotch {
     patch(url, callback, options) {
         options = Object.assign({ method: 'patch' }, options)
 
-        this.request(`${this.baseUrl}${url}`, callback, options)
+        return this.request(`${this.baseUrl}${url}`, callback, options)
     }
 
     /**
@@ -229,7 +300,7 @@ class Fotch {
     del(url, callback, options) {
         options = Object.assign({ method: 'delete' }, options)
 
-        this.request(`${this.baseUrl}${url}`, callback, options)
+        return this.request(`${this.baseUrl}${url}`, callback, options)
     }
 
 

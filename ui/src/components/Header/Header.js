@@ -4,21 +4,21 @@ import {
   AppBar,
   Toolbar,
   IconButton,
-  InputBase,
+  // InputBase,
   Menu,
   MenuItem,
   Fab,
 
 } from "@material-ui/core";
-import Chip from '@material-ui/core/Chip';
+// import Chip from '@material-ui/core/Chip';
 //import FaceIcon from '@material-ui/icons/Face';
-import SimCardIcon from '@material-ui/icons/SimCard';
+// import SimCardIcon from '@material-ui/icons/SimCard';
 import {
   Menu as MenuIcon,
-  MailOutline as MailIcon,
-  NotificationsNone as NotificationsIcon,
+  // MailOutline as MailIcon,
+  // NotificationsNone as NotificationsIcon,
   Person as AccountIcon,
-  Search as SearchIcon,
+  // Search as SearchIcon,
   Send as SendIcon,
   ArrowBack as ArrowBackIcon,
 } from "@material-ui/icons";
@@ -28,7 +28,7 @@ import classNames from "classnames";
 import useStyles from "./styles";
 import logo from "../../themes/logo2.png";
 // components
-import { Badge, Typography } from "../Wrappers/Wrappers";
+import {Typography } from "../Wrappers/Wrappers";
 import Notification from "../Notification/Notification";
 import UserAvatar from "../UserAvatar/UserAvatar";
 
@@ -110,11 +110,11 @@ function Header(props) {
 
   // local
   var [mailMenu, setMailMenu] = useState(null);
-  var [isMailsUnread, setIsMailsUnread] = useState(true);
+  // var [isMailsUnread, setIsMailsUnread] = useState(true);
   var [notificationsMenu, setNotificationsMenu] = useState(null);
-  var [isNotificationsUnread, setIsNotificationsUnread] = useState(true);
+  // var [isNotificationsUnread, setIsNotificationsUnread] = useState(true);
   var [profileMenu, setProfileMenu] = useState(null);
-  var [isSearchOpen, setSearchOpen] = useState(false);
+  // var [isSearchOpen, setSearchOpen] = useState(false);
 
   //var [pirateState, setPirateState] = useState(null);
   //Handle init state
@@ -126,7 +126,7 @@ function Header(props) {
 
   //const after_dispatch = useContext(dispatch(userActions.getAll()))
 
-  const { user } = props;
+  // const { user } = props;
   const { history } = props;
 
   var handleLogout = (e) =>{
@@ -134,7 +134,13 @@ function Header(props) {
     const { dispatch } = props;
     dispatch(userActions.logout() );*/
     //const user = null
-    history.push("/login")
+    // history.push("/login")
+    history.push({
+      pathname: "/login",
+      state: { 
+          from: props.location
+      }
+    })
   };
 
   return (

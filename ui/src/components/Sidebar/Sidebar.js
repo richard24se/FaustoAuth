@@ -2,20 +2,20 @@ import React, { useState, useEffect } from "react";
 import { Drawer, IconButton, List } from "@material-ui/core";
 import {
   Home as HomeIcon,
-  NotificationsNone as NotificationsIcon,
-  FormatSize as TypographyIcon,
-  FilterNone as UIElementsIcon,
-  BorderAll as TableIcon,
-  Web as WebIcon,
-  AccountCircle as AccountCircleIcon,
-  AllInbox as AllInboxIcon,
+  // NotificationsNone as NotificationsIcon,
+  // FormatSize as TypographyIcon,
+  // FilterNone as UIElementsIcon,
+  // BorderAll as TableIcon,
+  // Web as WebIcon,
+  // AccountCircle as AccountCircleIcon,
+  // AllInbox as AllInboxIcon,
   //  QuestionAnswer as SupportIcon,
-  LibraryBooks as LibraryIcon,
+  // LibraryBooks as LibraryIcon,
   //  HelpOutline as FAQIcon,
   ArrowBack as ArrowBackIcon,
   Assignment as AssignmentIcon,
-  Assessment as AssessmentIcon,
-  SpeakerNotes as SpeakerNotesIcon,
+  // Assessment as AssessmentIcon,
+  // SpeakerNotes as SpeakerNotesIcon,
   // NoteAddIcon as NoteAdd,
   // FindInPageIcon as FindInPage,
 } from "@material-ui/icons";
@@ -29,7 +29,7 @@ import useStyles from "./styles";
 
 // components
 import SidebarLink from "./components/SidebarLink/SidebarLink";
-import Dot from "./components/Dot";
+// import Dot from "./components/Dot";
 
 // context
 import {
@@ -47,9 +47,9 @@ const structure = [
     icon: <SettingsIcon />,
     children: [
       { label: "Create User", link: "/app/maintenance/create_user" },
-      { label: "Create Role", link: "/app/maintenance/create_role" },
-      { label: "Create Object", link: "/app/maintenance/create_object" },
+      { label: "Create Role", link: "/app/maintenance/create_role" },      
       { label: "Create Permission", link: "/app/maintenance/create_permission" },
+      { label: "Create Object", link: "/app/maintenance/create_object" },
     ],
   },
   {

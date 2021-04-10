@@ -8,7 +8,7 @@ import {
   ListItemText,
   Typography,
 } from "@material-ui/core";
-import { Inbox as InboxIcon } from "@material-ui/icons";
+// import { Inbox as InboxIcon } from "@material-ui/icons";
 import { Link } from "react-router-dom";
 import classnames from "classnames";
 
@@ -34,11 +34,11 @@ export default function SidebarLink({
   var classes = useStyles();
 
   // local
-  var [isOpen, setIsOpen] = useState(false);
+
   var isLinkActive =
     link &&
     (location.pathname === link || location.pathname.indexOf(link) !== -1);
-
+  var [isOpen, setIsOpen] = useState(isLinkActive ? isLinkActive : false);
   if (type === "title")
     return (
       <Typography
@@ -98,13 +98,13 @@ export default function SidebarLink({
       >
         <ListItemIcon
           className={classnames(classes.linkIcon, {
-            [classes.linkIconActive]: isLinkActive, 
+            [classes.linkIconActive]: isLinkActive,
           })}
         >
           {/*icon ? icon : <InboxIcon /> EXPAND ICON - RSE*/}
           {icon}
         </ListItemIcon>
-        
+
         <ListItemText
           classes={{
             primary: classnames(classes.linkText, {
@@ -114,8 +114,8 @@ export default function SidebarLink({
           }}
           primary={label}
         />
-        {isSidebarOpened? (isOpen ? <ExpandMoreIcon/> : <KeyboardArrowRightIcon/>) : null }
-        
+        {isSidebarOpened ? (isOpen ? <ExpandMoreIcon /> : <KeyboardArrowRightIcon />) : null}
+
       </ListItem>
       {children && (
         <Collapse
@@ -123,7 +123,7 @@ export default function SidebarLink({
           timeout="auto"
           unmountOnExit
         >{/*className={classes.nestedList} RSE*/}
-          <List component="div" disablePadding className={classes.nestedList}> 
+          <List component="div" disablePadding className={classes.nestedList}>
             {children.map(childrenLink => (
               <SidebarLink
                 key={childrenLink && childrenLink.link}
@@ -135,7 +135,7 @@ export default function SidebarLink({
               />
             ))}
           </List>
-          <Divider className={classes.divider}/>
+          {/* <Divider className={classes.divider}/> */}
         </Collapse>
       )}
     </>

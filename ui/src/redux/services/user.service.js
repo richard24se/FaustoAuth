@@ -30,11 +30,11 @@ function login_(username, password) {
 const fotchAuth = new Fotch(process.env.REACT_APP_API_AUTH)
 
 const login = (username, password, fn) => {
-    fotchAuth.post('/auth', fn, {data: {username: username, password: password, option: "login"} })
+    fotchAuth.post('/auth/login', fn, { data: { username: username, password: password } })
 }
 
-const permissions = (fn) => {
-    fotchAuth.get('/permission_user', fn, { headers: authHeader() })
+const permissions = (username, fn) => {
+    fotchAuth.get('/user/permission/' + username, fn, { headers: authHeader() })
 }
 
 // const testPermissions = (token,fn) => {
@@ -46,15 +46,15 @@ function login1(username, password) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-        "username": username,
-        "password": password,
-        "option": "login"
+            "username": username,
+            "password": password,
+            "option": "login"
         }),
         mode: 'cors',
     };
     //Create query params
-    var url = new URL(process.env.REACT_APP_API_AUTH+`/auth`),
-    params = {system: 'fausto'}
+    var url = new URL(process.env.REACT_APP_API_AUTH + `/auth`),
+        params = { system: 'fausto' }
     Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
     return fetch(url, requestOptions)
         .then(sleeper(500))
@@ -68,7 +68,7 @@ function login1(username, password) {
         }).catch((error) => {
             let args = {
                 response: error,
-                error:    true,
+                error: true,
                 msg: !(error instanceof TypeError) ? error.msg : "Error en el servidor, tiempo de espera expirado!"//error
             }
             console.log("catch error!")
@@ -108,8 +108,8 @@ function handleResponse(response) {
             //const error = (data && data.message) || response.statusText;
             // console.log(data);
             // console.log(data.message);
-            console.log("Error type from server: "+response.status);
-            console.log("Error text from server: "+response.statusText);
+            console.log("Error type from server: " + response.status);
+            console.log("Error text from server: " + response.statusText);
             // console.log(error);
             return Promise.reject(data);
         }
@@ -123,9 +123,15 @@ function handleResponse(response) {
 //     };
 //   }
 
+function validate_token(headers, fn) {
+    return fotchAuth.get('/auth/token', fn, { headers: headers })
+
+}
+
 export const userService = {
     login,
     logout,
     getAll,
-    permissions
+    permissions,
+    validate_token
 };

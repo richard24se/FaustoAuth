@@ -6,22 +6,22 @@ import SaveIcon from '@material-ui/icons/Save';
 import { withStyles } from '@material-ui/styles';
 import style from './style'
 
-import Widget from "../../components/Widget";
+import Widget from "components/Widget";
 import {
     EasyButton, EasyAutoSelect, EasyTextField, EasyMuiDataTable
-} from "../../components/EasyMaterial/EasyMaterialComponents"
+} from "components/EasyMaterial/EasyMaterialComponents"
 
 //FOTCH
-import { Fotch, capitalize, authHeader } from '../../fausto'
+import { Fotch, capitalize, authHeader } from 'fausto'
 
 //Redux
 import { connect } from 'react-redux';
-import { fotchActions } from '../../redux/actions'
-
+import { fotchActions } from 'redux/actions'
+import { mapDispatchToPropsNoti } from "redux/dispatchs"
 // import moment from "moment";
 
 //COMPONENTS
-import PageTitle from "../../components/PageTitle/PageTitle";
+import PageTitle from "components/PageTitle/PageTitle";
 
 const fotchAuth = new Fotch(process.env.REACT_APP_API_AUTH)
 
@@ -150,17 +150,17 @@ class createPermission_ extends Component {
             var format_object_types = []
             if (!obj.error) {
                 var object_types = obj.response.data;
-                format_object_types = object_types.reduce((o, item)=> { 
-                    return {...o, [item.id]: item.name}
+                format_object_types = object_types.reduce((o, item) => {
+                    return { ...o, [item.id]: item.name }
                 }, {})
                 this.setState({
                     object_types: format_object_types
                 });
                 this.getObjects()
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
-            
+
         });
     };
 
@@ -177,7 +177,7 @@ class createPermission_ extends Component {
                 }));
                 this.getPermissionTypes()
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
             this.setState({
                 objects_list: format_objects
@@ -198,7 +198,7 @@ class createPermission_ extends Component {
                 }));
                 this.getPermissions()
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
             this.setState({
                 permission_types_list: format_permission_types
@@ -210,7 +210,7 @@ class createPermission_ extends Component {
         // Change id_object_ty for the name
         var obtainObjectName = (id_object) => { for (var object of this.state.objects_list) if (id_object === object.id) return object.name }
         var obtainPermissionTypeName = (id_permission_type) => { for (var permission_type of this.state.permission_types_list) if (id_permission_type === permission_type.id) return capitalize(permission_type.name) }
-        this.props.dispatch(fotchActions.processing("Getting Permissions..."))
+        const notiloading = this.props.notiloading("Getting Permissions...")
         fotchAuth.get("/permission", obj => {
             console.log(obj);
             var format_permissions = []
@@ -223,9 +223,10 @@ class createPermission_ extends Component {
                     object: obtainObjectName(item.id_object),
                     permission_type: obtainPermissionTypeName(item.id_permission_type),
                 }));
-                this.props.dispatch(fotchActions.success(obj.response.msg))
+                this.props.notisuccess(obj.response.msg)
+                this.props.closenoti(notiloading)
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
             this.setState(prevState => ({
                 permissions_table: {
@@ -238,22 +239,23 @@ class createPermission_ extends Component {
 
     postPermission = () => {
         if (this.state.permission_name === "") {
-            this.props.dispatch(fotchActions.warning("Fill in the name field"))
+            this.props.notiwarn("Fill in the name field")
         } else if (this.state.object === "") {
-            this.props.dispatch(fotchActions.warning("Select an object"))
+            this.props.notiwarn("Select an object")
         } else if (this.state.permission_type === "") {
-            this.props.dispatch(fotchActions.warning("Select an permission type"))
+            this.props.notiwarn("Select an permission type")
         }
         else {
-            this.props.dispatch(fotchActions.processing("Saving the permission..."))
+            const notiloading = this.props.notiloading("Saving the permission...")
             fotchAuth.post("/permission", obj => {
+                this.props.closenoti(notiloading)
                 this.setState({ button_disabled: false })
                 if (!obj.error) {
                     this.resetForm()
                     this.getPermissions()
-                    this.props.dispatch(fotchActions.success(obj.response.msg))
+                    this.props.notisuccess(obj.response.msg)
                 } else {
-                    this.props.dispatch(fotchActions.error(obj.response.msg))
+                    this.props.notierror(obj.response.msg)
                 }
             },
                 {
@@ -285,28 +287,29 @@ class createPermission_ extends Component {
             })
         }
         else {
-            this.props.dispatch(fotchActions.error("Just can to select one record"))
+            this.props.notierror("Just can to select one record")
         }
     }
 
     putPermission = () => {
         if (this.state.permission_name === "") {
-            this.props.dispatch(fotchActions.warning("Fill in the name field"))
+            this.props.notiwarn("Fill in the name field")
         } else if (this.state.object === "") {
-            this.props.dispatch(fotchActions.warning("Select an object"))
+            this.props.notiwarn("Select an object")
         } else if (this.state.permission_type === "") {
-            this.props.dispatch(fotchActions.warning("Select an permission type"))
+            this.props.notiwarn("Select an permission type")
         }
         else {
-            this.props.dispatch(fotchActions.processing("Updating the permission..."))
+            const notiloading = this.props.notiloading("Updating the permission...")
             fotchAuth.put("/permission/" + this.state.id_permission, obj => {
+                this.props.closenoti(notiloading)
                 this.setState({ button_disabled: false })
                 if (!obj.error) {
                     this.resetForm()
                     this.getPermissions()
-                    this.props.dispatch(fotchActions.success(obj.response.msg))
+                    this.props.notisuccess(obj.response.msg)
                 } else {
-                    this.props.dispatch(fotchActions.error(obj.response.msg))
+                    this.props.notierror(obj.response.msg)
                 }
             },
                 {
@@ -327,19 +330,21 @@ class createPermission_ extends Component {
             this.deletePermission(permission.id)
         }
         else {
-            this.props.dispatch(fotchActions.error("Just can to select one record"))
+            this.props.notierror("Just can to select one record")
         }
     }
 
     deletePermission = id_permission => {
+        const notiloading = this.props.notiloading("Deleting the permission...")
         fotchAuth.del("/permission/" + id_permission, obj => {
             console.log(obj);
-            this.props.dispatch(fotchActions.processing("Deleting the permission..."))
+
+            this.props.closenoti(notiloading)
             if (!obj.error) {
-                this.props.dispatch(fotchActions.success(obj.response.msg))
+                this.props.notisuccess(obj.response.msg)
                 this.getPermissions()
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
         });
     }
@@ -425,7 +430,7 @@ class createPermission_ extends Component {
         );
     }
 }
-
+const mapDispatchToProps = (dispatch) => ({ ...mapDispatchToPropsNoti(dispatch), dispatch })
 const createPermission = withStyles(style)(createPermission_)
-const connectedComponent = connect()(createPermission)
+const connectedComponent = connect(null, mapDispatchToProps)(createPermission)
 export { connectedComponent as createPermission };

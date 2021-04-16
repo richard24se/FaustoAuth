@@ -69,7 +69,6 @@ function Login(props) {
 
   //Handle login
   var handleLogin = (e) =>{
-    const { dispatch } = props;
     const previousLocation = props.location.state && props.location.state.from ?  props.location.state.from.pathname : null
     dispatch(userActions.login(loginValue, passwordValue, previousLocation));
   };
@@ -104,7 +103,7 @@ function Login(props) {
               </Typography>
               <Grow in={ alert.message ? true : false}>
                 <Typography  color="primary" className={classnames(
-                  classes.errorMessage, alert.has_error ? colors.red : colors.green )
+                  classes.errorMessage, alert.loading ? colors.grey : alert.has_error ? colors.red : colors.green )
                 }>
                   {alert.message}
                 </Typography>

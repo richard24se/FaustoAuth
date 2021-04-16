@@ -9,27 +9,27 @@ import { withStyles } from "@material-ui/styles";
 import style from "./style";
 
 //EASY_MATERIAL
-import Widget from "../../components/Widget/Widget";
+import Widget from "components/Widget/Widget";
 import {
     EasyTextField,
     EasyButton,
     EasyAutoSelect,
     EasyMuiDataTable
-} from "../../components/EasyMaterial/EasyMaterialComponents";
+} from "components/EasyMaterial/EasyMaterialComponents";
 
 //FOTCH
 import {
     Fotch,
     capitalize,
     authHeader
-} from "../../fausto";
+} from "fausto";
 
 //COMPONENTS
-import PageTitle from "../../components/PageTitle/PageTitle";
+import PageTitle from "components/PageTitle/PageTitle";
 
 //Redux
 import { connect } from 'react-redux';
-import { fotchActions } from '../../redux/actions'
+import { fotchActions } from 'redux/actions'
 
 const fotchAuth = new Fotch(process.env.REACT_APP_API_AUTH)
 
@@ -215,7 +215,7 @@ class createUser_ extends Component {
                 }));
                 this.getUsers()
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
             this.setState({
                 roles_list: format_roles
@@ -249,10 +249,10 @@ class createUser_ extends Component {
                         data: format_users,
                     },
                 }));
-                // this.props.dispatch(fotchActions.success(obj.response.msg))
+                // this.props.notisuccess(obj.response.msg)
                 this.props.dispatch(fotchActions.clear_processing())
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
 
         });
@@ -279,9 +279,9 @@ class createUser_ extends Component {
                 if (!obj.error) {
                     this.resetForm()
                     this.getUsers()
-                    this.props.dispatch(fotchActions.success(obj.response.msg))
+                    this.props.notisuccess(obj.response.msg)
                 } else {
-                    this.props.dispatch(fotchActions.error(obj.response.msg))
+                    this.props.notierror(obj.response.msg)
                 }
             },
                 {
@@ -354,9 +354,9 @@ class createUser_ extends Component {
                 if (!obj.error) {
                     this.resetForm()
                     this.getUsers()
-                    this.props.dispatch(fotchActions.success(obj.response.msg))
+                    this.props.notisuccess(obj.response.msg)
                 } else {
-                    this.props.dispatch(fotchActions.error(obj.response.msg))
+                    this.props.notierror(obj.response.msg)
                 }
             },
                 {
@@ -382,10 +382,10 @@ class createUser_ extends Component {
             console.log(obj);
             this.props.dispatch(fotchActions.processing("Deleting user..."))
             if (!obj.error) {
-                this.props.dispatch(fotchActions.success(obj.response.msg))
+                this.props.notisuccess(obj.response.msg)
                 this.getRoles()
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
         });
     }

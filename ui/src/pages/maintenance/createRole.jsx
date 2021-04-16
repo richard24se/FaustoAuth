@@ -213,7 +213,7 @@ class createRole_ extends Component {
                     value: capitalize(item.name)
                 }));
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
             this.setState({
                 permission_types_list: format_permission_types
@@ -234,7 +234,7 @@ class createRole_ extends Component {
                 });
                 this.getObjects()
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
             
         });
@@ -252,7 +252,7 @@ class createRole_ extends Component {
                     value: `${item.name} (${this.state.object_types[item.id_object_type]})`
                 }));
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
             this.setState({
                 objects_list: format_objects
@@ -293,9 +293,9 @@ class createRole_ extends Component {
                     display_name: capitalize(item.display_name),
                     created_date: item.created_date,
                 }));
-                this.props.dispatch(fotchActions.success(obj.response.msg))
+                this.props.notisuccess(obj.response.msg)
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
             this.setState(prevState => ({
                 roles_table: {
@@ -318,9 +318,9 @@ class createRole_ extends Component {
                 if (!obj.error) {
                     this.resetForm()
                     this.getRoles()
-                    this.props.dispatch(fotchActions.success(obj.response.msg))
+                    this.props.notisuccess(obj.response.msg)
                 } else {
-                    this.props.dispatch(fotchActions.error(obj.response.msg))
+                    this.props.notierror(obj.response.msg)
                 }
             },
                 {
@@ -382,9 +382,9 @@ class createRole_ extends Component {
                 if (!obj.error) {
                     this.resetForm()
                     this.getRoles()
-                    this.props.dispatch(fotchActions.success(obj.response.msg))
+                    this.props.notisuccess(obj.response.msg)
                 } else {
-                    this.props.dispatch(fotchActions.error(obj.response.msg))
+                    this.props.notierror(obj.response.msg)
                 }
             },
                 {
@@ -416,10 +416,10 @@ class createRole_ extends Component {
             console.log(obj);
             this.props.dispatch(fotchActions.processing("Deleting Role..."))
             if (!obj.error) {
-                this.props.dispatch(fotchActions.success(obj.response.msg))
+                this.props.notisuccess(obj.response.msg)
                 this.getRoles()
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
         });
     }

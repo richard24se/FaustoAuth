@@ -6,22 +6,23 @@ import SaveIcon from '@material-ui/icons/Save';
 import { withStyles } from '@material-ui/styles';
 import style from './style'
 
-import Widget from "../../components/Widget";
+import Widget from "components/Widget";
 import {
     EasyButton, EasyAutoSelect, EasyTextField, EasyMuiDataTable
-} from "../../components/EasyMaterial/EasyMaterialComponents"
+} from "components/EasyMaterial/EasyMaterialComponents"
 
 //FOTCH
-import { Fotch, capitalize, authHeader } from '../../fausto'
+import { Fotch, capitalize, authHeader } from 'fausto'
 
 //Redux
 import { connect } from 'react-redux';
-import { fotchActions } from '../../redux/actions'
+import { fotchActions } from 'redux/actions'
+import { mapDispatchToPropsNoti } from "redux/dispatchs"
 
 // import moment from "moment";
 
 //COMPONENTS
-import PageTitle from "../../components/PageTitle/PageTitle";
+import PageTitle from "components/PageTitle/PageTitle";
 
 const fotchAuth = new Fotch(process.env.REACT_APP_API_AUTH)
 
@@ -154,7 +155,7 @@ class createObject_ extends Component {
                 }));
                 this.getObject()
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
             this.setState({
                 object_type_list: format_object_types
@@ -165,8 +166,10 @@ class createObject_ extends Component {
     getObject = () => {
         // Change id_object_ty for the name
         var obtainObjectTypeName = (id_type) => { for (var type of this.state.object_type_list) if (id_type === type.id) return type.name }
-        this.props.dispatch(fotchActions.processing("Getting objects..."))
+        // this.props.dispatch(fotchActions.processing("Getting objects..."))
+        const notiloading = this.props.notiloading("Getting objects...")
         fotchAuth.get("/object", obj => {
+            this.props.closenoti(notiloading)
             console.log(obj);
             var format_objects = []
             if (!obj.error) {
@@ -176,9 +179,11 @@ class createObject_ extends Component {
                     display_name: capitalize(item.display_name),
                     object_type: obtainObjectTypeName(item.id_object_type),
                 }));
-                this.props.dispatch(fotchActions.success(obj.response.msg))
+                // this.props.notisuccess(obj.response.msg)
+                this.props.notisuccess(obj.response.msg)
+                
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
             this.setState(prevState => ({
                 object_table: {
@@ -191,20 +196,22 @@ class createObject_ extends Component {
 
     postObject = () => {
         if (this.state.object_name === "" || this.state.object_display_name === "") {
-            this.props.dispatch(fotchActions.warning("Complete the fields empty"))
+            this.props.notiwarn("Complete the fields empty")
         } else if (this.state.object_type === "") {
-            this.props.dispatch(fotchActions.warning("Select an object type"))
+            this.props.notiwarn("Select an object type")
         }
         else {
-            this.props.dispatch(fotchActions.processing("Saving the object..."))
+            const notiloading = this.props.notiloading("Saving the object...")
             fotchAuth.post("/object", obj => {
+                this.props.closenoti(notiloading)
                 this.setState({ button_disabled: false })
                 if (!obj.error) {
                     this.resetForm()
                     this.getObject()
-                    this.props.dispatch(fotchActions.success(obj.response.msg))
+                    this.props.notisuccess(obj.response.msg)
+
                 } else {
-                    this.props.dispatch(fotchActions.error(obj.response.msg))
+                    this.props.notierror(obj.response.msg)
                 }
             },
                 {
@@ -234,26 +241,28 @@ class createObject_ extends Component {
             })
         }
         else {
-            this.props.dispatch(fotchActions.error("Just can to select one record"))
+            this.props.notierror("Just can to select one record")
         }
     }
 
     putObject = () => {
         if (this.state.object_name === "" || this.state.object_display_name === "") {
-            this.props.dispatch(fotchActions.warning("Complete the fields empty"))
+            this.props.notiwarn("Complete the fields empty")
         } else if (this.state.object_type === "") {
-            this.props.dispatch(fotchActions.warning("Select an object type"))
+            this.props.notiwarn("Select an object type")
         }
         else {
-            this.props.dispatch(fotchActions.processing("Updating the object..."))
+            const notiloading = this.props.notiloading("Updating the object...")
             fotchAuth.put("/object/" + this.state.id_object, obj => {
+                this.props.closenoti(notiloading)
                 this.setState({ button_disabled: false })
                 if (!obj.error) {
                     this.resetForm()
                     this.getObject()
-                    this.props.dispatch(fotchActions.success(obj.response.msg))
+                    this.props.notisuccess(obj.response.msg)
+                    
                 } else {
-                    this.props.dispatch(fotchActions.error(obj.response.msg))
+                    this.props.notierror(obj.response.msg)
                 }
             },
                 {
@@ -274,19 +283,21 @@ class createObject_ extends Component {
             this.deleteObject(object.id)
         }
         else {
-            this.props.dispatch(fotchActions.error("Just can to select one record"))
+            this.props.notierror("Just can to select one record")
         }
     }
 
     deleteObject = id_object => {
+        const notiloading = this.props.notiloading("Deleting the object...")
         fotchAuth.del("/object/" + id_object, obj => {
             console.log(obj);
-            this.props.dispatch(fotchActions.processing("Deleting the object..."))
+
             if (!obj.error) {
-                this.props.dispatch(fotchActions.success(obj.response.msg))
+                this.props.notisuccess(obj.response.msg)
+                this.props.closenoti(notiloading)
                 this.getObject()
             } else {
-                this.props.dispatch(fotchActions.error(obj.response.msg))
+                this.props.notierror(obj.response.msg)
             }
         });
     }
@@ -372,7 +383,7 @@ class createObject_ extends Component {
         );
     }
 }
-
+const mapDispatchToProps = (dispatch) => ({ ...mapDispatchToPropsNoti(dispatch), dispatch })
 const createObject = withStyles(style)(createObject_)
-const connectedComponent = connect()(createObject)
+const connectedComponent = connect(null, mapDispatchToProps)(createObject)
 export { connectedComponent as createObject };

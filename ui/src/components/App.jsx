@@ -20,8 +20,12 @@ import { PrivateRoute } from "./CustomRoutes";
 import { history } from '../redux/helpers';
 //Redux
 import { connect } from 'react-redux';
-import { fotchActions } from '../redux/actions'
+import { fotchActions } from 'redux/actions'
 
+//Notistack
+import Notifier from "components/Notistack";
+//Configurator
+import { Configurator } from "components/Configurator";
 
 function mapStateToProps(state) {
   const { success, warning, error, processing, message } = state.fotch;
@@ -41,6 +45,8 @@ const TrueApp = connect(mapStateToProps)((props) => {
   return (
 
     <>
+      <Notifier />
+      <Configurator/>
       <HashRouter history={history}>
         <Switch>
           <Route exact path="/" render={() => <Redirect to="/app/maintenance/create_user" />} />
@@ -110,9 +116,9 @@ export default connect(mapStateToProps)(function App(props) {
   if (enabled === true) {
     app = <TrueApp />
   } else if (enabled === false) {
-    app = <MessageApp msg= "Invalid key, try to contact richard.24.se@gmail.com"/>
+    app = <MessageApp msg="Invalid key, try to contact richard.24.se@gmail.com" />
   } else if (enabled === null) {
-    app = <MessageApp msg= "Loading app..."/>
+    app = <MessageApp msg="Loading app..." />
   }
   // global
   //var { isAuthenticated } = useUserState();

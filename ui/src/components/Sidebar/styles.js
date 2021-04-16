@@ -1,4 +1,4 @@
-import { makeStyles } from "@material-ui/styles";
+import { makeStyles } from '@material-ui/core/styles';
 
 const drawerWidth = 240;
 
@@ -16,7 +16,7 @@ export default makeStyles(theme => ({
     whiteSpace: "nowrap",
   },
   drawerOpen: {
-    width: 270, //drawerWidth,
+    width: drawerWidth,
     transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,

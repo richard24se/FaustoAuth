@@ -1,14 +1,24 @@
-import { makeStyles } from "@material-ui/styles";
+import { makeStyles } from '@material-ui/core/styles';
 
+import tinycolor from "tinycolor2";
+
+const lightenRate = 35.90;
+const super_light = (color) => tinycolor(color).lighten(lightenRate).toHexString()
 export default makeStyles(theme => ({
   link: {
     textDecoration: "none",
     "&:hover, &:focus": {
-      backgroundColor: theme.palette.background.light,
+      // backgroundColor: theme.palette.background.light,
+      backgroundColor: super_light(theme.palette.primary.light),
     },
   },
   linkActive: {
     backgroundColor: theme.palette.background.light,
+    // paddingLeft: theme.spacing(0),
+  },
+  linkActivePersist: {
+    backgroundColor: super_light(theme.palette.primary.light),
+    // paddingLeft: theme.spacing(0),
   },
   linkNested: {
     paddingLeft: 0,
@@ -17,7 +27,7 @@ export default makeStyles(theme => ({
     },
   },
   linkIcon: {
-    marginRight: theme.spacing(1),
+    // marginRight: theme.spacing(1),
     color: theme.palette.text.secondary + "99",
     transition: theme.transitions.create("color"),
     width: 24,
@@ -31,7 +41,6 @@ export default makeStyles(theme => ({
     padding: 0,
     color: theme.palette.text.secondary + "CC",
     transition: theme.transitions.create(["opacity", "color"]),
-    //fontSize: 16,
     fontSize: 14, //RSE
   },
   linkTextActive: {
@@ -47,10 +56,27 @@ export default makeStyles(theme => ({
     marginLeft: theme.spacing(4.5),
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
+    fontWeight: 600
+  },
+  rightBorder: {
+    borderRight: theme.palette.primary.main,
+    borderRightStyle: "solid",
+    borderRightWidth: theme.spacing(0.4),
+  },
+  rightBorderHidden: {
+    borderRight: "white",
+    borderRightStyle: "hidden",
+    borderRightWidth: theme.spacing(0.4),
+  },
+  ellipsisText: {
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    
   },
   divider: {
     marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2), //CAMBIO RSE ESTABA EN 4
+    marginBottom: theme.spacing(4),
     height: 1,
     backgroundColor: "#D8D8D880",
   },

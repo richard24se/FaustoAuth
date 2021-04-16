@@ -133,8 +133,16 @@ class Fotch {
             var neo_url = new URL(url)
 
         } catch {
-            alert("Error with URL, please check .env or syntax")
+            // alert("Error with URL, please check .env or syntax")
             console.log("Error with URL, please check .env or syntax")
+            return new Promise((resolve, reject) => {
+                let args = {
+                    response: { msg: "Error with URL, please check .env or syntax" },
+                    error: true,
+                }
+                callback(args)
+                resolve()
+            })
         }
 
         //query params object
@@ -215,6 +223,17 @@ class Fotch {
                         ok: error.ok
                     }, options.extraCallbackParams)
                     console.log("#------>Debug Error Args TypeError<------#")
+                    console.log(args)
+                }
+                else if (error instanceof SyntaxError) {
+                    args = Object.assign({
+                        status: null,
+                        statusText: null,
+                        response: { msg: error.message },
+                        error: true,
+                        ok: error.ok
+                    }, options.extraCallbackParams)
+                    console.log("#------>Debug Error Args SyntaxError<------#")
                     console.log(args)
                 }
                 else {

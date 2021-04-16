@@ -14,6 +14,11 @@ export function alert(state = {}, action) {
         message: action.message,
         has_error: true
       };
+    case alertConstants.LOADING:
+      return {
+        message: action.message,
+        loading: true
+      };
     case alertConstants.CLEAR:
       return {};
     default:

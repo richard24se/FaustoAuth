@@ -1,0 +1,3 @@
+export const SI_LS = "SET_ITEM_LOCALSTORAGE";
+export const GI_LS = "GET_ITEM_LOCALSTORAGE";
+export const RI_LS = "REMOVE_ITEM_LOCALSTORAGE";

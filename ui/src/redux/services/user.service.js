@@ -10,77 +10,29 @@ import { Fotch } from "../../fausto";
 const config = {
     apiUrl: 'http://localhost:7000',
 }
-/*
-function login_(username, password) {
-    const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    };
 
-    return fetch(`${config.apiUrl}/users/authenticate`, requestOptions)
-        .then(handleResponse)
-        .then(user => {
-            // store user details and jwt token in local storage to keep user logged in between page refreshes
-            localStorage.setItem('user', JSON.stringify(user));
-            localStorage.setItem('API_URL', process.env.REACT_APP_API_USUARIOS)
-            return user;
-        });
-}*/
 const fotchAuth = new Fotch(process.env.REACT_APP_API_AUTH)
 
 const login = (username, password, fn) => {
-    fotchAuth.post('/auth/login', fn, { data: { username: username, password: password } })
+    return fotchAuth.post('/auth/login', fn, { data: { username: username, password: password } })
 }
 
-const permissions = (username, fn) => {
-    fotchAuth.get('/user/permission/' + username, fn, { headers: authHeader() })
+const permissions = (username, fn, token) => {
+    return fotchAuth.get('/user/permission/' + username, fn, { headers: token ? token : authHeader() })
 }
 
-// const testPermissions = (token,fn) => {
-//     fotchAuth.get('/permission_user', fn, { headers: { 'Authorization': 'Bearer ' + token } })
-// }
-
-function login1(username, password) {
-    const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            "username": username,
-            "password": password,
-            "option": "login"
-        }),
-        mode: 'cors',
-    };
-    //Create query params
-    var url = new URL(process.env.REACT_APP_API_AUTH + `/auth`),
-        params = { system: 'fausto' }
-    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
-    return fetch(url, requestOptions)
-        .then(sleeper(500))
-        .then(handleResponse)
-        .then(user => {
-            console.log("catch user!")
-            console.log(user)
-            // store user details and jwt token in local storage to keep user logged in between page refreshes
-            localStorage.setItem('user', JSON.stringify(user));
-            return user;
-        }).catch((error) => {
-            let args = {
-                response: error,
-                error: true,
-                msg: !(error instanceof TypeError) ? error.msg : "Error en el servidor, tiempo de espera expirado!"//error
-            }
-            console.log("catch error!")
-            console.log(args)
-            return Promise.reject(args);
-        });
-}
 
 function logout() {
     // remove user from local storage to log user out
+    const user = localStorage.getItem('user')
+    const token = JSON.parse(user)
     localStorage.removeItem('user');
     localStorage.removeItem('user_tokens');
+    localStorage.removeItem('permissions');
+    return fotchAuth.del('/auth/logout', (obj) => {
+        console.log(obj)
+    }, { data: { access_token: token ? token.access_token : "" } })
+
 }
 
 function getAll() {
@@ -93,40 +45,51 @@ function getAll() {
 }
 
 function handleResponse(response) {
+    console.log("old login handle starting...")
     return response.text().then(text => {
         const data = text && JSON.parse(text);
-        console.log("HandleResponse")
-        console.log(data)
-        console.log(response)
         if (!response.ok) {
+            if (!response.status) {
+
+            }
             if (response.status === 401) {
                 // auto logout if 401 response returned from api
                 logout();
-                window.location.reload(true);
+                // window.location.reload(true);
             }
 
             //const error = (data && data.message) || response.statusText;
             // console.log(data);
             // console.log(data.message);
-            console.log("Error type from server: " + response.status);
-            console.log("Error text from server: " + response.statusText);
+            // console.log(response.statusText);
             // console.log(error);
+            console.log("old login handle #error -> ", data)
             return Promise.reject(data);
         }
-
+        console.log("old login handle -> ", data)
         return data;
     });
 }
 // function sleeper(ms) {
-//     return function(x) {
-//       return new Promise(resolve => setTimeout(() => resolve(x), ms));
+//     return function (x) {
+//         return new Promise(resolve => setTimeout(() => resolve(x), ms));
 //     };
-//   }
+// }
 
+// function validate_token(token) {
+//     console.log(token)
+//     return fotchAuth.get('/auth/verify_access', (obj) => {
+//         console.log(obj)
+//     }, { headers: auth_header_JWT(token) })
+// }
 function validate_token(headers, fn) {
     return fotchAuth.get('/auth/token', fn, { headers: headers })
-
 }
+// function verify_token(token) {
+//     return fotchAuth.get('/auth/verify_token', (obj) => {
+//         console.log(obj)
+//     }, { headers: auth_header_JWT(token) })
+// }
 
 export const userService = {
     login,

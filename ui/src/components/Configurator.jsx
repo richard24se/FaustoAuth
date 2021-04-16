@@ -7,7 +7,7 @@ import { appActions } from '../redux/actions'
 
 
 
-import { structure, SYSTEM, APPS, validateMetaData } from 'config'
+import { structure, SYSTEM, APPS, validateMetaData } from 'custom/config'
 
 const getRoutes = (struct, validateMetaData) => {
     let routes = []

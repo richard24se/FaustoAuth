@@ -1,13 +1,15 @@
-
-
-import logging
-from fastapi import APIRouter, Depends
-from fastapi import Body
-
 from auth.handlers import JWTBearer
-from fausto.fapi import Response
-from auth.service.permission import get_permission, get_permissions, create_permission, update_permission, delete_permission
 from auth.model.pydantic import PydanticPermission
+from auth.service.permission import (
+    create_permission,
+    delete_permission,
+    get_permission,
+    get_permissions,
+    update_permission,
+)
+from fausto.fapi import Response
+
+from fastapi import APIRouter, Body, Depends
 
 router = APIRouter(
     prefix="/permission",
@@ -40,5 +42,6 @@ async def updating_permission(permission_id: int, permission=Body(...)):
 @router.delete("/{permission_id}", response_model=Response)
 async def deleting_permission(permission_id: int):
     return delete_permission(permission_id)
+
 
 router_permission = router

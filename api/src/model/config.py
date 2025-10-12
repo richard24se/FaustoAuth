@@ -1,5 +1,6 @@
+# from config.databases import *
+
 from .database import createConnectionDB
-from config.databases import *
 
 # conf = {
 #     'user': BP_USER,
@@ -9,10 +10,10 @@ from config.databases import *
 #     'dbname': BP_DB
 # }
 conf = {
-    'user': 'root',
-    'pass': 'faustoauthdb24$',
-    'host': 'auth_db_postgres',
-    'port': '5432',
-    'dbname': 'Fausto'
+    "user": "root",
+    "pass": "faustoauthdb24$",
+    "host": "auth_db_postgres",
+    "port": "5432",
+    "dbname": "Fausto",
 }
 SQLALCH_AUTH = createConnectionDB(conf)

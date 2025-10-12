@@ -1,15 +1,14 @@
-
-
-import logging
-from fastapi import APIRouter, Depends
-from fastapi import Body
-from pydantic import BaseModel
-from typing import Optional, Any, Union
-
 from auth.handlers import JWTBearer
+from auth.service.auth import (
+    check_blacklist_user,
+    refresh_user,
+    revoke_user,
+    validate_user,
+)
 from fausto.fapi import Response, fapi_get_bearer_token
-from auth.service.auth import validate_user, revoke_user, check_blacklist_user, refresh_user
+from pydantic import BaseModel
 
+from fastapi import APIRouter, Depends
 
 router = APIRouter(
     prefix="/auth",
@@ -27,15 +26,20 @@ class Credential(BaseModel):
 @router.get("/token", response_model=Response, dependencies=[Depends(JWTBearer())])
 async def validate_token(token: str = Depends(fapi_get_bearer_token)):
     check_blacklist_user(token)
-    return {'msg': "Token is valid", 'error': False}
+    return {"msg": "Token is valid", "error": False}
 
 
-@router.post("/token/refresh", response_model=Response, dependencies=[Depends(JWTBearer())])
+@router.post(
+    "/token/refresh", response_model=Response, dependencies=[Depends(JWTBearer())]
+)
 async def refresh_token(token: str = Depends(fapi_get_bearer_token)):
     return refresh_user(token)
 
 
-@router.post("/login", response_model=Response,)
+@router.post(
+    "/login",
+    response_model=Response,
+)
 async def login(credential: Credential, refresh_token: bool = False):
     user_validade = validate_user(**credential.__dict__, refresh_token=refresh_token)
     respuesta = Response(**user_validade)
@@ -46,6 +50,7 @@ async def login(credential: Credential, refresh_token: bool = False):
 async def logout(token: str = Depends(fapi_get_bearer_token)):
     check_blacklist_user(token)
     return revoke_user(token)
+
 
 # @router.get("/grupos_postulantes", response_model=Response)
 # async def read_obtener_grupo_etapas(fecha: str):

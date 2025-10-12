@@ -1,0 +1,241 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 10.11 (Debian 10.11-1.pgdg90+1)
+-- Dumped by pg_dump version 10.11 (Debian 10.11-1.pgdg90+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Data for Name: audit_type; Type: TABLE DATA; Schema: auth; Owner: postgres
+--
+
+COPY auth.audit_type (id, name, created_date, modificated_date) FROM stdin;
+\.
+
+
+--
+-- Data for Name: role; Type: TABLE DATA; Schema: auth; Owner: postgres
+--
+
+COPY auth.role (id, name, display_name, created_date, modificated_date) FROM stdin;
+1	Admin	Administrator	2020-06-25 01:53:25.471654+00	2020-07-09 03:38:42.302424+00
+5	Gerente Producción	Gerente de producción	2020-07-09 03:46:55.771971+00	2020-07-10 21:27:28.762279+00
+3	Jefe planeamiento	Jefe planeamiento de cadena de suministros	2020-07-09 03:40:39.747911+00	2020-07-10 21:30:42.993117+00
+2	Ejecutivo ventas	Ejecutivo de ventas	2020-07-09 03:35:11.499545+00	2020-07-10 21:30:56.174526+00
+6	Supervisor de Línea	Supervisor de línea	2020-07-10 21:31:52.883562+00	\N
+4	Jefe producción	Jefe de producción	2020-07-09 03:46:28.173504+00	2020-07-18 03:53:29.376185+00
+\.
+
+
+--
+-- Data for Name: user; Type: TABLE DATA; Schema: auth; Owner: postgres
+--
+
+COPY auth."user" (id, username, password, names, surnames, created_date, modificated_date, id_role) FROM stdin;
+1	test	test	FaustoAuth	Administrator	2020-06-25 02:14:50.36715+00	\N	1
+2	admin@faustoauth.app	$admin	FaustoAuth	Administrator	2020-06-25 02:14:50.36715+00	\N	1
+3	Lperez	1234	Luis	Perez	2020-07-10 21:33:16.894519+00	\N	2
+5	Aroca	1234	Alfredo	Roca	2020-07-10 21:34:11.340537+00	\N	3
+6	Cayala	1234	Cesar	Ayala	2020-07-10 21:34:33.200732+00	\N	5
+7	Asilvera	1234	Arturo	Silvera	2020-07-10 21:34:58.362282+00	\N	4
+4	Imendez	1234	Inocente	Méndez	2020-07-10 21:33:42.292717+00	2020-07-10 21:37:24.632878+00	6
+8	Admin	1234	Administrador	Administrador	2020-07-24 04:28:54.879424+00	\N	1
+\.
+
+
+--
+-- Data for Name: audit; Type: TABLE DATA; Schema: auth; Owner: postgres
+--
+
+COPY auth.audit (id, data, created_date, modificated_date, input, id_user, id_audit_type) FROM stdin;
+\.
+
+
+--
+-- Data for Name: object_type; Type: TABLE DATA; Schema: auth; Owner: postgres
+--
+
+COPY auth.object_type (id, name, created_date, modificated_date) FROM stdin;
+1	web	2020-06-25 01:45:36.695837+00	\N
+2	mobile	2020-06-25 01:45:36.695837+00	\N
+\.
+
+
+--
+-- Data for Name: object; Type: TABLE DATA; Schema: auth; Owner: postgres
+--
+
+COPY auth.object (id, name, created_date, modificated_date, id_object_type, display_name) FROM stdin;
+1	userControl	2020-06-25 01:49:55.673365+00	\N	1	User control
+2	forecastVentas	2020-07-07 02:13:01.442724+00	\N	1	Forecast ventas
+3	margenVentas	2020-07-07 02:13:15.256378+00	\N	1	Margen ventas
+4	planificacion	2020-07-07 02:13:29.012515+00	\N	1	Planificacion
+5	generarProgramacion	2020-07-07 02:13:44.088566+00	\N	1	Generar programacion
+6	consultarProgramacion	2020-07-07 02:13:59.815493+00	\N	1	Consultar programacion
+7	capacidadPlanta	2020-07-07 02:14:12.749645+00	\N	1	Capacidad planta
+8	cambioSKU	2020-07-07 02:14:24.56203+00	\N	1	Cambio sku
+9	jornadaLaboral	2020-07-07 02:14:37.258249+00	\N	1	Jornada laboral
+10	configurarPrioridad	2020-07-07 02:14:50.208513+00	\N	1	Configurar prioridad
+11	registrarNotificacion	2020-07-07 02:15:06.685599+00	\N	1	Registrar notificacion
+12	consultarNotificacion	2020-07-07 02:15:23.903597+00	\N	1	Consultar notificacion
+13	sincronizacion	2020-07-07 02:15:37.951387+00	\N	1	Sincronizacion
+14	controlUsuario	2020-07-09 03:19:24.057798+00	\N	1	Control de usuario
+15	ingresoMasivo	2020-07-09 03:38:04.128555+00	\N	1	Ingreso masivo
+16	demoraSKU	2020-07-09 03:44:11.941195+00	\N	1	Demora por sku
+\.
+
+
+--
+-- Data for Name: permission_type; Type: TABLE DATA; Schema: auth; Owner: postgres
+--
+
+COPY auth.permission_type (id, name, created_date, modificated_date) FROM stdin;
+1	total control	2020-06-25 01:43:28.679511+00	\N
+1	read	2020-06-25 01:43:28.679511+00	\N
+\.
+
+
+--
+-- Data for Name: permission; Type: TABLE DATA; Schema: auth; Owner: postgres
+--
+
+COPY auth.permission (id, name, created_date, modificated_date, id_permission_type, id_object) FROM stdin;
+1	User Manager	2020-06-25 01:52:21.867896+00	\N	1	1
+2	Forecast ventas	2020-07-07 02:15:56.278988+00	\N	1	2
+3	Margen ventas	2020-07-07 02:16:07.81624+00	\N	1	3
+4	Planificacion	2020-07-07 02:16:19.867279+00	\N	1	4
+5	Generar programacion	2020-07-07 02:16:33.699631+00	\N	1	5
+6	Consultar programacion	2020-07-07 02:16:48.322511+00	\N	1	6
+7	Capacidad planta	2020-07-07 02:17:02.316483+00	\N	1	7
+8	Cambio sku	2020-07-07 02:17:13.333483+00	\N	1	8
+9	Jornada laboral	2020-07-07 02:17:25.158339+00	\N	1	9
+10	Configurar prioridad	2020-07-07 02:17:36.122828+00	\N	1	10
+11	Registrar notificacion	2020-07-07 02:17:53.15977+00	\N	1	11
+12	Consultar notificacion	2020-07-07 02:18:05.384908+00	\N	1	12
+13	Sincronizacion	2020-07-07 02:18:14.487278+00	\N	1	13
+14	Control de usuario	2020-07-09 03:19:39.813959+00	\N	1	14
+15	Ingreso masivo	2020-07-09 03:38:22.930456+00	\N	1	15
+16	Demora por sku	2020-07-09 03:44:46.546181+00	\N	1	16
+\.
+
+
+--
+-- Data for Name: role_permission; Type: TABLE DATA; Schema: auth; Owner: postgres
+--
+
+COPY auth.role_permission (id, created_date, id_permission, id_role) FROM stdin;
+1	2020-06-25 01:53:52.809224+00	1	1
+2	2020-07-07 02:18:43.355816+00	2	1
+3	2020-07-07 02:18:43.360801+00	3	1
+4	2020-07-07 02:18:43.363174+00	4	1
+5	2020-07-07 02:18:43.365475+00	6	1
+6	2020-07-07 02:18:43.367825+00	5	1
+7	2020-07-07 02:18:43.369972+00	7	1
+8	2020-07-07 02:18:43.37221+00	8	1
+9	2020-07-07 02:18:43.374395+00	9	1
+10	2020-07-07 02:18:43.376678+00	10	1
+11	2020-07-07 02:18:43.378689+00	11	1
+12	2020-07-07 02:18:43.380739+00	12	1
+13	2020-07-07 02:18:43.382804+00	13	1
+14	2020-07-09 03:19:59.647315+00	14	1
+15	2020-07-09 03:35:11.538297+00	2	2
+16	2020-07-09 03:38:42.307014+00	15	1
+17	2020-07-09 03:40:39.75264+00	2	3
+18	2020-07-09 03:40:39.757315+00	3	3
+19	2020-07-09 03:40:39.761643+00	4	3
+20	2020-07-09 03:40:39.764962+00	15	3
+21	2020-07-09 03:46:28.177877+00	7	4
+22	2020-07-09 03:46:28.182032+00	9	4
+23	2020-07-09 03:46:28.18548+00	16	4
+24	2020-07-09 03:46:28.190173+00	5	4
+25	2020-07-09 03:46:28.193363+00	11	4
+26	2020-07-09 03:46:28.196655+00	12	4
+27	2020-07-09 03:46:28.199862+00	13	4
+28	2020-07-09 03:46:28.203121+00	10	4
+29	2020-07-09 03:46:28.206254+00	6	4
+30	2020-07-09 03:46:55.776436+00	6	5
+31	2020-07-10 21:31:52.889432+00	11	6
+32	2020-07-10 21:31:52.893819+00	12	6
+33	2020-07-11 00:20:24.936407+00	8	4
+34	2020-07-18 03:53:29.443892+00	15	4
+\.
+
+
+--
+-- Name: audit_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+--
+
+SELECT pg_catalog.setval('auth.audit_id_seq', 1, false);
+
+
+--
+-- Name: audit_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+--
+
+SELECT pg_catalog.setval('auth.audit_type_id_seq', 1, false);
+
+
+--
+-- Name: object_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+--
+
+SELECT pg_catalog.setval('auth.object_id_seq', 16, true);
+
+
+--
+-- Name: object_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+--
+
+SELECT pg_catalog.setval('auth.object_type_id_seq', 1, true);
+
+
+--
+-- Name: permission_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+--
+
+SELECT pg_catalog.setval('auth.permission_id_seq', 16, true);
+
+
+--
+-- Name: permission_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+--
+
+SELECT pg_catalog.setval('auth.permission_type_id_seq', 1, true);
+
+
+--
+-- Name: role_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+--
+
+SELECT pg_catalog.setval('auth.role_id_seq', 7, true);
+
+
+--
+-- Name: role_permission_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+--
+
+SELECT pg_catalog.setval('auth.role_permission_id_seq', 35, true);
+
+
+--
+-- Name: user_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
+--
+
+SELECT pg_catalog.setval('auth.user_id_seq', 9, true);
+
+
+--
+-- PostgreSQL database dump complete
+--
+

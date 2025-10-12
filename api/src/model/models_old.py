@@ -1,14 +1,14 @@
 # coding: utf-8
 from sqlalchemy import Boolean, Column, Date, Float, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 metadata = Base.metadata
 
 
 class BallotPaperBanco(Base):
-    __tablename__ = 'BallotPaper_Banco'
+    __tablename__ = "BallotPaper_Banco"
 
     id_banco = Column(String(10), primary_key=True)
     Descripcion = Column(String(200))
@@ -17,14 +17,14 @@ class BallotPaperBanco(Base):
 
 
 class BallotPaperDepartamento(Base):
-    __tablename__ = 'BallotPaper_Departamento'
+    __tablename__ = "BallotPaper_Departamento"
 
     id_departamento = Column(String(10), primary_key=True)
     Descripcion = Column(String(100))
 
 
 class BallotPaperEstado(Base):
-    __tablename__ = 'BallotPaper_Estado'
+    __tablename__ = "BallotPaper_Estado"
 
     id_estado = Column(String(10), primary_key=True)
     Descripcion = Column(String(100))
@@ -33,7 +33,7 @@ class BallotPaperEstado(Base):
 
 
 class BallotPaperLevantamiento(Base):
-    __tablename__ = 'BallotPaper_Levantamiento'
+    __tablename__ = "BallotPaper_Levantamiento"
 
     id_levantamiento = Column(String(10), primary_key=True)
     Descripcion = Column(String(100))
@@ -44,7 +44,7 @@ class BallotPaperLevantamiento(Base):
 
 
 class BallotPaperMesaParte(Base):
-    __tablename__ = 'BallotPaper_MesaPartes'
+    __tablename__ = "BallotPaper_MesaPartes"
 
     id_mesaPartes = Column(String(10), primary_key=True)
     Nro_expedienteTramite = Column(String(50))
@@ -57,14 +57,14 @@ class BallotPaperMesaParte(Base):
 
 
 class BallotPaperMunicipalidad(Base):
-    __tablename__ = 'BallotPaper_Municipalidad'
+    __tablename__ = "BallotPaper_Municipalidad"
 
     id_municipalidad = Column(String(10), primary_key=True)
     Descripcion = Column(String(200))
 
 
 class BallotPaperRetencionCuenta(Base):
-    __tablename__ = 'BallotPaper_Retencion_cuenta'
+    __tablename__ = "BallotPaper_Retencion_cuenta"
 
     id_retencion_cuenta = Column(String(10), primary_key=True)
     Descripcion = Column(String(100))
@@ -72,7 +72,7 @@ class BallotPaperRetencionCuenta(Base):
 
 
 class BallotPaperTipoResolucion(Base):
-    __tablename__ = 'BallotPaper_TipoResolucion'
+    __tablename__ = "BallotPaper_TipoResolucion"
 
     id_tipo = Column(String(10), primary_key=True)
     Descripcion = Column(String(100))
@@ -80,7 +80,7 @@ class BallotPaperTipoResolucion(Base):
 
 
 class BallotPaperUsuario(Base):
-    __tablename__ = 'BallotPaper_Usuario'
+    __tablename__ = "BallotPaper_Usuario"
 
     id_usuario = Column(String(10), primary_key=True)
     Descripcion = Column(String(10))
@@ -93,7 +93,7 @@ class BallotPaperUsuario(Base):
 
 
 class BallotPaperPapeleta(Base):
-    __tablename__ = 'BallotPaper_Papeleta'
+    __tablename__ = "BallotPaper_Papeleta"
 
     id_papeleta = Column(Integer, primary_key=True)
     id_municipalidad = Column(String(10))
@@ -109,24 +109,38 @@ class BallotPaperPapeleta(Base):
     id_distrito = Column(String(10))
     id_provincia = Column(String(10))
     id_departamento = Column(String(10))
-    id_municipalidad_BallotPaper_Municipalidad = Column(ForeignKey('BallotPaper_Municipalidad.id_municipalidad', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
+    id_municipalidad_BallotPaper_Municipalidad = Column(
+        ForeignKey(
+            "BallotPaper_Municipalidad.id_municipalidad",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        )
+    )
 
-    BallotPaper_Municipalidad = relationship('BallotPaperMunicipalidad')
+    BallotPaper_Municipalidad = relationship("BallotPaperMunicipalidad")
 
 
 class BallotPaperProvincia(Base):
-    __tablename__ = 'BallotPaper_Provincia'
+    __tablename__ = "BallotPaper_Provincia"
 
     id_provincia = Column(String(10), primary_key=True)
     Descripcion = Column(String(100))
     id_departamento = Column(String(10))
-    id_departamento_BallotPaper_Departamento = Column(ForeignKey('BallotPaper_Departamento.id_departamento', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
+    id_departamento_BallotPaper_Departamento = Column(
+        ForeignKey(
+            "BallotPaper_Departamento.id_departamento",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        )
+    )
 
-    BallotPaper_Departamento = relationship('BallotPaperDepartamento')
+    BallotPaper_Departamento = relationship("BallotPaperDepartamento")
 
 
 class BallotPaperRespuestaBanco(Base):
-    __tablename__ = 'BallotPaper_Respuesta_Banco'
+    __tablename__ = "BallotPaper_Respuesta_Banco"
 
     id_respuesta_banco = Column(String(10), primary_key=True)
     Descripcion = Column(String(100))
@@ -134,48 +148,76 @@ class BallotPaperRespuestaBanco(Base):
     Fec_envio_respuesta = Column(Date)
     importe = Column(Float)
     Nro_ingreso = Column(String(100), nullable=False)
-    id_retencion_cuenta_BallotPaper_Retencion_cuenta = Column(ForeignKey('BallotPaper_Retencion_cuenta.id_retencion_cuenta', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
+    id_retencion_cuenta_BallotPaper_Retencion_cuenta = Column(
+        ForeignKey(
+            "BallotPaper_Retencion_cuenta.id_retencion_cuenta",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        )
+    )
 
-    BallotPaper_Retencion_cuenta = relationship('BallotPaperRetencionCuenta')
+    BallotPaper_Retencion_cuenta = relationship("BallotPaperRetencionCuenta")
 
 
 class BallotPaperRetencionBanco(Base):
-    __tablename__ = 'BallotPaper_RetencionBanco'
+    __tablename__ = "BallotPaper_RetencionBanco"
 
     id_retencion_banco = Column(String(10), primary_key=True)
     Descripcion = Column(String(100), nullable=False)
     Fec_emision_oficio = Column(Date)
     Fec_notificacion_oficio = Column(Date)
     id_banco = Column(String(10))
-    id_retencion_cuenta_BallotPaper_Retencion_cuenta = Column(ForeignKey('BallotPaper_Retencion_cuenta.id_retencion_cuenta', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
+    id_retencion_cuenta_BallotPaper_Retencion_cuenta = Column(
+        ForeignKey(
+            "BallotPaper_Retencion_cuenta.id_retencion_cuenta",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        )
+    )
 
-    BallotPaper_Retencion_cuenta = relationship('BallotPaperRetencionCuenta')
+    BallotPaper_Retencion_cuenta = relationship("BallotPaperRetencionCuenta")
 
 
 class BallotPaperDetalleRptaBanco(Base):
-    __tablename__ = 'BallotPaper_DetalleRptaBanco'
+    __tablename__ = "BallotPaper_DetalleRptaBanco"
 
     id_detalleRptaBanco = Column(String(10), primary_key=True)
     Descripcion = Column(String(100))
-    id_respuesta_banco_BallotPaper_Respuesta_Banco = Column(ForeignKey('BallotPaper_Respuesta_Banco.id_respuesta_banco', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
+    id_respuesta_banco_BallotPaper_Respuesta_Banco = Column(
+        ForeignKey(
+            "BallotPaper_Respuesta_Banco.id_respuesta_banco",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        )
+    )
 
-    BallotPaper_Respuesta_Banco = relationship('BallotPaperRespuestaBanco')
+    BallotPaper_Respuesta_Banco = relationship("BallotPaperRespuestaBanco")
 
 
 class BallotPaperDistrito(Base):
-    __tablename__ = 'BallotPaper_Distrito'
+    __tablename__ = "BallotPaper_Distrito"
 
     id_distrito = Column(String(10), primary_key=True)
     Descripcion = Column(String(10))
     id_provincia = Column(String(10))
     id_departamento = Column(String(10))
-    id_provincia_BallotPaper_Provincia = Column(ForeignKey('BallotPaper_Provincia.id_provincia', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
+    id_provincia_BallotPaper_Provincia = Column(
+        ForeignKey(
+            "BallotPaper_Provincia.id_provincia",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        )
+    )
 
-    BallotPaper_Provincia = relationship('BallotPaperProvincia')
+    BallotPaper_Provincia = relationship("BallotPaperProvincia")
 
 
 class BallotPaperResolucion(Base):
-    __tablename__ = 'BallotPaper_Resolucion'
+    __tablename__ = "BallotPaper_Resolucion"
 
     id_resolucion = Column(String(10), primary_key=True)
     Nro_resolucion = Column(String(10))
@@ -189,15 +231,30 @@ class BallotPaperResolucion(Base):
     Nueva_direccion = Column(String(200), nullable=False)
     Pago_oportuno = Column(Float, nullable=False)
     id_banco = Column(String(10), nullable=False)
-    id_tipo_BallotPaper_TipoResolucion = Column(ForeignKey('BallotPaper_TipoResolucion.id_tipo', ondelete='SET NULL', onupdate='CASCADE', match='FULL'))
-    id_papeleta_BallotPaper_Papeleta = Column(ForeignKey('BallotPaper_Papeleta.id_papeleta', ondelete='SET NULL', onupdate='CASCADE', match='FULL'), unique=True)
+    id_tipo_BallotPaper_TipoResolucion = Column(
+        ForeignKey(
+            "BallotPaper_TipoResolucion.id_tipo",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        )
+    )
+    id_papeleta_BallotPaper_Papeleta = Column(
+        ForeignKey(
+            "BallotPaper_Papeleta.id_papeleta",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        ),
+        unique=True,
+    )
 
-    BallotPaper_Papeleta = relationship('BallotPaperPapeleta', uselist=False)
-    BallotPaper_TipoResolucion = relationship('BallotPaperTipoResolucion')
+    BallotPaper_Papeleta = relationship("BallotPaperPapeleta", uselist=False)
+    BallotPaper_TipoResolucion = relationship("BallotPaperTipoResolucion")
 
 
 class BallotPaperRC1(Base):
-    __tablename__ = 'BallotPaper_RC1'
+    __tablename__ = "BallotPaper_RC1"
 
     id_rc1 = Column(String(10), primary_key=True)
     nro_rc1 = Column(String(100))
@@ -216,13 +273,21 @@ class BallotPaperRC1(Base):
     RC1_Cancelacion_Monto = Column(Float, nullable=False)
     Fec_pago = Column(Date, nullable=False)
     id_banco = Column(String(10), nullable=False)
-    id_resolucion_BallotPaper_Resolucion = Column(ForeignKey('BallotPaper_Resolucion.id_resolucion', ondelete='SET NULL', onupdate='CASCADE', match='FULL'), unique=True)
+    id_resolucion_BallotPaper_Resolucion = Column(
+        ForeignKey(
+            "BallotPaper_Resolucion.id_resolucion",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        ),
+        unique=True,
+    )
 
-    BallotPaper_Resolucion = relationship('BallotPaperResolucion', uselist=False)
+    BallotPaper_Resolucion = relationship("BallotPaperResolucion", uselist=False)
 
 
 class BallotPaperRC2(Base):
-    __tablename__ = 'BallotPaper_RC2'
+    __tablename__ = "BallotPaper_RC2"
 
     id_rc2 = Column(String, primary_key=True)
     nro_rc2 = Column(String(100), nullable=False)
@@ -232,13 +297,21 @@ class BallotPaperRC2(Base):
     mto_pagado = Column(Float, nullable=False)
     Fec_pago = Column(Date, nullable=False)
     id_banco = Column(String(10), nullable=False)
-    id_rc1_BallotPaper_RC1 = Column(ForeignKey('BallotPaper_RC1.id_rc1', ondelete='SET NULL', onupdate='CASCADE', match='FULL'), unique=True)
+    id_rc1_BallotPaper_RC1 = Column(
+        ForeignKey(
+            "BallotPaper_RC1.id_rc1",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        ),
+        unique=True,
+    )
 
-    BallotPaper_RC1 = relationship('BallotPaperRC1', uselist=False)
+    BallotPaper_RC1 = relationship("BallotPaperRC1", uselist=False)
 
 
 class BallotPaperRC3(Base):
-    __tablename__ = 'BallotPaper_RC3'
+    __tablename__ = "BallotPaper_RC3"
 
     id_rc3 = Column(String(10), primary_key=True)
     Nro_rc3 = Column(String(50))
@@ -255,26 +328,42 @@ class BallotPaperRC3(Base):
     Nro_formato = Column(String(50))
     Fec_recojo_cheque = Column(Date)
     Persona_recojo_cheque = Column(String(100), nullable=False)
-    id_rc2_BallotPaper_RC2 = Column(ForeignKey('BallotPaper_RC2.id_rc2', ondelete='SET NULL', onupdate='CASCADE', match='FULL'), unique=True)
+    id_rc2_BallotPaper_RC2 = Column(
+        ForeignKey(
+            "BallotPaper_RC2.id_rc2",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        ),
+        unique=True,
+    )
 
-    BallotPaper_RC2 = relationship('BallotPaperRC2', uselist=False)
+    BallotPaper_RC2 = relationship("BallotPaperRC2", uselist=False)
 
 
 class BallotPaperRC4(Base):
-    __tablename__ = 'BallotPaper_RC4'
+    __tablename__ = "BallotPaper_RC4"
 
     id_rc4 = Column(String(10), primary_key=True)
     Descripcion = Column(String(100))
     Fec_emision_rc4 = Column(Date)
     Fec_notificacion_rc4 = Column(Date)
     Observaciones = Column(String(100), nullable=False)
-    id_rc3_BallotPaper_RC3 = Column(ForeignKey('BallotPaper_RC3.id_rc3', ondelete='SET NULL', onupdate='CASCADE', match='FULL'), unique=True)
+    id_rc3_BallotPaper_RC3 = Column(
+        ForeignKey(
+            "BallotPaper_RC3.id_rc3",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        ),
+        unique=True,
+    )
 
-    BallotPaper_RC3 = relationship('BallotPaperRC3', uselist=False)
+    BallotPaper_RC3 = relationship("BallotPaperRC3", uselist=False)
 
 
 class BallotPaperRC5(Base):
-    __tablename__ = 'BallotPaper_RC5'
+    __tablename__ = "BallotPaper_RC5"
 
     id_rc5 = Column(String(10), primary_key=True)
     Nro_rc5 = Column(String(50))
@@ -285,6 +374,14 @@ class BallotPaperRC5(Base):
     Fec_envio_notificacion_mail = Column(Date, nullable=False)
     Usuario_nofitica_mail = Column(String(100), nullable=False)
     id_estado = Column(String(10))
-    id_rc4_BallotPaper_RC4 = Column(ForeignKey('BallotPaper_RC4.id_rc4', ondelete='SET NULL', onupdate='CASCADE', match='FULL'), unique=True)
+    id_rc4_BallotPaper_RC4 = Column(
+        ForeignKey(
+            "BallotPaper_RC4.id_rc4",
+            ondelete="SET NULL",
+            onupdate="CASCADE",
+            match="FULL",
+        ),
+        unique=True,
+    )
 
-    BallotPaper_RC4 = relationship('BallotPaperRC4', uselist=False)
+    BallotPaper_RC4 = relationship("BallotPaperRC4", uselist=False)

@@ -12,6 +12,7 @@ RUN yarn install
 RUN yarn upgrade
 COPY ./ui /ui
 ENV GENERATE_SOURCEMAP=false
+RUN yarn list | grep react
 RUN yarn build
 RUN rm -rf ./src ./public ./node_modules webpack.config.js yarn.lock
 

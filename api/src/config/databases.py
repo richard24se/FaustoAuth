@@ -1,9 +1,9 @@
 import os
+
 from dotenv import load_dotenv
 
-
 load_dotenv()
-load_dotenv(verbose=True, dotenv_path='.env')
+load_dotenv(verbose=True, dotenv_path=".env")
 
 BP_USER = os.getenv("BP_USER")
 BP_PASS = os.getenv("BP_PASS")

@@ -1,38 +1,38 @@
 # LIBRARY LAYER
-from logging.config import dictConfig
-from flask import Flask, jsonify, request
-from flask_restful import Api, Resource
-from flask_cors import CORS
-from datetime import timedelta
-from flask import Flask, request, jsonify
-from flask_jwt_extended import (
-    JWTManager, create_access_token, create_refresh_token, get_jti,
-    jwt_refresh_token_required, get_jwt_identity, jwt_required, get_raw_jwt
-)
 import logging
-import jwt
-import redis
+from datetime import timedelta
+from logging.config import dictConfig
 
-from fausto.utils import tryWrapper, jsonVerify, jsonWrapper
+# import jwt
+import redis
+from auth.user import get_user_name, validate_user
+from config.jwt import JWT_KEY
+from controller.master import (
+    ApiAudit,
+    ApiAuditType,
+    ApiObject,
+    ApiObjectType,
+    ApiPermission,
+    ApiPermissionType,
+    ApiRole,
+    ApiRolePermission,
+    ApiUser,
+)
+from flask import Flask, request
+from flask_cors import CORS
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    create_refresh_token,
+    get_jti,
+    get_jwt_identity,
+    get_raw_jwt,
+    jwt_refresh_token_required,
+    jwt_required,
+)
+from flask_restful import Api, Resource
 
 # DB LAYER
-from model.config import SQLALCH_AUTH
-from config.jwt import JWT_KEY
-
-from auth.user import get_user_name, validate_user
-
-from controller.master import  (
-    ApiUser, 
-    ApiRole, 
-    ApiPermission, 
-    ApiPermissionType,
-    ApiObject, 
-    ApiObjectType, 
-    ApiAudit, 
-    ApiAuditType,
-    ApiRolePermission
-)
-
 
 # APP LAYER
 APP = Flask(__name__)
@@ -44,14 +44,14 @@ blacklist = set()
 
 
 # JWT LAYER
-APP.config['JWT_SECRET_KEY'] = JWT_KEY
-APP.config['JWT_BLACKLIST_ENABLED'] = True
-APP.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+APP.config["JWT_SECRET_KEY"] = JWT_KEY
+APP.config["JWT_BLACKLIST_ENABLED"] = True
+APP.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
 # JWT EXPIRES!
 ACCESS_EXPIRES = timedelta(minutes=15)
 REFRESH_EXPIRES = timedelta(days=1)
-APP.config['JWT_ACCESS_TOKEN_EXPIRES'] = ACCESS_EXPIRES
-APP.config['JWT_REFRESH_TOKEN_EXPIRES'] = REFRESH_EXPIRES
+APP.config["JWT_ACCESS_TOKEN_EXPIRES"] = ACCESS_EXPIRES
+APP.config["JWT_REFRESH_TOKEN_EXPIRES"] = REFRESH_EXPIRES
 jwt = JWTManager(APP)
 
 # LOGIC LAYER
@@ -59,83 +59,82 @@ jwt = JWTManager(APP)
 
 class Init(Resource):
     def get(self):
-        return {
-            'init': 'flask',
-            'msg': 'This is a get FaustoAuth App'
-        }
+        return {"init": "flask", "msg": "This is a get FaustoAuth App"}
 
     def post(self):
-        return {
-            'init': 'flask',
-            'msg': 'This is a post FaustoAuth App'
-        }
+        return {"init": "flask", "msg": "This is a post FaustoAuth App"}
 
 
 # REDIS LAYER
 revoked_store = redis.StrictRedis(
-    host='auth_cache', port=6379, db=0, decode_responses=True)
+    host="auth_cache", port=6379, db=0, decode_responses=True
+)
 
 
 # JWT LAYER LOGIC
 
-#-----> Change default
+
+# -----> Change default
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
-    jti = decrypted_token['jti']
+    jti = decrypted_token["jti"]
     entry = revoked_store.get(jti)
-    logging.debug("Token from redis cache: "+str(entry))
+    logging.debug("Token from redis cache: " + str(entry))
     if entry is None:
         return True
-    return entry == 'true'
+    return entry == "true"
+
 
 @jwt.invalid_token_loader
 def invalid_token(current_reason):
-    return {"msg": current_reason, 'error': True}
+    return {"msg": current_reason, "error": True}
+
 
 @jwt.revoked_token_loader
 def revoked_token():
-    return {"msg": "Token has been revoked", 'error': True}
-#----->
+    return {"msg": "Token has been revoked", "error": True}
+
+
+# ----->
+
 
 @jwt_refresh_token_required
 def refresh_token(self):
     current_user = get_jwt_identity()
     access_token = create_access_token(identity=current_user)
     access_jti = get_jti(encoded_token=access_token)
-    revoked_store.set(access_jti, 'false', ACCESS_EXPIRES * 1.2)
-    ret = {
-        'access_token': access_token,
-        'time': str(ACCESS_EXPIRES)
-    }
+    revoked_store.set(access_jti, "false", ACCESS_EXPIRES * 1.2)
+    ret = {"access_token": access_token, "time": str(ACCESS_EXPIRES)}
     cache_token_keys = revoked_store.keys()
     cache_token_value = revoked_store.mget(cache_token_keys)
-    logging.debug("Cache keys/values: " +
-                  str(dict(zip(cache_token_keys, cache_token_value))))
+    logging.debug(
+        "Cache keys/values: " + str(dict(zip(cache_token_keys, cache_token_value)))
+    )
     return ret
 
 
 @jwt_refresh_token_required
 def revoke__refresh_token(self):
-    jti = get_raw_jwt()['jti']
-    revoked_store.set(jti, 'true', REFRESH_EXPIRES * 1.2)
+    jti = get_raw_jwt()["jti"]
+    revoked_store.set(jti, "true", REFRESH_EXPIRES * 1.2)
     return {"msg": "Successfully logged out"}
 
 
 @jwt_required
 def revoke_access_token(self):
-    jti = get_raw_jwt()['jti']
-    revoked_store.set(jti, 'true', REFRESH_EXPIRES * 1.2)
+    jti = get_raw_jwt()["jti"]
+    revoked_store.set(jti, "true", REFRESH_EXPIRES * 1.2)
     return {"msg": "Successfully logged out"}
 
 
 @jwt_required
 def verify_token(self):
-    jti = get_raw_jwt()['jti']
+    jti = get_raw_jwt()["jti"]
     entry = revoked_store.get(jti)
-    logging.debug("Token from cache: "+str(entry))
+    logging.debug("Token from cache: " + str(entry))
     if entry is None:
         return False
-    elif entry == 'true':
+    elif entry == "true":
         return False
     else:
         return True
@@ -155,60 +154,63 @@ class Auth(Resource):
         logging.info(request)
         # VERIFY DATA
         if request.data:
-            logging.debug("Has data: "+str(request.data))
+            logging.debug("Has data: " + str(request.data))
             logging.debug("Has JSON data")
-            username = request.json.get('username', None)
-            password = request.json.get('password', None)
-            option = request.json.get('option', None)
+            username = request.json.get("username", None)
+            password = request.json.get("password", None)
+            option = request.json.get("option", None)
         else:
             logging.debug("Hasn't JSON data")
             return {"msg": "Please provide JSON"}
 
-        if option == 'login':
+        if option == "login":
             user_validade = validate_user(username, password)
             logging.debug(str(user_validade))
-            if user_validade.get('error'):
+            if user_validade.get("error"):
                 return user_validade
             access_token = create_access_token(identity=username)
             refresh_token = create_refresh_token(identity=username)
 
             ret = {
-                'access_token': access_token,
-                'refresh_token': refresh_token,
-                'error': False
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "error": False,
             }
             # save to cache
             access_jti = get_jti(encoded_token=access_token)
             refresh_jti = get_jti(encoded_token=refresh_token)
-            revoked_store.set(access_jti, 'false', ACCESS_EXPIRES * 1.2)
-            revoked_store.set(refresh_jti, 'false', REFRESH_EXPIRES * 1.2)
+            revoked_store.set(access_jti, "false", ACCESS_EXPIRES * 1.2)
+            revoked_store.set(refresh_jti, "false", REFRESH_EXPIRES * 1.2)
             cache_token_keys = revoked_store.keys()
             cache_token_value = revoked_store.mget(cache_token_keys)
 
-            logging.debug("Cache keys: "+str(cache_token_keys))
-            logging.debug("Cache values: "+str(cache_token_value))
-            logging.debug("Cache keys/values: " +
-                          str(dict(zip(cache_token_keys, cache_token_value))))
-            logging.debug("Response success login: "+str(ret))
+            logging.debug("Cache keys: " + str(cache_token_keys))
+            logging.debug("Cache values: " + str(cache_token_value))
+            logging.debug(
+                "Cache keys/values: "
+                + str(dict(zip(cache_token_keys, cache_token_value)))
+            )
+            logging.debug("Response success login: " + str(ret))
             return ret
-        elif option == 'refresh':
+        elif option == "refresh":
             return refresh_token(self)
         else:
             return {"msg": "Please provide valid option!"}
+
     @jwt_required
     def delete(self):
         logging.info(request)
         # VERIFY DATA
         if request.data:
-            logging.debug("Has data: "+str(request.data))
+            logging.debug("Has data: " + str(request.data))
             logging.debug("Has JSON data")
-            option = request.json.get('option', None)
+            option = request.json.get("option", None)
         else:
             logging.debug("Hasn't JSON data")
             return {"msg": "Please provide JSON"}
-        if option == 'access':
+        if option == "access":
             return revoke_access_token(self)
-        elif option == 'refresh':
+        elif option == "refresh":
             return revoke__refresh_token(self)
         else:
             return {"msg": "Please provide valid option!"}
@@ -218,7 +220,7 @@ class TestAuth(Resource):
     @jwt_required
     def get(self):
         logging.debug(str(self))
-        return {'username': str(get_jwt_identity())}
+        return {"username": str(get_jwt_identity())}
 
 
 class TestPermissionUser(Resource):
@@ -229,53 +231,61 @@ class TestPermissionUser(Resource):
 
 
 # URL LAYER
-API.add_resource(Init, '/')
-API.add_resource(Auth, '/auth')
-API.add_resource(TestAuth, '/test')
-API.add_resource(ApiUser, '/user', '/user/<int:id>')
-API.add_resource(ApiRole, '/role', '/role/<int:id>')
-API.add_resource(ApiRolePermission, '/role_permission', '/role_permission/<int:id>')
-API.add_resource(ApiPermission, '/permission', '/permission/<int:id>')
-API.add_resource(ApiPermissionType, '/permission_types',
-                 '/permission_types/<int:id>')
-API.add_resource(ApiObject, '/object', '/object/<int:id>')
-API.add_resource(ApiObjectType, '/object_types', '/object_types/<int:id>')
-API.add_resource(ApiAudit, '/audit', '/audit/<int:id>')
-API.add_resource(ApiAuditType, '/audit_types', '/audit_types/<int:id>')
-API.add_resource(TestPermissionUser, '/permission_user', '/permission_user/<int:id>')
+API.add_resource(Init, "/")
+API.add_resource(Auth, "/auth")
+API.add_resource(TestAuth, "/test")
+API.add_resource(ApiUser, "/user", "/user/<int:id>")
+API.add_resource(ApiRole, "/role", "/role/<int:id>")
+API.add_resource(ApiRolePermission, "/role_permission", "/role_permission/<int:id>")
+API.add_resource(ApiPermission, "/permission", "/permission/<int:id>")
+API.add_resource(ApiPermissionType, "/permission_types", "/permission_types/<int:id>")
+API.add_resource(ApiObject, "/object", "/object/<int:id>")
+API.add_resource(ApiObjectType, "/object_types", "/object_types/<int:id>")
+API.add_resource(ApiAudit, "/audit", "/audit/<int:id>")
+API.add_resource(ApiAuditType, "/audit_types", "/audit_types/<int:id>")
+API.add_resource(TestPermissionUser, "/permission_user", "/permission_user/<int:id>")
 
 
 # DEBUG
 DEBUG = True
 
-FORMAT = '[%(asctime)s] %(levelname)s in %(module)s:%(filename)s on line ->%(lineno)d %(message)s' if DEBUG == True else '[%(asctime)s] %(levelname)s in %(module)s:%(filename)s %(message)s'
+FORMAT = (
+    "[%(asctime)s] %(levelname)s in %(module)s:%(filename)s on line ->%(lineno)d %(message)s"
+    if DEBUG
+    else "[%(asctime)s] %(levelname)s in %(module)s:%(filename)s %(message)s"
+)
 
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': FORMAT,
-    }},
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'default'
-    }},
-    'loggers': {
-        '': {  # root logger
-            'level': 'DEBUG' if DEBUG == True else 'INFO',
-            'handlers': ['wsgi'],
-            # 'propagate': False
+dictConfig(
+    {
+        "version": 1,
+        "formatters": {
+            "default": {
+                "format": FORMAT,
+            }
         },
-        'sqlalchemy.engine': {
-            'level': 'ERROR' if DEBUG == True else 'ERROR',
-            'handlers': ['wsgi'],
-            'propagate': False
-        }
+        "handlers": {
+            "wsgi": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://flask.logging.wsgi_errors_stream",
+                "formatter": "default",
+            }
+        },
+        "loggers": {
+            "": {  # root logger
+                "level": "DEBUG" if DEBUG else "INFO",
+                "handlers": ["wsgi"],
+                # 'propagate': False
+            },
+            "sqlalchemy.engine": {
+                "level": "DEBUG" if DEBUG else "ERROR",
+                "handlers": ["wsgi"],
+                "propagate": False,
+            },
+        },
     }
-})
+)
 
 
 # SERVE LAYER
-if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
-
+if __name__ == "__main__":
+    APP.run(host="0.0.0.0", port=5000, debug=True, threaded=True)

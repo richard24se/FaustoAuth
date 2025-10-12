@@ -1,13 +1,16 @@
-
-
-import logging
-from fastapi import APIRouter, Depends
-from fastapi import Body
-
 from auth.handlers import JWTBearer
-from fausto.fapi import Response
-from auth.service.object import get_object, get_objects, create_object, update_object, delete_object, get_object_role
 from auth.model.pydantic import PydanticObject
+from auth.service.object import (
+    create_object,
+    delete_object,
+    get_object,
+    get_object_role,
+    get_objects,
+    update_object,
+)
+from fausto.fapi import Response
+
+from fastapi import APIRouter, Body, Depends
 
 router = APIRouter(
     prefix="/object",
@@ -42,5 +45,6 @@ async def updating_object(object_id: int, object=Body(...)):
 @router.delete("/{object_id}", response_model=Response)
 async def deleting_object(object_id: int):
     return delete_object(object_id)
+
 
 router_object = router

@@ -1,13 +1,8 @@
-
-
-import logging
-from fastapi import APIRouter, Depends
-from fastapi import Body
-
 from auth.handlers import JWTBearer
-from fausto.fapi import Response
 from auth.service.role_permission import get_role_permission
-from auth.model.pydantic import PydanticRole
+from fausto.fapi import Response
+
+from fastapi import APIRouter, Depends
 
 router = APIRouter(
     prefix="/role_permission",
@@ -15,7 +10,6 @@ router = APIRouter(
     dependencies=[Depends(JWTBearer())],
     responses={404: {"description": "Not found"}},
 )
-
 
 
 @router.get("/", response_model=Response)

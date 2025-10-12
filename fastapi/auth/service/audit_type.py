@@ -1,9 +1,10 @@
-from config.databases import SQLALCH_AUTH
+import logging
+
 from auth.model.models import AuditType
-from fausto.sqlalch import sqlaPurge, format_dict_sqlalch, quick_format_sqlalch, sqlalch_wrapper, get_fields_sqlalch
+from config.databases import SQLALCH_AUTH
 from fausto import ControllerError
 from fausto.fapi import fapi_wrapper
-import logging
+from fausto.sqlalch import quick_format_sqlalch, sqlalch_wrapper
 
 
 @fapi_wrapper
@@ -29,7 +30,7 @@ def update_audit_type(s, id, data):
 @sqlalch_wrapper(sqlalch=SQLALCH_AUTH)
 def delete_audit_type(s, id):
     state = s.query(AuditType).filter(AuditType.id == id).delete()
-    logging.debug("SQLALCH state: "+str(state))
+    logging.debug("SQLALCH state: " + str(state))
     s.commit()
     if state:
         return "Deleted successful!"
@@ -42,8 +43,7 @@ def delete_audit_type(s, id):
 def get_audit_type(s, id):
     audit_type = s.query(AuditType).filter(AuditType.id == id).first()
     if audit_type:
-        logging.debug("SQLALCH AuditType: " +
-                      str(quick_format_sqlalch(audit_type)))
+        logging.debug("SQLALCH AuditType: " + str(quick_format_sqlalch(audit_type)))
         audit_type_dict = quick_format_sqlalch(audit_type)
         return "Audit type was found!", audit_type_dict
     else:
@@ -55,7 +55,7 @@ def get_audit_type(s, id):
 def get_audit_types(s):
     audit_types = s.query(AuditType).order_by(AuditType.id).all()
     if audit_types:
-        logging.debug("SQLALCH AuditType: "+str(audit_types))
+        logging.debug("SQLALCH AuditType: " + str(audit_types))
         audit_types_dict = [quick_format_sqlalch(i) for i in audit_types]
         return "Audit types were found!", audit_types_dict
     else:

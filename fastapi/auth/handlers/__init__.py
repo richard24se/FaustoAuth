@@ -1,1 +1,3 @@
-from .jwt import *
+from .jwt import JWTBearer
+
+__all__ = ["JWTBearer"]

@@ -1,22 +1,36 @@
 # DB LAYER
-from model.config import SQLALCH_AUTH
-
-from model.models import User, Role, Permission, PermissionType, Object, ObjectType, RolePermission
-from fausto.utils import tryWrapper, sqlaPurge, format_dict_sqlalch, quick_format_sqlalch, sqlalchWrapper, ControllerError, get_fields_sqlalch, get_columns_sqlalch, get_prefix_fields_sqlalch
 import logging
+from datetime import datetime
 
+from fausto.utils import (
+    ControllerError,
+    get_prefix_fields_sqlalch,
+    quick_format_sqlalch,
+    sqlalchWrapper,
+    tryWrapper,
+)
+from model.models import (
+    Object,
+    ObjectType,
+    Permission,
+    PermissionType,
+    Role,
+    RolePermission,
+    User,
+)
 from sqlalchemy import desc
 
-from datetime import datetime
-import datetime as dt
 
 @tryWrapper
 @sqlalchWrapper
 def create_user(s, data):
-    duplicate_username = s.query(User).filter_by(
-        username=data.get('username')).one_or_none()
+    duplicate_username = (
+        s.query(User).filter_by(username=data.get("username")).one_or_none()
+    )
     if duplicate_username:
-        raise ControllerError("the username already exists: '"+data.get('username')+"'")
+        raise ControllerError(
+            "the username already exists: '" + data.get("username") + "'"
+        )
     new_user = User(**data)
     s.add(new_user)
     s.commit()
@@ -28,40 +42,48 @@ def create_user(s, data):
 def update_user(s, id, data):
     if id is None:
         raise ControllerError("Send id!")
-    super_user = s.query(User).filter(User.id ==id).first()
+    super_user = s.query(User).filter(User.id == id).first()
     if super_user.username == "admin@faustoauth.app":
         raise ControllerError("Cannot update super-user")
-    duplicate_username = s.query(User).filter(User.username==data.get('username'), User.id!=id).one_or_none()
+    duplicate_username = (
+        s.query(User)
+        .filter(User.username == data.get("username"), User.id != id)
+        .one_or_none()
+    )
     if duplicate_username:
-        raise ControllerError("the username already exists: '"+data.get('username')+"'")
-    data['modificated_date'] = datetime.utcnow()
+        raise ControllerError(
+            "the username already exists: '" + data.get("username") + "'"
+        )
+    data["modificated_date"] = datetime.utcnow()
     s.query(User).filter_by(id=id).update(data)
     s.commit()
     return "Update successful!"
 
-@tryWrapper
-@sqlalchWrapper
-def delete_user(s, id):
-    super_user = s.query(User).filter(User.id==id).first()
-    if super_user and super_user.username == "admin@faustoauth.app":
-        raise ControllerError("Cannot delete super-user")
-    state = s.query(User).filter(User.id==id).delete()
-    logging.debug("SQLALCH state: "+str(state))
-    s.commit()
-    if state:
-        return "Deleted successful!"
-    else: 
-        raise ControllerError("The record has already been deleted!")
 
 @tryWrapper
 @sqlalchWrapper
-def get_user(s,id):
-    user = s.query(User).filter(User.id==id).first()
+def delete_user(s, id):
+    super_user = s.query(User).filter(User.id == id).first()
+    if super_user and super_user.username == "admin@faustoauth.app":
+        raise ControllerError("Cannot delete super-user")
+    state = s.query(User).filter(User.id == id).delete()
+    logging.debug("SQLALCH state: " + str(state))
+    s.commit()
+    if state:
+        return "Deleted successful!"
+    else:
+        raise ControllerError("The record has already been deleted!")
+
+
+@tryWrapper
+@sqlalchWrapper
+def get_user(s, id):
+    user = s.query(User).filter(User.id == id).first()
     if user:
-        logging.debug("SQLALCH user: "+str(quick_format_sqlalch(user)))
+        logging.debug("SQLALCH user: " + str(quick_format_sqlalch(user)))
         user_dict = quick_format_sqlalch(user)
         return "User was found!", user_dict
-    else: 
+    else:
         raise ControllerError("User not found!")
 
 
@@ -69,32 +91,49 @@ def get_user(s,id):
 @sqlalchWrapper
 def get_user_name(s, username):
     logging.debug(str(username))
-    user_fields= get_prefix_fields_sqlalch(['id','username'], User, 'user_')    
-    role_fields= get_prefix_fields_sqlalch(['id','name'], Role, 'role_')
-    user = (s.query(*user_fields, *role_fields)
-            .join(User,(User.id_role==Role.id))
-            .filter(User.username==username).one_or_none())
+    user_fields = get_prefix_fields_sqlalch(["id", "username"], User, "user_")
+    role_fields = get_prefix_fields_sqlalch(["id", "name"], Role, "role_")
+    user = (
+        s.query(*user_fields, *role_fields)
+        .join(User, (User.id_role == Role.id))
+        .filter(User.username == username)
+        .one_or_none()
+    )
     if user:
-        user_dict = quick_format_sqlalch(user)       
-        role_permission_fields= get_prefix_fields_sqlalch(['id'], RolePermission, 'rol_permission_')
-        permission_fields= get_prefix_fields_sqlalch(['id'], Permission, 'permission_')
-        permission_type_fields= get_prefix_fields_sqlalch(['id','name'], PermissionType, 'permission_type_')
-        object_fields= get_prefix_fields_sqlalch(['id','name'], Object, 'object_')
-        object_type_fields= get_prefix_fields_sqlalch(['id','name'], ObjectType, 'object_type_')
-        permission = (s.query(*role_permission_fields, *permission_fields, *permission_type_fields, *object_fields, *object_type_fields)
-                .join(Permission,(Permission.id==RolePermission.id_permission))
-                .join(PermissionType,(PermissionType.id==Permission.id_permission_type))
-                .join(Object,(Object.id==Permission.id_object))
-                .join(ObjectType,(ObjectType.id==Object.id_object_type))
-                .filter(RolePermission.id_role==user.role_id).all())
-        
+        user_dict = quick_format_sqlalch(user)
+        role_permission_fields = get_prefix_fields_sqlalch(
+            ["id"], RolePermission, "rol_permission_"
+        )
+        permission_fields = get_prefix_fields_sqlalch(["id"], Permission, "permission_")
+        permission_type_fields = get_prefix_fields_sqlalch(
+            ["id", "name"], PermissionType, "permission_type_"
+        )
+        object_fields = get_prefix_fields_sqlalch(["id", "name"], Object, "object_")
+        object_type_fields = get_prefix_fields_sqlalch(
+            ["id", "name"], ObjectType, "object_type_"
+        )
+        permission = (
+            s.query(
+                *role_permission_fields,
+                *permission_fields,
+                *permission_type_fields,
+                *object_fields,
+                *object_type_fields
+            )
+            .join(Permission, (Permission.id == RolePermission.id_permission))
+            .join(PermissionType, (PermissionType.id == Permission.id_permission_type))
+            .join(Object, (Object.id == Permission.id_object))
+            .join(ObjectType, (ObjectType.id == Object.id_object_type))
+            .filter(RolePermission.id_role == user.role_id)
+            .all()
+        )
+
         if permission:
-            user_dict['permission'] = [
-                quick_format_sqlalch(i) for i in permission]
+            user_dict["permission"] = [quick_format_sqlalch(i) for i in permission]
 
         logging.debug(str(user_dict))
         return "User was found!", user_dict
-    else: 
+    else:
         raise ControllerError("User not found!")
 
 
@@ -102,7 +141,7 @@ def get_user_name(s, username):
 @sqlalchWrapper
 def validate_user(s, username, password):
     logging.debug(str(username))
-    user = s.query(User).filter(User.username== username).first()
+    user = s.query(User).filter(User.username == username).first()
     if not user:
         raise ControllerError("User doesn't exist!")
     elif user.password != password:
@@ -116,8 +155,8 @@ def validate_user(s, username, password):
 def get_users(s):
     users = s.query(User).order_by(desc(User.id)).all()
     if users:
-        logging.debug("SQLALCH user: "+str(users))
-        users_dict = [ quick_format_sqlalch(i) for i in users]
+        logging.debug("SQLALCH user: " + str(users))
+        users_dict = [quick_format_sqlalch(i) for i in users]
         return "Users were found!", users_dict
-    else: 
+    else:
         raise ControllerError("No users found!", [])

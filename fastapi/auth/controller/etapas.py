@@ -1,17 +1,19 @@
-import logging
-from fastapi import APIRouter, Depends
-from fastapi import Body
-from pydantic import BaseModel
-from typing import Optional, Any, Union
+from typing import Optional
 
-from auth.handler_jwt import JWTBearer
+from pydantic import BaseModel
+from reclutamiento.service.etapas import (
+    obtener_etapas,
+    obtener_grupo_etapas,
+    obtener_postulantes,
+)
 from utils.fastapi import Response
-from reclutamiento.service.etapas import obtener_etapas, obtener_grupo_etapas, obtener_postulantes
+
+from fastapi import APIRouter, Body
+
 router = APIRouter(
     prefix="/etapas",
     tags=["etapas"],
     # dependencies=[Depends(JWTBearer())],
-
     responses={404: {"description": "Not found"}},
 )
 
@@ -27,20 +29,26 @@ async def read_items():
     respuesta = Response(**data)
     return respuesta
 
+
 @router.get("/grupos_postulantes", response_model=Response)
 async def read_obtener_grupo_etapas(fecha: str):
     data = obtener_grupo_etapas(fecha)
     respuesta = Response(**data)
     return respuesta
 
+
 @router.get("/postulantes", response_model=Response)
-async def read_obtener_postulantes(grupo_postulante_id: str = None, etapa_id: int= None):
+async def read_obtener_postulantes(
+    grupo_postulante_id: str = None, etapa_id: int = None
+):
     data = obtener_postulantes(grupo_postulante_id, etapa_id)
     respuesta = Response(**data)
     return respuesta
 
+
 @router.post("/")
-async def insert_item(etapa: Etapa, test_id: Optional[int] = None,  body=Body(...)):
+async def insert_item(etapa: Etapa, test_id: Optional[int] = None, body=Body(...)):
     return body
+
 
 router_etapas = router

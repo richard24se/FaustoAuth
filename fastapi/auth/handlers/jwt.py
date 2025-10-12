@@ -1,8 +1,9 @@
 import logging
-from fastapi import Request, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from fausto.jwt import decode_auth_token
+
+from fastapi import HTTPException, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 
 class JWTBearer(HTTPBearer):
@@ -10,21 +11,25 @@ class JWTBearer(HTTPBearer):
         super(JWTBearer, self).__init__(auto_error=auto_error)
 
     async def __call__(self, request: Request):
-        credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
+        credentials: HTTPAuthorizationCredentials = await super(
+            JWTBearer, self
+        ).__call__(request)
         if credentials:
             if not credentials.scheme == "Bearer":
                 raise HTTPException(
-                    status_code=403, detail="Invalid authentication scheme.")
+                    status_code=403, detail="Invalid authentication scheme."
+                )
             # if not self.verify_jwt(credentials.credentials):
-            if self.verify_jwt(credentials.credentials).get('error') == True:
-                msg = "Invalid token or expired token."
+            if self.verify_jwt(credentials.credentials).get("error") == True:
+                # msg = "Invalid token or expired token."
                 raise HTTPException(
-                    status_code=403, detail=dict(**self.verify_jwt(credentials.credentials)))
-                return {"failure": True}
+                    status_code=403,
+                    detail=dict(**self.verify_jwt(credentials.credentials)),
+                )
+                # return {"failure": True}
             return credentials.credentials
         else:
-            raise HTTPException(
-                status_code=403, detail="Invalid authorization code.")
+            raise HTTPException(status_code=403, detail="Invalid authorization code.")
 
     def verify_jwt(self, jwtoken: str) -> dict:
         payload: dict = {}
@@ -38,9 +43,9 @@ class JWTBearer(HTTPBearer):
             else:
                 is_token_valid = False
                 msg = payload
-            payload = {'error': not is_token_valid, 'msg': msg}
+            payload = {"error": not is_token_valid, "msg": msg}
         except Exception as err:
             logging.exception(err)
-            payload = {'error': True, 'msg': str(err)}
+            payload = {"error": True, "msg": str(err)}
 
         return payload

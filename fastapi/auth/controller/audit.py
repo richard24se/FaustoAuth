@@ -1,13 +1,15 @@
-
-
-import logging
-from fastapi import APIRouter, Depends
-from fastapi import Body
-
 from auth.handlers import JWTBearer
-from fausto.fapi import Response
-from auth.service.audit import get_audit, get_audits, create_audit, update_audit, delete_audit
 from auth.model.pydantic import PydanticAudit
+from auth.service.audit import (
+    create_audit,
+    delete_audit,
+    get_audit,
+    get_audits,
+    update_audit,
+)
+from fausto.fapi import Response
+
+from fastapi import APIRouter, Body, Depends
 
 router = APIRouter(
     prefix="/audit",
@@ -41,4 +43,7 @@ async def updating_audit(audit_id: int, audit=Body(...)):
 async def deleting_audit(audit_id: int):
     return delete_audit(audit_id)
 
+
 router_audit = router
+
+__all__ = ["router_audit"]

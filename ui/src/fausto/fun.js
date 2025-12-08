@@ -1,5 +1,5 @@
 
-import XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 
 function sleeper(ms) {
   return function (x) {

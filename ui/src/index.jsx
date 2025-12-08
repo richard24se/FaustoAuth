@@ -1,8 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { ThemeProvider } from "@material-ui/styles";
-import { CssBaseline } from "@material-ui/core";
-import { StylesProvider } from '@material-ui/core/styles';
+import { createRoot } from 'react-dom/client';
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+
 
 import Themes from "./themes";
 import App from "./components/App";
@@ -13,7 +14,7 @@ import { LayoutProvider } from "./context/LayoutContext";
 // CHANGES TO ADD REDUX SUPPORT
 import { Provider } from 'react-redux';
 
-import { store } from 'redux/store';
+import { store } from 'store/store';
 
 // Setup fake backend
 //import { configureFakeBackend } from './redux/testing/fake-backend.js';
@@ -21,31 +22,12 @@ import { store } from 'redux/store';
 //notistack
 import { SnackbarProvider } from "notistack";
 import classnames from "classnames";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import { withStyles } from "@material-ui/core/styles";
+import CircularProgress from "@mui/material/CircularProgress";
 
-// import Loader from './loader'
-
-const IconCircularProgress = withStyles({
-  root: {
-    color: "#fff",
-    padding: "2px",
-    marginRight: "10px"
-  }
-})((props) => {
-  const { classes, className } = props;
-  return (
-    <CircularProgress
-      className={classnames(classes.root, className)}
-      size={30}
-      thickness={5}
-    />
-  );
-});
 
 console.log( process.env )
 
-ReactDOM.hydrate(
+createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <SnackbarProvider
       anchorOrigin={{
@@ -54,21 +36,18 @@ ReactDOM.hydrate(
 
       }}
       iconVariant={{
-        default: <IconCircularProgress />
+        default: <CircularProgress size={30} thickness={5} style={{ color: "#fff", padding: "2px", marginRight: "10px" }} />
       }}>
       <LayoutProvider>
         {/*<UserProvider>*/}
         <ThemeProvider theme={Themes.default}>
           <CssBaseline />
-          <StylesProvider injectFirst>
             <App />
-          </StylesProvider>
         </ThemeProvider>
         {/*</UserProvider>*/}
       </LayoutProvider>
     </SnackbarProvider>
   </Provider>,
-  document.getElementById("root"),
 );
 
 // ReactDOM.hydrate(

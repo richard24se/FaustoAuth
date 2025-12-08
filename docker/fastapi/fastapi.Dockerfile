@@ -1,5 +1,8 @@
 FROM python:3.12-alpine
 ENV PYTHONUNBUFFERED 1
+# DO NOT RUN WITH -u or -O, they break normal debugging interaction
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONFAULTHANDLER=1
 WORKDIR /fastapi
 #time zone
 RUN apk add tzdata

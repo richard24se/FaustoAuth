@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import Grid from '@material-ui/core/Grid';
-import SaveIcon from '@material-ui/icons/Save';
+import Grid from '@mui/material/Grid';
+import SaveIcon from '@mui/icons-material/Save';
 
-import Paper from "@material-ui/core/Paper";
-import Typography from '@material-ui/core/Typography';
+import Paper from "@mui/material/Paper";
+import Typography from '@mui/material/Typography';
 
 //STYLE
-import { withStyles } from '@material-ui/styles';
+import { withStyles } from '@mui/styles';
 import style from './style'
 
 import Widget from "../../components/Widget";

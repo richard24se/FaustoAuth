@@ -5,32 +5,33 @@ import {
   Menu,
   MenuItem,
   Typography,
-} from "@material-ui/core";
-import { MoreVert as MoreIcon } from "@material-ui/icons";
+} from "@mui/material";
+import { MoreVert as MoreIcon } from "@mui/icons-material";
 import classnames from "classnames";
 
 // styles
-import useStyles from "./styles";
+import { StyledWidgetWrapper, StyledWidgetHeader, StyledWidgetRoot, StyledWidgetBody, StyledMoreButton } from "./styles";
 
 export default function Widget({
   children,
   title,
   noBodyPadding,
   bodyClass,
+  bodySx, // New prop
   disableWidgetMenu,
   header,
   ...props
 }) {
-  var classes = useStyles();
-
   // local
   var [moreButtonRef, setMoreButtonRef] = useState(null);
   var [isMoreMenuOpen, setMoreMenuOpen] = useState(false);
-
+  /*
+  overflow unset works with oversized lists
+  */
   return (
-    <div className={classes.widgetWrapper}>
-      <Paper className={classes.paper} classes={{ root: classes.widgetRoot }}  style={{overflow: props.overflow ? props.overflow : "absolute"  }}>
-        <div className={classes.widgetHeader}>
+    <StyledWidgetWrapper>
+      <StyledWidgetRoot style={{overflow: props.overflow ? props.overflow : "absolute"  }}>
+        <StyledWidgetHeader>
           {header ? (
             header
           ) : (
@@ -39,29 +40,27 @@ export default function Widget({
                 {title}
               </Typography>
               {!disableWidgetMenu && (
-                <IconButton
+                <StyledMoreButton
                   color="primary"
-                  classes={{ root: classes.moreButton }}
                   aria-owns="widget-menu"
                   aria-haspopup="true"
                   onClick={() => setMoreMenuOpen(true)}
                   buttonRef={setMoreButtonRef}
                 >
                   <MoreIcon />
-                </IconButton>
+                </StyledMoreButton>
               )}
             </React.Fragment>
           )}
-        </div>
-        <div
-          className={classnames(classes.widgetBody, {
-            [classes.noPadding]: noBodyPadding,
-            [bodyClass]: bodyClass,
-          })}
+        </StyledWidgetHeader>
+        <StyledWidgetBody
+          isNoPadding={noBodyPadding}
+          className={bodyClass}
+          sx={bodySx} // Apply new prop
         >
           {children}
-        </div>
-      </Paper>
+        </StyledWidgetBody>
+      </StyledWidgetRoot>
       <Menu
         id="widget-menu"
         open={isMoreMenuOpen}
@@ -82,6 +81,6 @@ export default function Widget({
           <Typography>Print</Typography>
         </MenuItem>
       </Menu>
-    </div>
+    </StyledWidgetWrapper>
   );
 }

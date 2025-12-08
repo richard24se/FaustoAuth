@@ -1,30 +1,24 @@
 import React from "react";
-import { Button } from "@material-ui/core";
+import { Button } from "@mui/material";
 
 // styles
-import useStyles from "./styles";
-
-// components
-import { Typography } from "../Wrappers";
+import { StyledPageTitleContainer, StyledTypography, StyledButton } from "./styles";
 
 export default function PageTitle(props) {
-  var classes = useStyles();
-
   return (
-    <div className={classes.pageTitleContainer}>
-      <Typography className={classes.typo} variant="h2" size="sm">
+    <StyledPageTitleContainer>
+      <StyledTypography variant="h2" size="sm">
         {props.title}
-      </Typography>
+      </StyledTypography>
       {props.button && (
-        <Button
-          classes={{ root: classes.button }}
+        <StyledButton
           variant="contained"
           size="large"
           color="secondary"
         >
           {props.button}
-        </Button>
+        </StyledButton>
       )}
-    </div>
+    </StyledPageTitleContainer>
   );
 }

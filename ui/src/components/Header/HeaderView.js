@@ -8,7 +8,7 @@ import {
   MenuItem,
   Fab,
   withStyles
-} from "@material-ui/core";
+} from "@mui/material";
 import {
   Menu as MenuIcon,
   MailOutline as MailIcon,
@@ -17,8 +17,8 @@ import {
   Search as SearchIcon,
   Send as SendIcon,
   ArrowBack as ArrowBackIcon
-} from "@material-ui/icons";
-import { fade } from "@material-ui/core/styles/colorManipulator";
+} from "@mui/icons-material";
+import { fade } from "@mui/material/styles/colorManipulator";
 import classNames from "classnames";
 
 import { Badge, Typography } from "../Wrappers";

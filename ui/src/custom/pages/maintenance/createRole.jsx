@@ -1,13 +1,12 @@
 import React, { Component } from "react";
-import Grid from '@material-ui/core/Grid';
-import SaveIcon from '@material-ui/icons/Save';
+import Grid from '@mui/material/Grid';
+import SaveIcon from '@mui/icons-material/Save';
 
-import Paper from "@material-ui/core/Paper";
-import Typography from '@material-ui/core/Typography';
+import Paper from "@mui/material/Paper";
+import Typography from '@mui/material/Typography';
 
-//STYLE
-import { withStyles } from '@material-ui/styles';
-import style from './style'
+
+
 
 import Widget from "components/Widget";
 import {
@@ -19,8 +18,8 @@ import { Fotch, capitalize, authHeader } from 'fausto'
 
 //Redux
 import { connect } from 'react-redux';
-import { fotchActions } from 'redux/actions'
-import { mapDispatchToPropsNoti } from "redux/dispatchs"
+import { fotchActions } from 'store/actions'
+import { mapDispatchToPropsNoti } from "store/dispatchs"
 // import moment from "moment";
 
 //COMPONENTS
@@ -554,6 +553,6 @@ class createRole_ extends Component {
     }
 }
 const mapDispatchToProps = (dispatch) => ({ ...mapDispatchToPropsNoti(dispatch), dispatch })
-const createRole = withStyles(style)(createRole_)
+const createRole = createRole_
 const connectedComponent = connect(null, mapDispatchToProps)(createRole)
 export { connectedComponent as createRole };

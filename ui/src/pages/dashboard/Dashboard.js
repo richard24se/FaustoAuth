@@ -5,8 +5,8 @@ import {
   Select,
   OutlinedInput,
   MenuItem,
-} from "@material-ui/core";
-import { useTheme } from "@material-ui/styles";
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -22,7 +22,7 @@ import {
 } from "recharts";
 
 // styles
-import useStyles from "./styles";
+import { StyledCard, StyledVisitsNumberContainer, StyledProgressSection, StyledProgressTitle, StyledProgress, StyledPieChartLegendWrapper, StyledLegendItemContainer, StyledFullHeightBody, StyledFullHeightBodyStyles, StyledTableWidget, StyledTableWidgetStyles, StyledProgressBar, StyledPerformanceLegendWrapper, StyledLegendElement, StyledLegendElementText, StyledServerOverviewElement, StyledServerOverviewElementText, StyledServerOverviewElementChartWrapper, StyledMainChartBody, StyledMainChartBodyStyles, StyledMainChartHeader, StyledMainChartHeaderLabels, StyledMainChartHeaderLabel, StyledMainChartSelectRoot, StyledMainChartLegendElement } from "./styles";
 
 // components
 import mock from "./mock";
@@ -42,7 +42,6 @@ const PieChartData = [
 ];
 
 export default function Dashboard(props) {
-  var classes = useStyles();
   var theme = useTheme();
 
   // local
@@ -56,10 +55,10 @@ export default function Dashboard(props) {
           <Widget
             title="Visits Today"
             upperTitle
-            bodyClass={classes.fullHeightBody}
-            className={classes.card}
+            bodySx={StyledFullHeightBodyStyles({ theme })}
+            as={StyledCard}
           >
-            <div className={classes.visitsNumberContainer}>
+            <StyledVisitsNumberContainer>
               <Typography size="xl" weight="medium">
                 12, 678
               </Typography>
@@ -83,7 +82,7 @@ export default function Dashboard(props) {
                   dot={false}
                 />
               </LineChart>
-            </div>
+            </StyledVisitsNumberContainer>
             <Grid
               container
               direction="row"
@@ -115,81 +114,74 @@ export default function Dashboard(props) {
           <Widget
             title="App Performance"
             upperTitle
-            className={classes.card}
-            bodyClass={classes.fullHeightBody}
+            as={StyledCard}
+            bodySx={StyledFullHeightBodyStyles({ theme })}
           >
-            <div className={classes.performanceLegendWrapper}>
-              <div className={classes.legendElement}>
+            <StyledPerformanceLegendWrapper>
+              <StyledLegendElement>
                 <Dot color="warning" />
-                <Typography
+                <StyledLegendElementText
                   color="text"
                   colorBrightness="secondary"
-                  className={classes.legendElementText}
                 >
                   Integration
-                </Typography>
-              </div>
-              <div className={classes.legendElement}>
+                </StyledLegendElementText>
+              </StyledLegendElement>
+              <StyledLegendElement>
                 <Dot color="primary" />
-                <Typography
+                <StyledLegendElementText
                   color="text"
                   colorBrightness="secondary"
-                  className={classes.legendElementText}
                 >
                   SDK
-                </Typography>
-              </div>
-            </div>
-            <div className={classes.progressSection}>
-              <Typography
+                </StyledLegendElementText>
+              </StyledLegendElement>
+            </StyledPerformanceLegendWrapper>
+            <StyledProgressSection>
+              <StyledProgressTitle
                 size="md"
                 color="text"
                 colorBrightness="secondary"
-                className={classes.progressSectionTitle}
               >
                 Integration
-              </Typography>
-              <LinearProgress
+              </StyledProgressTitle>
+              <StyledProgress
                 variant="determinate"
                 value={30}
-                classes={{ barColorPrimary: classes.progressBar }}
-                className={classes.progress}
+                barColor={theme.palette.warning.main}
               />
-            </div>
-            <div>
-              <Typography
+            </StyledProgressSection>
+            <StyledProgressSection>
+              <StyledProgressTitle
                 size="md"
                 color="text"
                 colorBrightness="secondary"
-                className={classes.progressSectionTitle}
               >
                 SDK
-              </Typography>
-              <LinearProgress
+              </StyledProgressTitle>
+              <StyledProgress
                 variant="determinate"
                 value={55}
-                classes={{ barColorPrimary: classes.progressBar }}
-                className={classes.progress}
+                barColor={theme.palette.warning.main}
               />
-            </div>
+            </StyledProgressSection>
           </Widget>
         </Grid>
         <Grid item lg={3} md={8} sm={6} xs={12}>
           <Widget
             title="Server Overview"
             upperTitle
-            className={classes.card}
-            bodyClass={classes.fullHeightBody}
+            as={StyledCard}
+            bodySx={StyledFullHeightBodyStyles({ theme })}
           >
-            <div className={classes.serverOverviewElement}>
-              <Typography
+            <StyledServerOverviewElement>
+              <StyledServerOverviewElementText
                 color="text"
                 colorBrightness="secondary"
-                className={classes.serverOverviewElementText}
               >
                 60% / 37°С / 3.3 Ghz
-              </Typography>
-              <div className={classes.serverOverviewElementChartWrapper}>
+              </StyledServerOverviewElementText>
+              <StyledServerOverviewElementChartWrapper>
                 <ResponsiveContainer height={50} width="99%">
                   <AreaChart data={getRandomData(10)}>
                     <Area
@@ -202,17 +194,16 @@ export default function Dashboard(props) {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
-            <div className={classes.serverOverviewElement}>
-              <Typography
+              </StyledServerOverviewElementChartWrapper>
+            </StyledServerOverviewElement>
+            <StyledServerOverviewElement>
+              <StyledServerOverviewElementText
                 color="text"
                 colorBrightness="secondary"
-                className={classes.serverOverviewElementText}
               >
                 54% / 31°С / 3.3 Ghz
-              </Typography>
-              <div className={classes.serverOverviewElementChartWrapper}>
+              </StyledServerOverviewElementText>
+              <StyledServerOverviewElementChartWrapper>
                 <ResponsiveContainer height={50} width="99%">
                   <AreaChart data={getRandomData(10)}>
                     <Area
@@ -225,17 +216,16 @@ export default function Dashboard(props) {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
-            <div className={classes.serverOverviewElement}>
-              <Typography
+              </StyledServerOverviewElementChartWrapper>
+            </StyledServerOverviewElement>
+            <StyledServerOverviewElement>
+              <StyledServerOverviewElementText
                 color="text"
                 colorBrightness="secondary"
-                className={classes.serverOverviewElementText}
               >
                 57% / 21°С / 3.3 Ghz
-              </Typography>
-              <div className={classes.serverOverviewElementChartWrapper}>
+              </StyledServerOverviewElementText>
+              <StyledServerOverviewElementChartWrapper>
                 <ResponsiveContainer height={50} width="99%">
                   <AreaChart data={getRandomData(10)}>
                     <Area
@@ -248,12 +238,12 @@ export default function Dashboard(props) {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
+              </StyledServerOverviewElementChartWrapper>
+            </StyledServerOverviewElement>
           </Widget>
         </Grid>
         <Grid item lg={3} md={4} sm={6} xs={12}>
-          <Widget title="Revenue Breakdown" upperTitle className={classes.card}>
+          <Widget title="Revenue Breakdown" upperTitle as={StyledCard}>
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <ResponsiveContainer width="100%" height={144}>
@@ -275,9 +265,9 @@ export default function Dashboard(props) {
                 </ResponsiveContainer>
               </Grid>
               <Grid item xs={6}>
-                <div className={classes.pieChartLegendWrapper}>
+                <StyledPieChartLegendWrapper>
                   {PieChartData.map(({ name, value, color }, index) => (
-                    <div key={color} className={classes.legendItemContainer}>
+                    <StyledLegendItemContainer key={color}>
                       <Dot color={color} />
                       <Typography style={{ whiteSpace: "nowrap" }}>
                         &nbsp;{name}&nbsp;
@@ -285,18 +275,18 @@ export default function Dashboard(props) {
                       <Typography color="text" colorBrightness="secondary">
                         &nbsp;{value}
                       </Typography>
-                    </div>
+                    </StyledLegendItemContainer>
                   ))}
-                </div>
+                </StyledPieChartLegendWrapper>
               </Grid>
             </Grid>
           </Widget>
         </Grid>
         <Grid item xs={12}>
           <Widget
-            bodyClass={classes.mainChartBody}
+            bodySx={StyledMainChartBodyStyles({ theme })}
             header={
-              <div className={classes.mainChartHeader}>
+              <StyledMainChartHeader>
                 <Typography
                   variant="h5"
                   color="text"
@@ -304,36 +294,32 @@ export default function Dashboard(props) {
                 >
                   Daily Line Chart
                 </Typography>
-                <div className={classes.mainChartHeaderLabels}>
-                  <div className={classes.mainChartHeaderLabel}>
+                <StyledMainChartHeaderLabels>
+                  <StyledMainChartHeaderLabel>
                     <Dot color="warning" />
-                    <Typography className={classes.mainChartLegentElement}>
+                    <StyledMainChartLegendElement>
                       Tablet
-                    </Typography>
-                  </div>
-                  <div className={classes.mainChartHeaderLabel}>
+                    </StyledMainChartLegendElement>
+                  </StyledMainChartHeaderLabel>
+                  <StyledMainChartHeaderLabel>
                     <Dot color="primary" />
-                    <Typography className={classes.mainChartLegentElement}>
+                    <StyledMainChartLegendElement>
                       Mobile
-                    </Typography>
-                  </div>
-                  <div className={classes.mainChartHeaderLabel}>
+                    </StyledMainChartLegendElement>
+                  </StyledMainChartHeaderLabel>
+                  <StyledMainChartHeaderLabel>
                     <Dot color="primary" />
-                    <Typography className={classes.mainChartLegentElement}>
+                    <StyledMainChartLegendElement>
                       Desktop
-                    </Typography>
-                  </div>
-                </div>
+                    </StyledMainChartLegendElement>
+                  </StyledMainChartHeaderLabel>
+                </StyledMainChartHeaderLabels>
                 <Select
                   value={mainChartState}
                   onChange={e => setMainChartState(e.target.value)}
                   input={
-                    <OutlinedInput
+                    <StyledMainChartSelectRoot
                       labelWidth={0}
-                      classes={{
-                        notchedOutline: classes.mainChartSelectRoot,
-                        input: classes.mainChartSelect,
-                      }}
                     />
                   }
                   autoWidth
@@ -342,7 +328,7 @@ export default function Dashboard(props) {
                   <MenuItem value="weekly">Weekly</MenuItem>
                   <MenuItem value="monthly">Monthly</MenuItem>
                 </Select>
-              </div>
+              </StyledMainChartHeader>
             }
           >
             <ResponsiveContainer width="100%" minWidth={500} height={350}>
@@ -402,7 +388,7 @@ export default function Dashboard(props) {
             title="Support Requests"
             upperTitle
             noBodyPadding
-            bodyClass={classes.tableWidget}
+            bodySx={StyledTableWidgetStyles({ theme })}
           >
             <Table data={mock.table} />
           </Widget>

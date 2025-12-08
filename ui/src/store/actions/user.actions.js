@@ -2,7 +2,8 @@ import { userConstants } from '../constants';
 import { alertConstants } from '../constants';
 import { userService } from '../services';
 import { alertActions } from './';
-import { authHeader, history } from '../helpers';
+import { history } from 'store/helpers';
+import { authHeader } from 'store/helpers';
 
 export const userActions = {
     login,
@@ -16,11 +17,11 @@ export const userActions = {
 
 function save_user(information) { return { type: userConstants.SAVE_USER_INFO, information } }
 function clean_user() { return { type: userConstants.CLEAN_USER_INFO } }
-function login(username, password, location) {
+function login(username, password, location, history) {
     console.log("EN EL LOGIN NORMAL")
     return dispatch => {
         dispatch(request({ username }));
-        dispatch(alertActions.loading("Cargando..."));
+        dispatch(alertActions.loading("Loading..."));
         userService.login(username, password)
             .then(
                 obj => {
@@ -30,7 +31,7 @@ function login(username, password, location) {
                         const { data: { sistemas, ...credentials }, msg } = response
                         const { access_token } = credentials
                         localStorage.setItem('user_tokens', JSON.stringify(response.data));
-                        dispatch(validate_role(username, location))
+                        dispatch(validate_role(username, location, history))
                         // dispatch(success({ username, access_token }));
                         // dispatch(save_user({ permissions: sistemas, credentials }))
                         // localStorage.setItem('user', JSON.stringify({ username, access_token }));
@@ -63,7 +64,7 @@ function login(username, password, location) {
     function failure(error) { return { type: userConstants.LOGIN_FAILURE, error } }
 }
 
-function validate_role(username, location) {
+function validate_role(username, location, history) {
     return dispatch => {
         userService.permissions(username, (obj) => {
             if (!obj.error && obj.response.data.role_name === "Admin") {

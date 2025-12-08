@@ -1,4 +1,4 @@
-version: '3'
+version: "3.9"
 
 services:
   db:
@@ -31,20 +31,20 @@ services:
       driver: none
   # api:
   #   container_name: auth_api
-  #   build: 
+  #   build:
   #     context: .
   #     dockerfile: ./docker/api/api.Dockerfile
   #   volumes:
   #     - ./api/src:/api/src
   #     - ./api/src/.env:/api/src/.env
-  #   command: >    
+  #   command: >
   #     sh -c "more .env && python run.py"
   #   restart: always
   #   ports:
   #     - "5111:5000"
   fastapi:
     container_name: auth_fastapi
-    build: 
+    build:
       context: .
       dockerfile: ./docker/fastapi/fastapi.Dockerfile
     volumes:
@@ -55,6 +55,15 @@ services:
     restart: always
     ports:
       - "9024:5000"
+    stdin_open: true # <-- REQUIRED for breakpoint()
+    tty: true
+    environment:
+      PYTHONUNBUFFERED: "1"
+      PYTHONFAULTHANDLER: "1"
+      DB_HOST: auth_db_postgres
+      DB_PORT: 5432
+      REDIS_HOST: auth_cache
+
     depends_on:
       - db
       - db_admin
@@ -64,4 +73,5 @@ services:
     container_name: auth_cache
     expose:
       - 6379
-
+    ports:
+      - "6379:6379"

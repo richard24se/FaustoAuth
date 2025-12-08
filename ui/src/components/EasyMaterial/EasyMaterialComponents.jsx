@@ -2,39 +2,41 @@ import React, { Component, PureComponent, memo } from 'react';
 
 
 
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+
+import FormHelperText from '@mui/material/FormHelperText';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 // import clsx from 'clsx';
-import Input from '@material-ui/core/Input';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import Input from '@mui/material/Input';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-import TextField from '@material-ui/core/TextField';
-import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
 
 //PICKERS => DATE AND TIME
 import 'date-fns';
 import {
-    MuiPickersUtilsProvider,
-    KeyboardTimePicker,
-    KeyboardDatePicker,
-} from '@material-ui/pickers';
+    LocalizationProvider,
+    TimePicker,
+    DatePicker,
+} from '@mui/lab';
 //import DateFnsUtils from '@date-io/date-fns';
 import MomentUtils from "@date-io/moment";
 import moment from "moment";
 import "moment/locale/es";
 
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 
 import { SingleSelect as ReactSingleSelect, MultiSelect as ReactMultiSelect } from './ReactAutoSelect'
 
 import MaterialTable from '../../components/EasyMaterial/MaterialTable';
 
 import MUIDataTable from '../../components/EasyMaterial/MuiDataTable';
+import MUIDataTableX from '../../components/EasyMaterial/MuiDataTableX';
 
 import SwipTabs from '../../components/EasyMaterial/SwipTabs'
 
@@ -42,31 +44,44 @@ import Snackbar from '../../components/EasyMaterial/Snackbar'
 
 // import { Tree } from '../../components/EasyMaterial/EasyTree'
 
-import Slider from '@material-ui/core/Slider';
+import Slider from '@mui/material/Slider';
 
 //DIALOG
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 //FORM DIALOG
-import MuiDialogTitle from '@material-ui/core/DialogTitle';
-import MuiDialogContent from '@material-ui/core/DialogContent';
-import MuiDialogActions from '@material-ui/core/DialogActions';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
-import Typography from '@material-ui/core/Typography';
+import MuiDialogTitle from '@mui/material/DialogTitle';
+import MuiDialogContent from '@mui/material/DialogContent';
+import MuiDialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import Typography from '@mui/material/Typography';
 
 //STYLE
-import classnames from "classnames";
-import { createMuiTheme, withStyles } from '@material-ui/core/styles';
-import style from './style'
-import { ThemeProvider } from '@material-ui/styles';
+import { styled } from '@mui/material/styles';
+
+import {
+    StyledRoot,
+    StyledFormControl,
+    StyledSelect,
+    StyledInput,
+    selectEmpty, // This is a style object, not a styled component
+    StyledFormInput,
+    StyledTextField,
+    StyledPicker,
+    StyledTextArea,
+    StyledButton,
+    StyledSlimButton,
+    StyledSlider,
+    StyledBaseColorsContainer,
+} from './style'
 
 import { colors } from '../../themes/colors'
 
-import Slide from '@material-ui/core/Slide';
+import Slide from '@mui/material/Slide';
 
 const capitalize = (s) => {
     if (typeof s !== 'string') return ''
@@ -88,9 +103,8 @@ class EasySelect_ extends Component {
     }*/
 
     render() {
-        const { classes } = this.props;
         return (
-            <FormControl className={classes.select}>
+            <StyledSelect as={FormControl}>
                 <InputLabel htmlFor="age-helper">{capitalize(this.props.name)}</InputLabel>
                 <Select
                     value={this.props.state}
@@ -107,7 +121,7 @@ class EasySelect_ extends Component {
                     ))}
                 </Select>
                 {this.props.state === "" ? (<FormHelperText>Eliga un valor {this.props.name}</FormHelperText>) : (null)}
-            </FormControl>
+            </StyledSelect>
         );
     }
 }
@@ -149,7 +163,6 @@ class EasyTextField_ extends Component {
         const newProps = { ...this.props };
         delete newProps.color;
         delete newProps.type;
-        delete newProps.classes
         delete newProps.handle
         delete newProps.press
         delete newProps.pressKey
@@ -157,15 +170,12 @@ class EasyTextField_ extends Component {
         delete newProps.endAdornment
 
 
-        const { classes } = this.props;
-
         switch (this.props.type) {
             case 'readonly':
                 return (
-                    <TextField
+                    <StyledTextField
                         id="standard-read-only-input"
                         label={this.props.label ? this.props.label : capitalize(this.props.name)}
-                        className={classes.textField}
                         margin="normal"
                         InputProps={{
                             readOnly: true,
@@ -179,10 +189,9 @@ class EasyTextField_ extends Component {
                 );
             case 'textfield':
                 return (
-                    <TextField
+                    <StyledTextField
                         id="standard-text-input"
                         label={this.props.label ? this.props.label : capitalize(this.props.name)}
-                        className={classes.textField}
                         margin="normal"
                         InputProps={{
                             name: this.props.name,
@@ -213,9 +222,9 @@ class EasyTextField_ extends Component {
                 );
             case 'password':
                 return (
-                    <FormControl className={classes.formInput}>
+                    <StyledFormInput as={FormControl}>
                         <InputLabel htmlFor="standard-adornment-password">{this.props.label}</InputLabel>
-                        <Input className={classes.textField}
+                        <StyledInput
                             id="standard-adornment-password"
                             type={this.state.showPassword ? 'text' : 'password'}
                             // margin="normal"
@@ -235,11 +244,11 @@ class EasyTextField_ extends Component {
                             }
                         />
                         <FormHelperText id="component-helper-text">{this.props.helperText}</FormHelperText>
-                    </FormControl>
+                    </StyledFormInput>
                 );
             case 'textarea':
                 return (
-                    <TextField
+                    <StyledTextArea
                         id="standard-multiline-flexible"
                         label={this.props.label ? this.props.label : capitalize(this.props.name)}
                         multiline
@@ -253,7 +262,6 @@ class EasyTextField_ extends Component {
                             name: this.props.name,
                         }}
                         value={this.props.state}
-                        className={classes.textArea}
                         margin="dense"
                         variant="outlined"
                         fullWidth
@@ -303,7 +311,7 @@ class EasyPicker_ extends Component {
 
     render() {
         //const newProps = {...this.props};
-        const { type, classes, formatDate, handle, ...newProps } = this.props;
+        const { type, formatDate, handle, ...newProps } = this.props;
         // delete newProps.type;
         // delete newProps.classes;
         // delete newProps.formatDate;
@@ -311,42 +319,44 @@ class EasyPicker_ extends Component {
         switch (this.props.type) {
             case 'time':
                 return (
-                    <MuiPickersUtilsProvider utils={(MomentUtils)} libInstance={moment} locale={this.locale}>
-                        <KeyboardTimePicker
-                            margin="normal"
-                            id="time-picker"
-                            label={this.props.label ? this.props.label : capitalize(this.props.name)}
-                            value={this.props.state}
-                            onChange={(date) => this.props.handle(date, this.props.name)}
-                            KeyboardButtonProps={{
-                                'aria-label': 'change time',
-                            }}
-                            cancelLabel="Cancelar"
-                            className={classes.picker}
-                            {...newProps}
-                        />
-                    </MuiPickersUtilsProvider>
+                    <LocalizationProvider utils={(MomentUtils)} libInstance={moment} locale={this.locale}>
+                        <StyledPicker>
+                            <TimePicker
+                                margin="normal"
+                                id="time-picker"
+                                label={this.props.label ? this.props.label : capitalize(this.props.name)}
+                                value={this.props.state}
+                                onChange={(date) => this.props.handle(date, this.props.name)}
+                                KeyboardButtonProps={{
+                                    'aria-label': 'change time',
+                                }}
+                                cancelLabel="Cancelar"
+                                {...newProps}
+                            />
+                        </StyledPicker>
+                    </LocalizationProvider >
                 );
             case 'date':
                 return (
-                    <MuiPickersUtilsProvider utils={(MomentUtils)} libInstance={moment} locale={this.locale}>
-                        <KeyboardDatePicker
-                            margin="normal"
-                            id="date-picker"
-                            label={this.props.label ? this.props.label : capitalize(this.props.name)}
-                            value={this.props.state}
-                            onChange={(date) => this.props.handle(date, this.props.name)}
-                            KeyboardButtonProps={{
-                                'aria-label': 'change time',
-                            }}
-                            cancelLabel="Cancelar"
-                            className={classes.picker}
-                            format={this.props.formatDate ? this.props.formatDate : "YYYY/MM/DD"}
-                            views={this.props.views ? this.props.views : ["year", "month", "date"]}
-                            {...newProps}
-                        />
+                    <LocalizationProvider utils={(MomentUtils)} libInstance={moment} locale={this.locale}>
+                        <StyledPicker>
+                            <DatePicker
+                                margin="normal"
+                                id="date-picker"
+                                label={this.props.label ? this.props.label : capitalize(this.props.name)}
+                                value={this.props.state}
+                                onChange={(date) => this.props.handle(date, this.props.name)}
+                                KeyboardButtonProps={{
+                                    'aria-label': 'change time',
+                                }}
+                                cancelLabel="Cancelar"
+                                format={this.props.formatDate ? this.props.formatDate : "YYYY/MM/DD"}
+                                views={this.props.views ? this.props.views : ["year", "month", "date"]}
+                                {...newProps}
+                            />
+                        </StyledPicker>
                         {/*views={this.props.views ? this.props.views : ["year","date","month"]}*/}
-                    </MuiPickersUtilsProvider>
+                    </LocalizationProvider >
                 );
             default:
                 return "No existe tipo de TextField";
@@ -372,75 +382,33 @@ class EasyButton_ extends PureComponent {
         const newProps = { ...this.props };
         delete newProps.color;
         delete newProps.type;
-        delete newProps.classes
         delete newProps.handle
         //console.log(newProps);
-
-        const { classes } = this.props;
-
-        const classy = classnames(
-            classes.button//, classes[this.props.color]
-        )
-        const classySlim = classnames(
-            //classes.button, classes.slimButton, classes[this.props.color]
-            classes.button, classes.slimButton
-        )
-
-        const theme = this.props.color ? createMuiTheme(colors(this.props.color)) : false;
 
         switch (this.props.type) {
             case 'text':
                 return (
-                    theme
-                        ?
-                        <ThemeProvider theme={theme}>
-                            <Button color="primary"
-                                className={classy} {...newProps}
-                            >
-                                {this.props.label}
-                            </Button>
-                        </ThemeProvider>
-                        :
-                        <Button color="primary"
-                            className={classy} {...newProps}
-                        >
-                            {this.props.label}
-                        </Button>
+                    <StyledButton variant="text" color="primary"
+                        {...newProps}
+                    >
+                        {this.props.label}
+                    </StyledButton>
                 );
             case 'contained':
                 return (
-                    theme ?
-                        <ThemeProvider theme={theme}>
-                            <Button variant="contained" color="primary"
-                                className={classy} {...newProps}
-                            >
-                                {this.props.label}
-                            </Button>
-                        </ThemeProvider>
-                        :
-                        <Button variant="contained" color="primary"
-                            className={classy} {...newProps}
-                        >
-                            {this.props.label}
-                        </Button>
+                    <StyledButton variant="contained" color="primary"
+                        {...newProps}
+                    >
+                        {this.props.label}
+                    </StyledButton>
                 );
             case 'slim':
                 return (
-                    theme
-                        ?
-                        <ThemeProvider theme={theme}>
-                            <Button variant="contained" color="primary"
-                                className={classySlim} {...newProps}
-                            >
-                                {this.props.label}
-                            </Button>
-                        </ThemeProvider>
-                        :
-                        <Button variant="contained" color="primary"
-                            className={classySlim} {...newProps}
-                        >
-                            {this.props.label}
-                        </Button>
+                    <StyledSlimButton variant="contained" color="primary"
+                        {...newProps}
+                    >
+                        {this.props.label}
+                    </StyledSlimButton>
                 );
             case 'file':
                 var filetype = null
@@ -457,7 +425,6 @@ class EasyButton_ extends PureComponent {
                     <>
                         <input
                             accept={filetype}
-                            className={classes.input}
                             id={"contained-button-file-" + this.unique_id}
                             multiple
                             type="file"
@@ -465,20 +432,11 @@ class EasyButton_ extends PureComponent {
                             onChange={this.props.handle}
                         />
                         <label htmlFor={"contained-button-file-" + this.unique_id}>
-                            {theme ?
-                                <ThemeProvider theme={theme}>
-                                    <Button variant="contained" color="primary" component="span"
-                                        className={classy} {...newProps}
-                                    >
-                                        {this.props.label}
-                                    </Button>
-                                </ThemeProvider>
-                                :
-                                <Button variant="contained" color="primary" component="span"
-                                    className={classy} {...newProps}
-                                >
-                                    {this.props.label}
-                                </Button>}
+                            <StyledButton variant="contained" color="primary" component="span"
+                                {...newProps}
+                            >
+                                {this.props.label}
+                            </StyledButton>
                         </label>
                     </>
 
@@ -494,7 +452,7 @@ class EasyButton_ extends PureComponent {
 class EasyAutoSelect_ extends Component { //RSE Pendiente revisión de performance
     constructor(props) {
         super(props);
-        this.dataset = [{ id: 0, label: "No records" , disabled: true}]
+        this.dataset = [{ id: 0, label: "No records", disabled: true }]
     }
     mappingDataset = () => {
         return this.props.dataset.map(item => ({ value: item.id, label: item.value }))
@@ -508,15 +466,14 @@ class EasyAutoSelect_ extends Component { //RSE Pendiente revisión de performan
         return this.props.dataset !== nextProps.dataset || this.props.state !== nextProps.state; //props que cambian, sólo con esas se renderiza
     }
     render() {
-        const { classes } = this.props;
         switch (this.props.type) {
             case 'single':
                 return (
-                    <ReactSingleSelect name={this.props.name} state={this.props.state} handle={this.props.handle} label={this.props.label} placeholder="Write..." dataset={ this.props.dataset && this.props.dataset.length !== 0 ? this.mappingDataset() : this.dataset} className={classes.autoSelect} maxMenu={this.props.maxMenu} />
+                    <ReactSingleSelect name={this.props.name} state={this.props.state} handle={this.props.handle} label={this.props.label} placeholder="Write..." dataset={ this.props.dataset && this.props.dataset.length !== 0 ? this.mappingDataset() : this.dataset} maxMenu={this.props.maxMenu} />
                 );
             case 'multi':
                 return (
-                    <ReactMultiSelect name={this.props.name} state={this.props.state} handle={this.props.handle} label={this.props.label} placeholder="Write..." dataset={this.props.dataset && this.props.dataset.length !== 0 ? this.mappingDataset() : this.dataset} className={classes.autoSelect} maxMenu={this.props.maxMenu} />
+                    <ReactMultiSelect name={this.props.name} state={this.props.state} handle={this.props.handle} label={this.props.label} placeholder="Write..." dataset={this.props.dataset && this.props.dataset.length !== 0 ? this.mappingDataset() : this.dataset} maxMenu={this.props.maxMenu} className={this.props.className} />
                 );
             default:
                 return "Auto Select type doesn't exist";
@@ -579,7 +536,7 @@ class EasyMuiDataTable_ extends Component {
     render() {
 
         return (
-            <MUIDataTable
+            <MUIDataTableX
                 title={this.props.title}
                 state={this.props.state}
                 handle={this.props.handle}
@@ -610,45 +567,38 @@ class EasyMuiDataTable_ extends Component {
 //JUST DIALOG
 
 //Form dialog components
-const styles = theme => ({
-    root: {
-        margin: 0,
-        padding: theme.spacing(2),
-    },
-    closeButton: {
-        position: 'absolute',
-        right: theme.spacing(1),
-        top: theme.spacing(1),
-        color: theme.palette.grey[500],
-    },
-});
-
-const FormDialogTitle = withStyles(styles)(memo(props => {
-    const { children, classes, onClose, ...other } = props;
-    return (
-        <MuiDialogTitle disableTypography className={classes.root} {...other}>
-            <Typography variant="h6">{children}</Typography>
-            {onClose ? (
-                <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
-                    <CloseIcon />
-                </IconButton>
-            ) : null}
-        </MuiDialogTitle>
-    );
+const StyledDialogTitle = styled(MuiDialogTitle)(({ theme }) => ({
+    margin: 0,
+    padding: theme.spacing(2),
+    position: 'relative',
 }));
 
-const FormDialogContent = withStyles(theme => ({
-    root: {
-        padding: theme.spacing(2),
-    },
-}))(MuiDialogContent);
+const CloseButton = styled(IconButton)(({ theme }) => ({
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+}));
 
-const FormDialogActions = withStyles(theme => ({
-    root: {
-        margin: 0,
-        padding: theme.spacing(1),
-    },
-}))(MuiDialogActions);
+const FormDialogTitle = memo(({ children, onClose, ...other }) => (
+    <StyledDialogTitle disableTypography {...other}>
+        <Typography variant="h6">{children}</Typography>
+        {onClose ? (
+            <CloseButton aria-label="close" onClick={onClose}>
+                <CloseIcon />
+            </CloseButton>
+        ) : null}
+    </StyledDialogTitle>
+));
+
+const FormDialogContent = styled(MuiDialogContent)(({ theme }) => ({
+    padding: theme.spacing(2),
+}));
+
+const FormDialogActions = styled(MuiDialogActions)(({ theme }) => ({
+    margin: 0,
+    padding: theme.spacing(1),
+}));
 
 
 class EasyDialog_ extends Component {
@@ -714,7 +664,7 @@ class EasyDialog_ extends Component {
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions> {/*style={{justifyContent: 'center'}}*/}
-                            <EasyButton label="OK" onClick={this.handleAlert} type="text" color="green" />
+                            <EasyButton_ label="OK" onClick={this.handleAlert} type="text" color="green" />
                         </DialogActions>
                     </Dialog>
                 );
@@ -733,8 +683,8 @@ class EasyDialog_ extends Component {
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions>
-                            <EasyButton label="No" onClick={() => this.handleOK(false)} type="text" color="red" />
-                            <EasyButton label="Sí" onClick={() => this.handleOK(true)} type="text" color="green" />
+                            <EasyButton_ label="No" onClick={() => this.handleOK(false)} type="text" color="red" />
+                            <EasyButton_ label="Sí" onClick={() => this.handleOK(true)} type="text" color="green" />
                         </DialogActions>
                     </Dialog>
                 );
@@ -759,7 +709,7 @@ class EasyDialog_ extends Component {
                             {InnerComponent ? <InnerComponent state={this.props.state} handle={this.props.handle} /> : "No se envió componente"}
                         </FormDialogContent>
                         <FormDialogActions>
-                            <EasyButton label={formNameButton ? formNameButton : "Guardar"} onClick={() => this.handleOK(true)} type="text" color="green" />
+                            <EasyButton_ label={formNameButton ? formNameButton : "Guardar"} onClick={() => this.handleOK(true)} type="text" color="green" />
                         </FormDialogActions>
                     </Dialog>
                 );
@@ -776,8 +726,8 @@ class EasyDialog_ extends Component {
                             <Typography variant="h6">Default Dialog!</Typography>
                         </DialogContent>
                         <DialogActions>
-                            <EasyButton label="No" onClick={() => this.handleOK(false)} type="text" color="red" />
-                            <EasyButton label="Sí" onClick={() => this.handleOK(true)} type="text" color="green" />
+                            <EasyButton_ label="No" onClick={() => this.handleOK(false)} type="text" color="red" />
+                            <EasyButton_ label="Sí" onClick={() => this.handleOK(true)} type="text" color="green" />
                         </DialogActions>
                     </Dialog>
                 );
@@ -817,7 +767,7 @@ class EasySnackbar_ extends PureComponent {
 // }
 
 const EasySlider_ = memo((props) => {
-    const { state, handle, valueLabelFormat, valueText, min, max, marks, classes, name } = props;
+    const { state, handle, valueLabelFormat, valueText, min, max, marks, name } = props;
 
     const defaultValueLabelFormat = (value) => {
         return value;
@@ -828,7 +778,7 @@ const EasySlider_ = memo((props) => {
         return `${value}%`;
     }
     return (
-        <div className={classes.slider}>
+        <StyledSlider>
             <Slider
                 value={state}
                 valueLabelFormat={valueLabelFormat ? valueLabelFormat : defaultValueLabelFormat} //función para determinar qué se verá en el label en un hover
@@ -841,34 +791,21 @@ const EasySlider_ = memo((props) => {
                 min={min ? min : 0}
                 max={max ? max : 100}
             />
-        </div>
+        </StyledSlider>
     )
 })
 
-//EXPORT WITHSTYLES!
-const EasySelect = withStyles(style)(EasySelect_)
-const EasyTextField = withStyles(style)(EasyTextField_)
-const EasyPicker = withStyles(style)(EasyPicker_)
-const EasyButton = withStyles(style)(EasyButton_)
-const EasyAutoSelect = withStyles(style)(EasyAutoSelect_)
-const EasyMaterialTable = withStyles(style)(EasyMaterialTable_)
-const EasyMuiDataTable = withStyles(style)(EasyMuiDataTable_)
-const EasyDialog = withStyles(style)(EasyDialog_)
-const EasySwipTabs = withStyles(style)(EasySwipTabs_)
-const EasySnackbar = withStyles(style)(EasySnackbar_)
-// const EasyTree = EasyTree_
-const EasySlider = withStyles(style)(EasySlider_)
 export {
-    EasySelect,
-    EasyTextField,
-    EasyPicker,
-    EasyButton,
-    EasyAutoSelect,
-    EasyMaterialTable,
-    EasyMuiDataTable,
-    EasyDialog,
-    EasySwipTabs,
-    EasySnackbar,
+    EasySelect_ as EasySelect,
+    EasyTextField_ as EasyTextField,
+    EasyPicker_ as EasyPicker,
+    EasyButton_ as EasyButton,
+    EasyAutoSelect_ as EasyAutoSelect,
+    EasyMaterialTable_ as EasyMaterialTable,
+    EasyMuiDataTable_ as EasyMuiDataTable,
+    EasyDialog_ as EasyDialog,
+    EasySwipTabs_ as EasySwipTabs,
+    EasySnackbar_ as EasySnackbar,
     // EasyTree,
-    EasySlider
+    EasySlider_ as EasySlider
 };

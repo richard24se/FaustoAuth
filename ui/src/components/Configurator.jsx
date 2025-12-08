@@ -2,7 +2,7 @@
 import React from "react";
 import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { appActions } from '../redux/actions'
+import { appActions } from '../store/actions'
 
 
 
@@ -71,11 +71,14 @@ const Configurator = () => {
             modules.push(...applications.modulos)
 
     }
-    
+    console.log(modules)
     useEffect(() => {
         console.log(system)
         const routes = getRoutes(structure);
         const filtered_routes = getRoutes(structure, (metaData) => validateMetaData(metaData, modules));
+        console.log("HOOOKS")
+        console.log(routes)
+        console.log(filtered_routes)
         const filtered_structure = getStructure(structure, (metaData) => validateMetaData(metaData, modules))
         dispatch(appActions.setRoutes(routes))
         dispatch(appActions.setFilteredRoutes(filtered_routes))

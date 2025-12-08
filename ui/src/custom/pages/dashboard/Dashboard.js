@@ -5,8 +5,8 @@ import {
   Select,
   OutlinedInput,
   MenuItem,
-} from "@material-ui/core";
-import { useTheme } from "@material-ui/styles";
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import {
   ResponsiveContainer,
   ComposedChart,

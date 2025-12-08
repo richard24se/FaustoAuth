@@ -7,18 +7,18 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-} from "@material-ui/core";
-// import { Inbox as InboxIcon } from "@material-ui/icons";
+} from "@mui/material";
+// import { Inbox as InboxIcon } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import classnames from "classnames";
 
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
-import Tooltip from '@material-ui/core/Tooltip';
-import Fade from '@material-ui/core/Fade';
-import Zoom from '@material-ui/core/Zoom';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import Tooltip from '@mui/material/Tooltip';
+import Fade from '@mui/material/Fade';
+import Zoom from '@mui/material/Zoom';
 // styles
-import useStyles from "./styles";
+import { StyledLink, StyledLinkIcon, StyledLinkText, StyledNestedList, StyledSectionTitle, StyledRightBorder, StyledEllipsisText, StyledDivider } from "./styles";
 
 // components
 import Dot from "../Dot";
@@ -33,7 +33,6 @@ export default function SidebarLink({
   nested,
   type,
 }) {
-  var classes = useStyles();
   let myItemRef = React.createRef();
   const [needTooltip, setNeedTooltip] = useState(false)
   // local
@@ -46,7 +45,7 @@ export default function SidebarLink({
   useEffect(() => {
     console.log("SiderbarLink debug ------->")
     console.log(`l ${link} p ${location.pathname} i ${location.pathname.indexOf(link)} e ${location.pathname === link || location.pathname.indexOf(link) !== -1}`)
-    if (myItemRef.current) {
+    if (myItemRef.current && myItemRef.current.firstChild) { // Add check for firstChild
       console.log(myItemRef)
       console.log(myItemRef.current.innerHTML)
       const { scrollWidth, offsetWidth } = myItemRef.current.firstChild;
@@ -57,140 +56,107 @@ export default function SidebarLink({
         setNeedTooltip(true)
       }
     }
-  }, [])
+  }, [label, link, location.pathname]) // Add dependencies to useEffect
 
   if (type === "title")
     return (
-      <Typography
-        className={classnames(classes.linkText, classes.sectionTitle, {
-          [classes.linkTextHidden]: !isSidebarOpened,
-        })}
+      <StyledSectionTitle
+        isHidden={!isSidebarOpened}
       >
         {label}
-      </Typography>
+      </StyledSectionTitle>
     );
 
-  if (type === "divider") return <Divider className={classes.divider} />;
+  if (type === "divider") return <StyledDivider />;
 
   if (!children)
     return (
-      <ListItem
+      <StyledLink
         button
         component={link && Link}
         to={link}
-        className={classes.link}
-        classes={{
-          root: classnames(classes.linkRoot, {
-            [classes.linkActive]: isLinkActive && !nested,
-            [classes.linkNested]: nested,
-          }),
-        }}
+        isActive={isLinkActive && !nested}
+        isNested={nested}
         disableRipple
       >
-        <ListItemIcon
-          className={classnames(classes.linkIcon, {
-            [classes.linkIconActive]: isLinkActive && isPathActive,
-          })}
-        >
+        <StyledLinkIcon isActive={isLinkActive && isPathActive}>
           {nested ? <Dot color={isLinkActive && isPathActive && "primary"} /> : icon}
-        </ListItemIcon>
+        </StyledLinkIcon>
         {
           needTooltip ?
             <Tooltip title={label} placement="right" arrow TransitionComponent={Zoom}>
-              <ListItemText
+              <StyledLinkText
                 ref={myItemRef}
-                classes={{
-                  primary: classnames(classes.linkText, {
-                    [classes.linkTextActive]: isLinkActive && isPathActive,
-                    [classes.linkTextHidden]: !isSidebarOpened,
-                  }, classes.ellipsisText),
-                  // root: classes.ellipsisText
-                }}
+                isActive={isLinkActive && isPathActive}
+                isHidden={!isSidebarOpened}
                 primary={label}
               />
             </Tooltip> :
-            <ListItemText
+            <StyledLinkText
               ref={myItemRef}
-              classes={{
-                primary: classnames(classes.linkText, {
-                  [classes.linkTextActive]: isLinkActive && isPathActive,
-                  [classes.linkTextHidden]: !isSidebarOpened,
-                }, classes.ellipsisText),
-                // root: classes.ellipsisText
-              }}
+              isActive={isLinkActive && isPathActive}
+              isHidden={!isSidebarOpened}
               primary={label}
             />
         }
 
-      </ListItem>
+      </StyledLink>
     );
 
   return (
     <>
-      <ListItem
+      <StyledLink
         button
         component={link && Link}
         onClick={toggleCollapse}
-        className={classnames(classes.link, { [classes.linkActivePersist]: isLinkActive, [classes.rightBorder]: isLinkActive, [classes.rightBorderHidden]: !isLinkActive })}
-        to={link}
+        isActive={isLinkActive}
+        hasRightBorder={isLinkActive}
+        isRightBorderHidden={!isLinkActive}
         disableRipple
       >
-        <ListItemIcon
-          className={classnames(classes.linkIcon, {
-            [classes.linkIconActive]: isLinkActive,
-          })}
-        >
-          {/*icon ? icon : <InboxIcon /> EXPAND ICON - RSE*/}
+        <StyledLinkIcon isActive={isLinkActive}>
           {icon}
-        </ListItemIcon>
+        </StyledLinkIcon>
         {
           needTooltip ?
             <Tooltip title={label} placement="right" arrow TransitionComponent={Zoom}>
-              <ListItemText
+              <StyledLinkText
                 ref={myItemRef}
-                classes={{
-                  primary: classnames(classes.linkText, {
-                    [classes.linkTextActive]: isLinkActive,
-                    [classes.linkTextHidden]: !isSidebarOpened,
-                  }, classes.ellipsisText),
-                }}
+                isActive={isLinkActive}
+                isHidden={!isSidebarOpened}
                 primary={label}
               />
             </Tooltip> :
-            <ListItemText
+            <StyledLinkText
               ref={myItemRef}
-              classes={{
-                primary: classnames(classes.linkText, {
-                  [classes.linkTextActive]: isLinkActive,
-                  [classes.linkTextHidden]: !isSidebarOpened,
-                }, classes.ellipsisText),
-              }}
+              isActive={isLinkActive}
+              isHidden={!isSidebarOpened}
               primary={label}
             />
         }
 
         {isSidebarOpened ? (isOpen ? <ExpandMoreIcon /> : <KeyboardArrowRightIcon />) : null}
 
-      </ListItem>
+      </StyledLink>
       {children && (
         <Collapse
           in={isOpen && isSidebarOpened}
           timeout="auto"
           unmountOnExit
-        >{/*className={classes.nestedList} RSE*/}
-          <List component="div" disablePadding className={classes.nestedList}>
+        >
+          <StyledNestedList component="div" disablePadding>
             {children.map(childrenLink => (
               <SidebarLink
                 key={childrenLink && childrenLink.link}
                 location={location}
                 isSidebarOpened={isSidebarOpened}
-                classes={classes}
+                // classes={classes} // No longer needed
                 nested
                 {...childrenLink}
               />
             ))}
-          </List>
-          {/* <Divider className={classes.divider}/> */}
+          </StyledNestedList>
+          {/* <StyledDivider/> */}
         </Collapse>
       )}
     </>

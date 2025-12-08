@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { Grid, Select, MenuItem, Input } from "@material-ui/core";
-import { ArrowForward as ArrowForwardIcon } from "@material-ui/icons";
-import { useTheme } from "@material-ui/styles";
+import { Grid, Select, MenuItem, Input } from "@mui/material";
+import { ArrowForward as ArrowForwardIcon } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 import { BarChart, Bar } from "recharts";
 import classnames from "classnames";
 
 // styles
-import useStyles from "./styles";
+import { StyledTitle, StyledBottomStatsContainer, StyledStatCell, StyledTotalValueContainer, StyledTotalValue, StyledProfitArrow, StyledSelectInput } from "./styles";
 
 // components
 import Widget from "components/Widget";
@@ -14,7 +14,6 @@ import { Typography } from "components/Wrappers";
 
 export default function BigStat(props) {
   var { product, total, color, registrations, bounce } = props;
-  var classes = useStyles();
   var theme = useTheme();
 
   // local
@@ -23,30 +22,29 @@ export default function BigStat(props) {
   return (
     <Widget
       header={
-        <div className={classes.title}>
+        <StyledTitle>
           <Typography variant="h5">{product}</Typography>
 
           <Select
             value={value}
             onChange={e => setValue(e.target.value)}
             input={
-              <Input
+              <StyledSelectInput
                 disableUnderline
-                classes={{ input: classes.selectInput }}
               />
             }
-            className={classes.select}
+            // className={classes.select} // No direct replacement for classes.select, assuming it's handled by StyledSelectInput
           >
             <MenuItem value="daily">Daily</MenuItem>
             <MenuItem value="weekly">Weekly</MenuItem>
             <MenuItem value="monthly">Monthly</MenuItem>
           </Select>
-        </div>
+        </StyledTitle>
       }
       upperTitle
     >
-      <div className={classes.totalValueContainer}>
-        <div className={classes.totalValue}>
+      <StyledTotalValueContainer>
+        <StyledTotalValue>
           <Typography size="xxl" color="text" colorBrightness="secondary">
             {total[value]}
           </Typography>
@@ -54,7 +52,7 @@ export default function BigStat(props) {
             &nbsp;{total.percent.profit ? "+" : "-"}
             {total.percent.value}%
           </Typography>
-        </div>
+        </StyledTotalValue>
         <BarChart width={150} height={70} data={getRandomData()}>
           <Bar
             dataKey="value"
@@ -63,50 +61,44 @@ export default function BigStat(props) {
             barSize={10}
           />
         </BarChart>
-      </div>
-      <div className={classes.bottomStatsContainer}>
-        <div className={classnames(classes.statCell, classes.borderRight)}>
+      </StyledTotalValueContainer>
+      <StyledBottomStatsContainer>
+        <StyledStatCell>
           <Grid container alignItems="center">
             <Typography variant="h6">{registrations[value].value}</Typography>
-            <ArrowForwardIcon
-              className={classnames(classes.profitArrow, {
-                [!registrations[value].profit]: classes.profitArrowDanger,
-              })}
-            />
+            <StyledProfitArrow isDanger={!registrations[value].profit}>
+              <ArrowForwardIcon />
+            </StyledProfitArrow>
           </Grid>
           <Typography size="sm" color="text" colorBrightness="secondary">
             Registrations
           </Typography>
-        </div>
-        <div className={classes.statCell}>
+        </StyledStatCell>
+        <StyledStatCell>
           <Grid container alignItems="center">
             <Typography variant="h6">{bounce[value].value}%</Typography>
-            <ArrowForwardIcon
-              className={classnames(classes.profitArrow, {
-                [!registrations[value].profit]: classes.profitArrowDanger,
-              })}
-            />
+            <StyledProfitArrow isDanger={!registrations[value].profit}>
+              <ArrowForwardIcon />
+            </StyledProfitArrow>
           </Grid>
           <Typography size="sm" color="text" colorBrightness="secondary">
             Bounce Rate
           </Typography>
-        </div>
-        <div className={classnames(classes.statCell, classes.borderRight)}>
+        </StyledStatCell>
+        <StyledStatCell>
           <Grid container alignItems="center">
             <Typography variant="h6">
               {registrations[value].value * 10}
             </Typography>
-            <ArrowForwardIcon
-              className={classnames(classes.profitArrow, {
-                [classes.profitArrowDanger]: !registrations[value].profit,
-              })}
-            />
+            <StyledProfitArrow isDanger={!registrations[value].profit}>
+              <ArrowForwardIcon />
+            </StyledProfitArrow>
           </Grid>
           <Typography size="sm" color="text" colorBrightness="secondary">
             Views
           </Typography>
-        </div>
-      </div>
+        </StyledStatCell>
+      </StyledBottomStatsContainer>
     </Widget>
   );
 }

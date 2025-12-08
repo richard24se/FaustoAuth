@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-import Grid from "@material-ui/core/Grid";
-import SaveIcon from "@material-ui/icons/Save";
-import CancelIcon from '@material-ui/icons/Cancel';
-import LockIcon from '@material-ui/icons/Lock';
+import Grid from "@mui/material/Grid";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from '@mui/icons-material/Cancel';
+import LockIcon from '@mui/icons-material/Lock';
 
 //STYLE
-import { withStyles } from "@material-ui/styles";
+import { withStyles } from "@mui/styles";
 import style from "./style";
 
 //EASY_MATERIAL
@@ -100,7 +100,7 @@ class createUser_ extends Component {
         ];
 
         this.state = {
-            titulo: "USER CREATION",
+            titulo: "USER CREATION2",
             button_type: "create",
             roles_list: [],
             user_table: {

@@ -1,12 +1,11 @@
 import React, { Component } from "react";
-import Grid from "@material-ui/core/Grid";
-import SaveIcon from "@material-ui/icons/Save";
-import CancelIcon from '@material-ui/icons/Cancel';
-import LockIcon from '@material-ui/icons/Lock';
+import Grid from "@mui/material/Grid";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from '@mui/icons-material/Cancel';
+import LockIcon from '@mui/icons-material/Lock';
 
-//STYLE
-import { withStyles } from "@material-ui/styles";
-import style from "./style";
+
+
 
 //EASY_MATERIAL
 import Widget from "components/Widget/Widget";
@@ -29,8 +28,8 @@ import PageTitle from "components/PageTitle/PageTitle";
 
 //Redux
 import { connect } from 'react-redux';
-import { fotchActions } from 'redux/actions'
-import { mapDispatchToPropsNoti } from "redux/dispatchs"
+import { fotchActions } from 'store/actions'
+import { mapDispatchToPropsNoti } from "store/dispatchs"
 
 const fotchAuth = new Fotch(process.env.REACT_APP_API_AUTH)
 
@@ -101,7 +100,7 @@ class createUser_ extends Component {
         ];
 
         this.state = {
-            titulo: "USER CREATION",
+            titulo: "USER CREATION1",
             button_type: "create",
             roles_list: [],
             user_table: {
@@ -304,6 +303,7 @@ class createUser_ extends Component {
         var obtainRoleName = (id_role) => { for (var role of this.state.roles_list) if (id_role === role.id) return { value: role.id, label: capitalize(role.name) } }
 
         console.log(dataIndex)
+        console.log(this.state.user_table.data)
         if (dataIndex || dataIndex === 0) {
             const user = this.state.user_table.data[dataIndex];
             this.setState({
@@ -576,6 +576,6 @@ class createUser_ extends Component {
     }
 }
 const mapDispatchToProps = (dispatch) => ({ ...mapDispatchToPropsNoti(dispatch), dispatch })
-const createUser = withStyles(style)(createUser_);
+const createUser = createUser_;
 const connectedComponent = connect(null, mapDispatchToProps)(createUser)
 export { connectedComponent as createUser };

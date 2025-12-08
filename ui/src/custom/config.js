@@ -1,13 +1,12 @@
 
+import React from 'react';
 //Icons
-import {
-    Https as Https,
-    SelectAll as SelectAll,
-    ArrowBack as ArrowBackIcon,
-    Assignment as AssignmentIcon,
-    Settings as SettingsIcon,
-    Domain as DomainIcon
-} from "@material-ui/icons";
+import HttpsIcon from "@mui/icons-material/Https";
+import SelectAllIcon from "@mui/icons-material/SelectAll";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import SettingsIcon from "@mui/icons-material/Settings";
+import DomainIcon from "@mui/icons-material/Domain";
 
 //Pages
 import { createObject } from "custom/pages/maintenance/createObject";

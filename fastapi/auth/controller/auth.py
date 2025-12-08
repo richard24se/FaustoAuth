@@ -1,144 +1,107 @@
 from auth.handlers import JWTBearer
+from auth.model.pydantic import LoginCredentials
 from auth.service.auth import (
     check_blacklist_user,
     refresh_user,
     revoke_user,
     validate_user,
 )
+from config.databases import get_async_db
 from fausto.fapi import Response, fapi_get_bearer_token
-from pydantic import BaseModel
-
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(
     prefix="/auth",
-    tags=["auth"],
-    # dependencies=[Depends(JWTBearer())],
+    tags=["Authentication"],
     responses={404: {"description": "Not found"}},
 )
-
-
-class Credential(BaseModel):
-    username: str
-    password: str
-
-
-@router.get("/token", response_model=Response, dependencies=[Depends(JWTBearer())])
-async def validate_token(token: str = Depends(fapi_get_bearer_token)):
-    check_blacklist_user(token)
-    return {"msg": "Token is valid", "error": False}
-
-
-@router.post(
-    "/token/refresh", response_model=Response, dependencies=[Depends(JWTBearer())]
-)
-async def refresh_token(token: str = Depends(fapi_get_bearer_token)):
-    return refresh_user(token)
 
 
 @router.post(
     "/login",
     response_model=Response,
+    summary="Log in to get access token",
 )
-async def login(credential: Credential, refresh_token: bool = False):
-    user_validade = validate_user(**credential.__dict__, refresh_token=refresh_token)
-    respuesta = Response(**user_validade)
-    return respuesta
+async def login(
+    credential: LoginCredentials,
+    s: AsyncSession = Depends(get_async_db),
+    refresh: bool = False,
+):
+    """Authenticates a user and returns an access token.
+
+    Args:
+        credential (LoginCredentials): User's login credentials (username and password).
+        refresh (bool): If True, a refresh token is also returned. Defaults to False.
+
+    Returns:
+        Response: A response object containing the access token and optionally a refresh token.
+    """
+    return await validate_user(
+        s=s,
+        username=credential.username,
+        password=credential.password,
+        refresh_token=refresh,
+    )
 
 
-@router.delete("/logout", response_model=Response, dependencies=[Depends(JWTBearer())])
+@router.post(
+    "/logout",
+    response_model=Response,
+    dependencies=[Depends(JWTBearer())],
+    summary="Log out and revoke token",
+)
 async def logout(token: str = Depends(fapi_get_bearer_token)):
-    check_blacklist_user(token)
-    return revoke_user(token)
+    """Logs out the current user by revoking their access token.
+
+    The token is added to a blacklist and can no longer be used.
+
+    Args:
+        token (str): The access token to revoke.
+
+    Returns:
+        Response: A response object indicating successful logout.
+    """
+    return await revoke_user(token=token)
 
 
-# @router.get("/grupos_postulantes", response_model=Response)
-# async def read_obtener_grupo_etapas(fecha: str):
-#     data = obtener_grupo_etapas(fecha)
-#     respuesta = Response(**data)
-#     return respuesta
+@router.get(
+    "/token/validate",
+    response_model=Response,
+    dependencies=[Depends(JWTBearer())],
+    summary="Validate an access token",
+)
+async def validate_token(token: str = Depends(fapi_get_bearer_token)):
+    """Checks if the provided access token is valid and not revoked.
 
-# @router.get("/postulantes", response_model=Response)
-# async def read_obtener_postulantes(grupo_postulante_id: str = None, etapa_id: int= None):
-#     data = obtener_postulantes(grupo_postulante_id, etapa_id)
-#     respuesta = Response(**data)
-#     return respuesta
+    The JWTBearer dependency already validates the token's signature and expiration.
+    This endpoint adds a check to see if the token has been explicitly revoked (blacklisted).
 
-# @router.post("/")
-# async def insert_item(etapa: Etapa, test_id: Optional[int] = None,  body=Body(...)):
-#     return body
+    Args:
+        token (str): The access token to validate.
+
+    Returns:
+        Response: A response object indicating the token's validity.
+    """
+    return await check_blacklist_user(token=token)
+
+
+@router.post(
+    "/token/refresh",
+    response_model=Response,
+    dependencies=[Depends(JWTBearer())],
+    summary="Refresh an access token",
+)
+async def refresh_token(token: str = Depends(fapi_get_bearer_token)):
+    """Generates a new access token using a valid refresh token.
+
+    Args:
+        token (str): The refresh token.
+
+    Returns:
+        Response: A response object containing the new access token.
+    """
+    return await refresh_user(token=token)
+
 
 router_auth = router
-
-
-# class Auth(Resource):
-
-#     def get(self):
-#         ret = verify_token(self)
-#         logging.debug(ret)
-#         if ret:
-#             return {"msg": "Token is valid!", "valid": ret}
-#         else:
-#             return {"msg": "Token is invalid!", "valid": ret}
-
-#     def post(self):
-#         logging.info(request)
-#         # VERIFY DATA
-#         if request.data:
-#             logging.debug("Has data: "+str(request.data))
-#             logging.debug("Has JSON data")
-#             username = request.json.get('username', None)
-#             password = request.json.get('password', None)
-#             option = request.json.get('option', None)
-#         else:
-#             logging.debug("Hasn't JSON data")
-#             return {"msg": "Please provide JSON"}
-
-#         if option == 'login':
-#             user_validade = validate_user(username, password)
-#             logging.debug(str(user_validade))
-#             if user_validade.get('error'):
-#                 return user_validade
-#             access_token = create_access_token(identity=username)
-#             refresh_token = create_refresh_token(identity=username)
-
-#             ret = {
-#                 'access_token': access_token,
-#                 'refresh_token': refresh_token,
-#                 'error': False
-#             }
-#             # save to cache
-#             access_jti = get_jti(encoded_token=access_token)
-#             refresh_jti = get_jti(encoded_token=refresh_token)
-#             revoked_store.set(access_jti, 'false', ACCESS_EXPIRES * 1.2)
-#             revoked_store.set(refresh_jti, 'false', REFRESH_EXPIRES * 1.2)
-#             cache_token_keys = revoked_store.keys()
-#             cache_token_value = revoked_store.mget(cache_token_keys)
-
-#             logging.debug("Cache keys: "+str(cache_token_keys))
-#             logging.debug("Cache values: "+str(cache_token_value))
-#             logging.debug("Cache keys/values: " +
-#                           str(dict(zip(cache_token_keys, cache_token_value))))
-#             logging.debug("Response success login: "+str(ret))
-#             return ret
-#         elif option == 'refresh':
-#             return refresh_token(self)
-#         else:
-#             return {"msg": "Please provide valid option!"}
-#     @jwt_required
-#     def delete(self):
-#         logging.info(request)
-#         # VERIFY DATA
-#         if request.data:
-#             logging.debug("Has data: "+str(request.data))
-#             logging.debug("Has JSON data")
-#             option = request.json.get('option', None)
-#         else:
-#             logging.debug("Hasn't JSON data")
-#             return {"msg": "Please provide JSON"}
-#         if option == 'access':
-#             return revoke_access_token(self)
-#         elif option == 'refresh':
-#             return revoke__refresh_token(self)
-#         else:
-#             return {"msg": "Please provide valid option!"}

@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { Drawer, IconButton, List } from "@material-ui/core";
 import {
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
+import {
+  Home as HomeIcon,
+  FilterNone as UIElementsIcon,
+  BorderAll as TableIcon,
+  QuestionAnswer as SupportIcon,
+  LibraryBooks as LibraryIcon,
+  HelpOutline as FAQIcon,
   ArrowBack as ArrowBackIcon,
-
-} from "@material-ui/icons";
-import { useTheme } from "@material-ui/styles";
+} from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 import { withRouter } from "react-router-dom";
 import classNames from "classnames";
 
 // styles
-import useStyles from "./styles";
+import { StyledMenuButton, StyledHide, StyledDrawer, StyledToolbar, StyledContent, StyledMobileBackButton } from "./styles";
 
 // components
 import SidebarLink from "./components/SidebarLink/SidebarLink";
-import SearchIcon from '@material-ui/icons/Search';
-import SettingsIcon from '@material-ui/icons/Settings';
+import Dot from "./components/Dot";
 
 // context
 import {
@@ -22,12 +32,43 @@ import {
   useLayoutDispatch,
   toggleSidebar,
 } from "../../context/LayoutContext";
-import { removeItemLS } from "../../redux/actions";
+
+//Redux
 import { useSelector } from 'react-redux'
 
+const structure = [
+  { id: 0, label: "Dashboard", link: "/app/dashboard", icon: <HomeIcon /> },
+  {
+    id: 1,
+    label: "Typography",
+    link: "/app/typography",
+    icon: <UIElementsIcon />,
+  },
+  { id: 2, label: "Tables", link: "/app/tables", icon: <TableIcon /> },
+  {
+    id: 3,
+    label: "Notifications",
+    link: "/app/notifications",
+    icon: <SupportIcon />,
+  },
+  {
+    id: 4,
+    label: "UI Elements",
+    link: "/app/ui",
+    icon: <UIElementsIcon />,
+    children: [
+      { id: 5, label: "Icons", link: "/app/ui/icons" },
+      { id: 6, label: "Charts", link: "/app/ui/charts" },
+      { id: 7, label: "Maps", link: "/app/ui/maps" },
+    ],
+  },
+  { id: 8, type: "divider" },
+  { id: 9, label: "Sample Link", link: "https://flatlogic.com/templates/react-material-admin-full", icon: <LibraryIcon /> },
+  { id: 10, label: "Support", link: "https://flatlogic.com/templates/react-material-admin-full", icon: <SupportIcon /> },
+  { id: 11, label: "FAQ", link: "https://flatlogic.com/templates/react-material-admin-full", icon: <FAQIcon /> },
+];
 
-function Sidebar({ location }) {
-  var classes = useStyles();
+function Sidebar({ location, history }) {
   var theme = useTheme();
 
   // global
@@ -37,6 +78,8 @@ function Sidebar({ location }) {
   // local
   var [isPermanent, setPermanent] = useState(true);
 
+  const structure = useSelector(state => state.app.filtered_structure) || []
+
   useEffect(function () {
     window.addEventListener("resize", handleWindowWidthChange);
     handleWindowWidthChange();
@@ -44,33 +87,22 @@ function Sidebar({ location }) {
       window.removeEventListener("resize", handleWindowWidthChange);
     };
   });
-  const structure = useSelector(state => state.app.filtered_structure) || []
+
   return (
-    <Drawer
-      variant={isPermanent ? "permanent" : "temporary"}
-      className={classNames(classes.drawer, {
-        [classes.drawerOpen]: isSidebarOpened,
-        [classes.drawerClose]: !isSidebarOpened,
-      })}
-      classes={{
-        paper: classNames({
-          [classes.drawerOpen]: isSidebarOpened,
-          [classes.drawerClose]: !isSidebarOpened,
-        }),
-      }}
-      open={isSidebarOpened}
+    <StyledDrawer
+      variant="permanent"
+      isOpen={isPermanent}
     >
-      <div className={classes.toolbar} />
-      <div className={classes.mobileBackButton}>
-        <IconButton onClick={() => toggleSidebar(layoutDispatch)}>
-          <ArrowBackIcon
-            classes={{
-              root: classNames(classes.headerIcon, classes.headerIconCollapse),
-            }}
-          />
-        </IconButton>
-      </div>
-      <List className={classes.sidebarList}>
+      <StyledToolbar />
+      <StyledHide isHidden={isPermanent}>
+        <StyledMobileBackButton
+          color="inherit"
+          onClick={() => toggleSidebar(layoutDispatch)}
+        >
+          <ArrowBackIcon />
+        </StyledMobileBackButton>
+      </StyledHide>
+      <List>
         {structure.map(link => (
           <SidebarLink
             key={link.id}
@@ -80,20 +112,17 @@ function Sidebar({ location }) {
           />
         ))}
       </List>
-    </Drawer>
+    </StyledDrawer>
   );
 
-  // ##################################################################
+  // ###########################################################
+  // #################### Sidebar specific functions ###########
+  // ###########################################################
   function handleWindowWidthChange() {
     var windowWidth = window.innerWidth;
     var breakpointWidth = theme.breakpoints.values.md;
-    var isSmallScreen = windowWidth < breakpointWidth;
-
-    if (isSmallScreen && isPermanent) {
-      setPermanent(false);
-    } else if (!isSmallScreen && !isPermanent) {
-      setPermanent(true);
-    }
+    var isPermanent = windowWidth >= breakpointWidth;
+    setPermanent(isPermanent);
   }
 }
 

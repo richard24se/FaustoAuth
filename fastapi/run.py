@@ -1,8 +1,14 @@
+"""Main application file for the Fausto Auth FastAPI service.
+
+This file initializes the FastAPI application, configures middleware,
+includes all the API routers, and sets up logging and event handlers.
+"""
+
 import logging
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
+from typing import Any
 
-# importante rutas
 from auth.controller import (
     router_audit,
     router_audit_type,
@@ -15,49 +21,104 @@ from auth.controller import (
     router_role_permission,
     router_user,
 )
-from config.databases import SQLALCH_AUTH
-from config.settings import DEBUG
-from starlette.exceptions import HTTPException as StarletteHTTPException
-
-from fastapi import FastAPI
+from config.databases import SQLALCH_AUTH, async_redis_pool, async_token_store, async_engine  # Import async_engine
+from config.settings import settings
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from sqlalchemy import text  # Added import
+from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
 
+# --- OpenAPI Metadata ---
 tags_metadata = [
+    {"name": "Authentication", "description": "User login, logout, and token management."},
+    {"name": "Users", "description": "Operations to manage users."},
+    {"name": "Roles", "description": "Manage user roles."},
+    {"name": "Permissions", "description": "Manage system permissions."},
     {
-        "name": "user",
-        "description": "Operations with users. The **login** logic doesn't here.",
+        "name": "Role Permissions",
+        "description": "View permissions associated with roles.",
     },
-    # {
-    #     "name": "items",
-    #     "description": "Manage items. So _fancy_ they have their own docs.",
-    #     "externalDocs": {
-    #         "description": "Items external docs",
-    #         "url": "https://fastapi.tiangolo.com/",
-    #     },
-    # },
+    {"name": "Permission Types", "description": "Manage types of permissions (e.g., read, write)."},
+    {"name": "Objects", "description": "Manage system objects that can be permissioned."},
+    {"name": "Object Types", "description": "Manage types of objects (e.g., page, component)."},
+    {"name": "Audit", "description": "View the audit trail of user actions."},
+    {"name": "Audit Types", "description": "Manage the types of audit events."},
 ]
-# events
 
 
+# --- Application Lifespan Events ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # on startup
-    logging.debug("starting microservice...")
-    logging.debug(SQLALCH_AUTH)
+    """Handles application startup and shutdown events.
+
+    Args:
+        app (FastAPI): The FastAPI application instance.
+    """
+    # Startup
+    logging.info("--- Starting Fausto Auth Service ---")
+    logging.info("Connecting to database and Redis...")
+    try:
+        # Test database connection
+        async with SQLALCH_AUTH() as session:  # Use async with and call SQLALCH_AUTH (which is get_async_db)
+            await session.execute(text("SELECT 1"))  # Await execute
+        logging.info("Database connection successful.")
+        # Test Redis connection
+        await async_token_store.ping()
+        logging.info("Redis connection successful.")
+    except Exception as e:
+        logging.critical("Failed to connect to database or Redis on startup: %s", e)
+
     yield
-    # on shutdown
-    logging.debug("turning off microservice...")
+
+    # Shutdown
+    logging.info("--- Shutting down Fausto Auth Service ---")
+    await async_engine.dispose()  # Dispose of the async engine
+    await async_redis_pool.disconnect()
+    logging.info("Connections closed.")
 
 
+# --- FastAPI Application Initialization ---
 app = FastAPI(
-    title="API Fausto Auth with FastAPI",
-    description="This is a very fancy project, with auto docs for the API and everything",
-    version="0.7",
+    title="Fausto Auth API",
+    description="Authentication and authorization service for the Fausto platform.",
+    version="1.0.0",
     openapi_tags=tags_metadata,
     lifespan=lifespan,
 )
 
+# --- Middleware ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, restrict this to specific domains
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# --- Custom Exception Handler ---
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """Custom handler to ensure all HTTP exceptions return a consistent JSON format.
+
+    Args:
+        request (Request): The incoming request.
+        exc (StarletteHTTPException): The exception that occurred.
+
+    Returns:
+        JSONResponse: A JSON response with consistent error format.
+    """
+    content = {"error": True, "msg": exc.detail, "data": None}
+    if isinstance(exc.detail, dict):
+        # If the detail is already a dict, use it as the base
+        content = {**content, **exc.detail}
+
+    return JSONResponse(content=content, status_code=exc.status_code)
+
+
+# --- API Routers ---
 app.include_router(router_auth)
 app.include_router(router_user)
 app.include_router(router_role)
@@ -68,37 +129,25 @@ app.include_router(router_object)
 app.include_router(router_object_type)
 app.include_router(router_audit)
 app.include_router(router_audit_type)
-# agregando cors
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
-# mejorando httpexception
-@app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request, exc):
-    content = None
-    if isinstance(exc.detail, str):
-        content = {"msg": exc.detail}
-    else:
-        content = exc.detail
-    return JSONResponse(content=content, status_code=exc.status_code)
-
-
-@app.get("/")
+# --- Root Endpoint ---
+@app.get("/", tags=["Root"])
 async def root():
-    logging.debug("This is a root path")
-    return {"message": "Hello World"}
+    """Root endpoint providing a welcome message.
+
+    Returns:
+        dict: A dictionary with a welcome message.
+    """
+    return {"message": "Welcome to the Fausto Auth API"}
 
 
-FORMAT = (
-    "[%(asctime)s] %(levelname)s in %(module)s:%(filename)s on %(lineno)d %(message)s"
-    if isinstance(DEBUG, bool) and DEBUG
-    else "[%(asctime)s] %(levelname)s in %(module)s:%(filename)s %(message)s"
+# --- Logging Configuration ---
+LOG_LEVEL = "DEBUG" if settings.DEBUG else "INFO"
+LOG_FORMAT = (
+    "[%(asctime)s] %(levelname)s in %(module)s:%(lineno)d - %(message)s"
+    if settings.DEBUG
+    else "[%(asctime)s] %(levelname)s - %(message)s"
 )
 
 dictConfig(
@@ -107,15 +156,17 @@ dictConfig(
         "disable_existing_loggers": False,
         "formatters": {
             "default": {
-                "format": FORMAT,
+                "format": LOG_FORMAT,
+                "datefmt": "%Y-%m-%d %H:%M:%S",
             }
         },
         "handlers": {
-            "default": {"class": "logging.StreamHandler", "formatter": "default"}
+            "default": {
+                "class": "logging.StreamHandler",
+                "formatter": "default",
+                "stream": "ext://sys.stdout",
+            }
         },
-        "root": {
-            "level": "DEBUG" if DEBUG else "INFO",
-            "handlers": ["default"],
-        },
+        "root": {"level": LOG_LEVEL, "handlers": ["default"]},
     }
 )

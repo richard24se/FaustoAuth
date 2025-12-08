@@ -1,101 +1,13 @@
 import React from "react";
 import {
-  withStyles,
   Badge as BadgeBase,
   Typography as TypographyBase,
   Button as ButtonBase,
-} from "@material-ui/core";
-import { useTheme, makeStyles } from "@material-ui/styles";
-import classnames from "classnames";
+} from "@mui/material";
+import { useTheme } from "@mui/styles"; // Keep useTheme for now, might be removed later
+import { styled } from "@mui/material/styles"; // Import styled
 
-// styles
-var useStyles = makeStyles(theme => ({
-  badge: {
-    fontWeight: 600,
-    height: 16,
-    minWidth: 16,
-  },
-}));
-
-function Badge({ children, colorBrightness, color, ...props }) {
-  var classes = useStyles();
-  var theme = useTheme();
-  var Styled = createStyled({
-    badge: {
-      backgroundColor: getColor(color, theme, colorBrightness),
-    },
-  });
-
-  return (
-    <Styled>
-      {styledProps => (
-        <BadgeBase
-          classes={{
-            badge: classnames(classes.badge, styledProps.classes.badge),
-          }}
-          {...props}
-        >
-          {children}
-        </BadgeBase>
-      )}
-    </Styled>
-  );
-}
-
-function Typography({
-  children,
-  weight,
-  size,
-  colorBrightness,
-  color,
-  ...props
-}) {
-  var theme = useTheme();
-
-  return (
-    <TypographyBase
-      style={{
-        color: getColor(color, theme, colorBrightness),
-        fontWeight: getFontWeight(weight),
-        fontSize: getFontSize(size, props.variant, theme),
-      }}
-      {...props}
-    >
-      {children}
-    </TypographyBase>
-  );
-}
-
-function Button({ children, color, ...props }) {
-  var theme = useTheme();
-
-  var Styled = createStyled({
-    button: {
-      backgroundColor: getColor(color, theme),
-      boxShadow: theme.customShadows.widget,
-      color: "white",
-      "&:hover": {
-        backgroundColor: getColor(color, theme, "light"),
-        boxShadow: theme.customShadows.widgetWide,
-      },
-    },
-  });
-
-  return (
-    <Styled>
-      {({ classes }) => (
-        <ButtonBase classes={{ root: classes.button }} {...props}>
-          {children}
-        </ButtonBase>
-      )}
-    </Styled>
-  );
-}
-
-export { Badge, Typography, Button };
-
-// ########################################################################
-
+// Helper functions (moved to top)
 function getColor(color, theme, brigtness = "main") {
   if (color && theme.palette[color] && theme.palette[color][brigtness]) {
     return theme.palette[color][brigtness];
@@ -144,11 +56,30 @@ function getFontSize(size, variant = "", theme) {
   return `calc(${defaultSize} * ${multiplier})`;
 }
 
-function createStyled(styles, options) {
-  var Styled = function(props) {
-    const { children, ...other } = props;
-    return children(other);
-  };
+// Styled Badge
+const StyledBadge = styled(BadgeBase)(({ theme, colorBrightness, color }) => ({
+  fontWeight: 600,
+  height: 16,
+  minWidth: 16,
+  backgroundColor: getColor(color, theme, colorBrightness),
+}));
 
-  return withStyles(styles, options)(Styled);
-}
+// Styled Typography
+const StyledTypography = styled(TypographyBase)(({ theme, weight, size, colorBrightness, color, variant }) => ({
+  color: getColor(color, theme, colorBrightness),
+  fontWeight: getFontWeight(weight),
+  fontSize: getFontSize(size, variant, theme),
+}));
+
+// Styled Button
+const StyledButton = styled(ButtonBase)(({ theme, color }) => ({
+  backgroundColor: getColor(color, theme),
+  boxShadow: theme.customShadows.widget,
+  color: "white",
+  "&:hover": {
+    backgroundColor: getColor(color, theme, "light"),
+    boxShadow: theme.customShadows.widgetWide,
+  },
+}));
+
+export { StyledBadge as Badge, StyledTypography as Typography, StyledButton as Button };

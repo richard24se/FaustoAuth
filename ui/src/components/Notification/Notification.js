@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@material-ui/core";
+import { Button } from "@mui/material";
 import {
   NotificationsNone as NotificationsIcon,
   ThumbUp as ThumbUpIcon,
@@ -14,8 +14,8 @@ import {
   AccountBox as CustomerIcon,
   Done as ShippedIcon,
   Publish as UploadIcon,
-} from "@material-ui/icons";
-import { useTheme } from "@material-ui/styles";
+} from "@mui/icons-material";
+import { useTheme } from '@mui/material/styles';
 import classnames from "classnames";
 import tinycolor from "tinycolor2";
 

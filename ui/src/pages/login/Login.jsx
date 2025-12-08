@@ -8,16 +8,16 @@ import {
   Tab,
   TextField,
   Grow,
-} from "@material-ui/core";
+} from "@mui/material";
 //import { Typography } from '../../components/Wrappers'
 import { withRouter } from "react-router-dom";
 import classnames from "classnames";
 
-// styles
-import useStyles from "./styles";
 
+// styles
+import { StyledContainer, StyledLogotypeContainer, StyledLogotypeImage, StyledLogotypeText, StyledFormContainer, StyledForm, StyledTab, StyledGreeting, StyledSubGreeting, StyledGoogleButton, StyledGoogleButtonCreating, StyledGoogleIcon, StyledCreatingButtonContainer, StyledCreateAccountButton, StyledFormDividerContainer, StyledFormDividerWord, StyledFormDivider, StyledErrorMessage, StyledLoginTextField, StyledFormButtons, StyledForgetButton, StyledLoginLoader, StyledCopyright, StyledFormButtonsCenter } from "./styles";
 //Colors Styles
-import {hooksStyles} from '../../themes/colors';
+import { hooksStyles } from '../../themes/colors';
 
 // logo
 import logo from "../../themes/logo.png";
@@ -29,13 +29,12 @@ import fausto from "../../themes/fausto.png";
 
 //Redux actions
 import { connect } from 'react-redux';
-import { userActions } from '../../redux/actions';
+import { userActions } from '../../store/actions';
 
 import findIP from './findIP';
-//import { useTheme, makeStyles } from "@material-ui/styles";
+//import { useTheme, makeStyles } from "@mui/material/styles";
 
 function Login(props) {
-  var classes = useStyles();
   var colors = hooksStyles();
 
   // global
@@ -46,15 +45,16 @@ function Login(props) {
   //var [error, setError] = useState(null);
   var [activeTabId, setActiveTabId] = useState(0);
   //var [nameValue, setNameValue] = useState("");
-  var [loginValue, setLoginValue] = useState("");
-  var [passwordValue, setPasswordValue] = useState("");
+  var [loginValue, setLoginValue] = useState("admin@faustoauth.app");
+  var [passwordValue, setPasswordValue] = useState("$admin");
   //IP Value
-  var [IPValue, setIPValue] = useState("Cargando..");
+  var [IPValue, setIPValue] = useState("Loading..");
 
-  
+
   //Handle init state
-  const {dispatch} = props;
-  
+  const { dispatch } = props;
+  const { history } = props;
+
   useEffect(() => {
     //Get Logout
     dispatch(userActions.logout())
@@ -68,23 +68,25 @@ function Login(props) {
   }, [dispatch]);
 
   //Handle login
-  var handleLogin = (e) =>{
-    const previousLocation = props.location.state && props.location.state.from ?  props.location.state.from.pathname : null
-    dispatch(userActions.login(loginValue, passwordValue, previousLocation));
+  var handleLogin = (e) => {
+    const previousLocation = props.location.state && props.location.state.from ? props.location.state.from.pathname : null
+    dispatch(userActions.login(loginValue, passwordValue, previousLocation, history));
+
+
   };
 
   const { loggingIn } = props;
   const { alert } = props;
 
   return (
-    <Grid container className={classes.container}>
-      <div className={classes.logotypeContainer}>
-        <img src={logo} alt="logo" className={classes.logotypeImage} />
-        <img src={fausto} alt="fausto" style={{width: 200}} />
-        {/* <Typography className={classes.logotypeText}>Fausto Auth</Typography> */}
-      </div>
-      <div className={classes.formContainer}>
-        <div className={classes.form}>
+    <StyledContainer container>
+      <StyledLogotypeContainer>
+        <StyledLogotypeImage src={logo} alt="logo" />
+        <img src={fausto} alt="fausto" style={{ width: 200 }} />
+        {/* <StyledLogotypeText>Fausto Auth</StyledLogotypeText> */}
+      </StyledLogotypeContainer>
+      <StyledFormContainer>
+        <StyledForm>
           <Tabs
             value={activeTabId}
             onChange={(e, id) => setActiveTabId(id)}
@@ -92,50 +94,41 @@ function Login(props) {
             textColor="primary"
             centered
           >
-            <Tab label="Login" classes={{ root: classes.tab }} />
+            <StyledTab label="Login" />
             {/*<Tab label="New User" classes={{ root: classes.tab }} />*/}
           </Tabs>
           {activeTabId === 0 && (
             <React.Fragment>
-              <Typography variant="h5" className={classes.greeting}>
+              <StyledGreeting variant="h5">
                 Enter your credentials to access Auth
-                
-              </Typography>
-              <Grow in={ alert.message ? true : false}>
-                <Typography  color="primary" className={classnames(
-                  classes.errorMessage, alert.loading ? colors.grey : alert.has_error ? colors.red : colors.green )
+
+              </StyledGreeting>
+              <Grow in={alert.message ? true : false}>
+                <StyledErrorMessage className={classnames(
+                  alert.loading ? colors.grey : alert.has_error ? colors.red : colors.green)
                 }>
                   {alert.message}
-                </Typography>
+                </StyledErrorMessage>
               </Grow>
-              <TextField
+              <StyledLoginTextField
                 id="email"
-                InputProps={{
-                  classes: {
-                    underline: classes.textFieldUnderline,
-                    input: classes.textField,
-                  },
-                }}
                 value={loginValue}
                 onChange={e => setLoginValue(e.target.value)}
                 margin="normal"
                 placeholder="Username"
                 type="text"
+                variant="filled"
                 fullWidth
+
               />
-              <TextField
+              <StyledLoginTextField
                 id="password"
-                InputProps={{
-                  classes: {
-                    underline: classes.textFieldUnderline,
-                    input: classes.textField,
-                  },
-                }}
                 value={passwordValue}
                 onChange={e => setPasswordValue(e.target.value)}
                 margin="normal"
                 placeholder="Password"
                 type="password"
+                variant="filled"
                 fullWidth
                 onKeyPress={(ev) => {
                   if (ev.key === 'Enter') {
@@ -155,9 +148,9 @@ function Login(props) {
                   readOnly: true,
                 }}
               /> */}
-              <div className={classes.formButtonsCenter}>
+              <StyledFormButtonsCenter>
                 {loggingIn ? (
-                  <CircularProgress size={26} className={classes.loginLoader} />
+                  <StyledLoginLoader><CircularProgress size={26} /></StyledLoginLoader>
                 ) : (
                   <Button
                     disabled={
@@ -188,15 +181,15 @@ function Login(props) {
                 >
                   Forget Password
                 </Button>*/}
-              </div>
+              </StyledFormButtonsCenter>
             </React.Fragment>
           )}
-        </div>
-        <Typography color="primary" className={classes.copyright}>
+        </StyledForm>
+        <StyledCopyright color="primary">
           © 2020 Fausto. All rights reserved.
-        </Typography>
-      </div>
-    </Grid>
+        </StyledCopyright>
+      </StyledFormContainer>
+    </StyledContainer>
   );
 }
 
@@ -212,7 +205,7 @@ function mapStateToProps(state) {
 
 const connectedLoginPage = connect(mapStateToProps)(Login);
 
-export default withRouter( connectedLoginPage );
+export default withRouter(connectedLoginPage);
 
 
 

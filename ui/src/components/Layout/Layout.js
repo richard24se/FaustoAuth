@@ -8,7 +8,7 @@ import {
 import classnames from "classnames";
 
 // styles
-import useStyles from "./styles";
+import { StyledRoot, StyledContent, StyledFakeToolbar } from "./styles";
 
 // components
 import Header from "../Header";
@@ -20,7 +20,7 @@ import Typography from "../../pages/typography";
 import Notifications from "../../pages/notifications";
 import Maps from "../../pages/maps";
 import Tables from "../../pages/tables";
-import Icons from "../../pages/icons";
+// import Icons from "../../pages/icons";
 import Charts from "../../pages/charts";
 
 // context
@@ -30,22 +30,18 @@ import { useLayoutState } from "../../context/LayoutContext";
 import { useSelector } from 'react-redux'
 
 function Layout(props) {
-  var classes = useStyles();
-
   // global
   var layoutState = useLayoutState();
   const routes = useSelector(state => state.app.filtered_routes) || []
   return (
-    <div className={classes.root}>
+    <StyledRoot>
       <>
         <Header history={props.history} />
         <Sidebar />
-        <div
-          className={classnames(classes.content, {
-            [classes.contentShift]: layoutState.isSidebarOpened,
-          })}
+        <StyledContent
+          isShifted={layoutState.isSidebarOpened}
         >
-          <div className={classes.fakeToolbar} />
+          <StyledFakeToolbar />
           <Switch>
             {
               routes.map(e => {
@@ -64,15 +60,15 @@ function Layout(props) {
               render={() => <Redirect to="/app/ui/icons" />}
             />
             <Route path="/app/ui/maps" component={Maps} />
-            <Route path="/app/ui/icons" component={Icons} />
+            {/* <Route path="/app/ui/icons" component={Icons} /> */}
             <Route path="/app/ui/charts" component={Charts} />
 
 
             <Redirect to='/' />
           </Switch>
-        </div>
+        </StyledContent>
       </>
-    </div>
+    </StyledRoot>
   );
 }
 

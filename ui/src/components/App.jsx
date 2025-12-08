@@ -17,10 +17,10 @@ import Login from "../pages/login/Login";
 import { PrivateRoute } from "./CustomRoutes";
 
 //Redux history
-import { history } from '../redux/helpers';
+import { history } from 'store/helpers';
 //Redux
 import { connect } from 'react-redux';
-import { fotchActions } from 'redux/actions'
+import { fotchActions } from 'store/actions'
 
 //Notistack
 import Notifier from "components/Notistack";

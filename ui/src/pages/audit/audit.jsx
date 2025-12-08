@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import Grid from "@material-ui/core/Grid";
-import SaveIcon from "@material-ui/icons/Save";
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
-import SearchIcon from '@material-ui/icons/Search';
-import Typography from "@material-ui/core/Typography";
+import Grid from "@mui/material/Grid";
+import SaveIcon from "@mui/icons-material/Save";
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import SearchIcon from '@mui/icons-material/Search';
+import Typography from "@mui/material/Typography";
 
 //STYLE
-import { withStyles } from "@material-ui/styles";
+import { withStyles } from "@mui/styles";
 import style from "./style";
 
 //EASY_MATERIAL

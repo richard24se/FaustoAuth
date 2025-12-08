@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import Grid from '@material-ui/core/Grid';
-import SaveIcon from '@material-ui/icons/Save';
+import Grid from '@mui/material/Grid';
+import SaveIcon from '@mui/icons-material/Save';
 
 //STYLE
-import { withStyles } from '@material-ui/styles';
+import { withStyles } from '@mui/styles';
 import style from './style'
 
 import Widget from "components/Widget";
@@ -347,7 +347,7 @@ class createObject_ extends Component {
                                     label="Select object type"
                                     dataset={this.state.object_type_list}
                                     type="single"
-                                    maxMenu={100}
+                                    maxMenu={300}
                                 />
                             </Grid>
 

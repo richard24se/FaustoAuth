@@ -1,18 +1,14 @@
-import { makeStyles } from "@material-ui/styles";
+import { makeStyles } from "@mui/styles";
 //Colors from material-ui
-import {grey } from '@material-ui/core/colors';
-import green from '@material-ui/core/colors/green';
-import blue from '@material-ui/core/colors/blue';
-import red from '@material-ui/core/colors/red';
-import purple from '@material-ui/core/colors/purple';
-import pink from '@material-ui/core/colors/pink';
+import { grey, green, blue, red, purple, pink } from '@mui/material/colors';
+
 
 import tinycolor from "tinycolor2";
 const darkenRate = 10;
 const lightenRate = 7.5;
 
 const baseColorsStyle = {
-  red:{
+  red: {
     color: red['A400']
   },
   green: {
@@ -42,7 +38,7 @@ const baseColorsStyle = {
 const colors = (color) => {
 
   var primary = grey[800]
-  switch(color){
+  switch (color) {
     case 'red':
       primary = red['A400']
       break
@@ -81,4 +77,4 @@ const classStyles = theme => (baseColorsStyle);
 
 const hooksStyles = makeStyles(theme => (baseColorsStyle));
 
-export {classStyles, hooksStyles, baseColorsStyle, colors}
+export { classStyles, hooksStyles, baseColorsStyle, colors }

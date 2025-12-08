@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Paper, Typography, Button } from "@material-ui/core";
+import { Grid, Paper, Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import classnames from "classnames";
 

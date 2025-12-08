@@ -1,28 +1,53 @@
 # -*- coding: utf-8 -*-
-
-import os
 from datetime import timedelta
-
-from dotenv import load_dotenv
-
-load_dotenv()
-load_dotenv(verbose=True, dotenv_path=".env")
+from pydantic_settings import BaseSettings
 
 
-# DATABASE
-DB_NAME = os.getenv("DB_NAME", "Fausto")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWD", "faustoauthdb24$")
-DB_HOST = os.getenv("DB_HOST", "auth_db_postgres")
-DB_PORT = os.getenv("DB_PORT", "5432")
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables.
 
-# JWT
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "fausto_auth32adadasdsa")
-JWT_TOKEN_EXPIRES = os.getenv("JWT_TOKEN_EXPIRES", 2409)
-JWT_TOKEN_REFRESH_EXPIRES = os.getenv("JWT_TOKEN_REFRESH_EXPIRES", 240900)
-JWT_SYSTEM = os.getenv("JWT_SYSTEM", "FaustoAuth")
-JWT_TOKEN_FORMAT = os.getenv("JWT_TOKEN_FORMAT")
-# REDIS
-ACCESS_EXPIRES = timedelta(seconds=JWT_TOKEN_EXPIRES)
+    Utilizes Pydantic's BaseSettings for automatic validation and type casting.
+    """
 
-DEBUG = os.getenv("DEBUG", False)
+    # --- Application ---
+    DEBUG: bool = False
+
+    # --- Database (PostgreSQL) ---
+    DB_NAME: str = "Fausto"
+    DB_USER: str = "root"
+    DB_PASSWORD: str = "faustoauthdb24$"
+    # DB_HOST: str = "auth_db_postgres"
+    DB_HOST: str = "localhost"
+    # DB_PORT: int = 5432
+    DB_PORT: int = 5464
+
+    # --- Cache (Redis) ---
+    REDIS_HOST: str = "localhost"
+    # REDIS_HOST: str = "auth_cache"
+    REDIS_PORT: int = 6379
+
+    # --- JWT Authentication ---
+    JWT_SECRET_KEY: str = "fausto_auth32adadasdsa"
+    JWT_SYSTEM: str = "FaustoAuth"
+    # Token expiration times in seconds
+    JWT_TOKEN_EXPIRES: int = 2409  # ~40 minutes
+    JWT_TOKEN_REFRESH_EXPIRES: int = 240900  # ~2.8 days
+
+    @property
+    def ACCESS_EXPIRES(self) -> timedelta:
+        """Converts token expiration from seconds to a timedelta object.
+
+        Returns:
+            timedelta: The access token expiration as a timedelta object.
+        """
+        return timedelta(seconds=self.JWT_TOKEN_EXPIRES)
+
+    class Config:
+        # This allows pydantic to read from a .env file if python-dotenv is installed
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = False
+
+
+# Make a single, importable instance of the settings
+settings = Settings()

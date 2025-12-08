@@ -1,10 +1,9 @@
 import React, { Component } from "react";
-import Grid from '@material-ui/core/Grid';
-import SaveIcon from '@material-ui/icons/Save';
+import Grid from '@mui/material/Grid';
+import SaveIcon from '@mui/icons-material/Save';
 
-//STYLE
-import { withStyles } from '@material-ui/styles';
-import style from './style'
+
+
 
 import Widget from "components/Widget";
 import {
@@ -16,8 +15,8 @@ import { Fotch, capitalize, authHeader } from 'fausto'
 
 //Redux
 import { connect } from 'react-redux';
-import { fotchActions } from 'redux/actions'
-import { mapDispatchToPropsNoti } from "redux/dispatchs"
+import { fotchActions } from 'store/actions'
+import { mapDispatchToPropsNoti } from "store/dispatchs"
 
 // import moment from "moment";
 
@@ -175,7 +174,8 @@ class createObject_ extends Component {
                 var objects = obj.response.data;
                 format_objects = objects.map(item => ({
                     ...item,
-                    display_name: capitalize(item.display_name),
+                    
+                    display_name: capitalize(item.display_name),                    
                     object_type: obtainObjectTypeName(item.id_object_type),
                 }));
                 // this.props.notisuccess(obj.response.msg)
@@ -227,7 +227,10 @@ class createObject_ extends Component {
         // Change id_object_ty for the name
         var obtainObjectType = (id_type) => { for (var type of this.state.object_type_list) if (id_type === type.id) return { value: type.id, label: type.name } }
 
+        console.log("#handleUpdate", dataIndex)
+
         console.log(dataIndex)
+        console.log(this.state.object_table.data)
         if (dataIndex || dataIndex === 0) {
             const object = this.state.object_table.data[dataIndex];
             this.setState({
@@ -343,7 +346,7 @@ class createObject_ extends Component {
                                     label="Select object type"
                                     dataset={this.state.object_type_list}
                                     type="single"
-                                    maxMenu={100}
+                                    maxMenu={200}
                                 />
                             </Grid>
 
@@ -380,6 +383,6 @@ class createObject_ extends Component {
     }
 }
 const mapDispatchToProps = (dispatch) => ({ ...mapDispatchToPropsNoti(dispatch), dispatch })
-const createObject = withStyles(style)(createObject_)
+const createObject = createObject_
 const connectedComponent = connect(null, mapDispatchToProps)(createObject)
 export { connectedComponent as createObject };

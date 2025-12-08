@@ -1,9 +1,9 @@
 import React from 'react';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import CircularProgress from '@mui/material/CircularProgress';
+import { fade } from '@mui/material/styles/colorManipulator';
 
 
-import { useTheme } from '@material-ui/core/styles';
+import { useTheme } from '@mui/material/styles';
 
 
 //const useStyles = makeStyles(theme => ({}));

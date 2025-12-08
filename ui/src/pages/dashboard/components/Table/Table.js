@@ -5,7 +5,7 @@ import {
   TableHead,
   TableBody,
   TableCell,
-} from "@material-ui/core";
+} from "@mui/material";
 
 // components
 import { Button } from "../../../../components/Wrappers";

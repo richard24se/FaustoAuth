@@ -4,31 +4,31 @@ import {
   AppBar,
   Toolbar,
   IconButton,
-  // InputBase,
+  InputBase, // Uncommented
   Menu,
   MenuItem,
   Fab,
-
-} from "@material-ui/core";
-// import Chip from '@material-ui/core/Chip';
-//import FaceIcon from '@material-ui/icons/Face';
-// import SimCardIcon from '@material-ui/icons/SimCard';
+  Typography, // Imported from @mui/material
+  List, // Added for StyledHeaderMenuList
+} from "@mui/material";
+// import Chip from '@mui/material/Chip';
+//import FaceIcon from '@mui/icons-material/Face';
+// import SimCardIcon from '@mui/icons-material/SimCard';
 import {
   Menu as MenuIcon,
   // MailOutline as MailIcon,
   // NotificationsNone as NotificationsIcon,
   Person as AccountIcon,
-  // Search as SearchIcon,
+  Search as SearchIcon, // Uncommented
   Send as SendIcon,
   ArrowBack as ArrowBackIcon,
-} from "@material-ui/icons";
+} from "@mui/icons-material";
 import classNames from "classnames";
 
 // styles
-import useStyles from "./styles";
+import { StyledLogotype, StyledAppBar, StyledToolbar, StyledHide, StyledGrow, StyledSearch, StyledSearchIcon, StyledInputBase, StyledMessageContent, StyledHeaderMenu, StyledHeaderMenuList, StyledHeaderMenuItem, StyledHeaderMenuButton, StyledHeaderIcon, StyledProfileMenu, StyledProfileMenuUser, StyledProfileMenuItem, StyledProfileMenuIcon, StyledProfileMenuLink, StyledMessageNotification, StyledMessageNotificationSide, StyledMessageNotificationBodySide, StyledSendMessageButton, StyledSendButtonIcon, StyledRedSoft, StyledLogotypeImage } from "./styles";
 import logo from "../../themes/logo2.png";
 // components
-import {Typography } from "../Wrappers/Wrappers";
 import Notification from "../Notification/Notification";
 import UserAvatar from "../UserAvatar/UserAvatar";
 
@@ -101,7 +101,7 @@ const notifications = [
 ];
 
 function Header(props) {
-  var classes = useStyles();
+  // var classes = useStyles(); // Removed
 
   // global
   var layoutState = useLayoutState();
@@ -114,11 +114,11 @@ function Header(props) {
   var [notificationsMenu, setNotificationsMenu] = useState(null);
   // var [isNotificationsUnread, setIsNotificationsUnread] = useState(true);
   var [profileMenu, setProfileMenu] = useState(null);
-  // var [isSearchOpen, setSearchOpen] = useState(false);
+  var [isSearchOpen, setSearchOpen] = useState(false); // Uncommented
 
   //var [pirateState, setPirateState] = useState(null);
   //Handle init state
-  const {dispatch} = props;
+  const { dispatch } = props;
 
   useEffect(() => {
     //dispatch(userActions.getAll())
@@ -129,7 +129,7 @@ function Header(props) {
   // const { user } = props;
   const { history } = props;
 
-  var handleLogout = (e) =>{
+  var handleLogout = (e) => {
     /*
     const { dispatch } = props;
     dispatch(userActions.logout() );*/
@@ -137,47 +137,34 @@ function Header(props) {
     // history.push("/login")
     history.push({
       pathname: "/login",
-      state: { 
-          from: props.location
+      state: {
+        from: props.location
       }
     })
   };
 
   return (
-    <AppBar position="fixed" className={classes.appBar}>
-      <Toolbar className={classes.toolbar}>
-        <IconButton
+    <StyledAppBar position="fixed">
+      <StyledToolbar>
+        <StyledHeaderMenuButton
           color="inherit"
           onClick={() => toggleSidebar(layoutDispatch)}
-          className={classNames(
-            classes.headerMenuButton,
-            classes.headerMenuButtonCollapse,
-          )}
+          isCollapsed={layoutState.isSidebarOpened}
         >
           {layoutState.isSidebarOpened ? (
-            <ArrowBackIcon
-              classes={{
-                root: classNames(
-                  classes.headerIcon,
-                  classes.headerIconCollapse,
-                ),
-              }}
-            />
+            <StyledHeaderIcon isCollapsed={layoutState.isSidebarOpened}>
+              <ArrowBackIcon />
+            </StyledHeaderIcon>
           ) : (
-            <MenuIcon
-              classes={{
-                root: classNames(
-                  classes.headerIcon,
-                  classes.headerIconCollapse,
-                ),
-              }}
-            />
+            <StyledHeaderIcon isCollapsed={layoutState.isSidebarOpened}>
+              <MenuIcon />
+            </StyledHeaderIcon>
           )}
-        </IconButton>
-        {/* <Typography variant="h1" weight="medium" className={classes.logotype}>
+        </StyledHeaderMenuButton>
+        {/* <StyledLogotype variant="h1" weight="medium">
           Fausto Auth
-        </Typography> */}
-        <img src={logo} alt="logo" className={classes.logotypeImage} />
+        </StyledLogotype> */}
+        <StyledLogotypeImage src={logo} alt="logo" />
         {/*
         <Chip
           icon={<SimCardIcon />}
@@ -186,28 +173,17 @@ function Header(props) {
           className={classNames(classes.chip,classes.red_soft)}
           color="primary"
         />*/}
-        <div className={classes.grow} />
-        {/* <div
-          className={classNames(classes.search, {
-            [classes.searchFocused]: isSearchOpen,
-          })}
-        >
-          <div
-            className={classNames(classes.searchIcon, {
-              [classes.searchIconOpened]: isSearchOpen,
-            })}
-            onClick={() => setSearchOpen(!isSearchOpen)}
-          >
-            <SearchIcon classes={{ root: classes.headerIcon }} />
-          </div>
-          <InputBase
+        <StyledGrow />
+        {/* <StyledSearch isFocused={isSearchOpen}>
+          <StyledSearchIcon isOpened={isSearchOpen} onClick={() => setSearchOpen(!isSearchOpen)}>
+            <StyledHeaderIcon>
+              <SearchIcon />
+            </StyledHeaderIcon>
+          </StyledSearchIcon>
+          <StyledInputBase
             placeholder="Search…"
-            classes={{
-              root: classes.inputRoot,
-              input: classes.inputInput,
-            }}
           />
-        </div> */}
+        </StyledSearch> */}
         {/* <IconButton  //Notificaciones
           color="inherit"
           aria-haspopup="true"
@@ -242,155 +218,133 @@ function Header(props) {
             <MailIcon classes={{ root: classes.headerIcon }} />
           </Badge>
         </IconButton> */}
-        <IconButton
+        <StyledHeaderMenuButton
           aria-haspopup="true"
           color="inherit"
-          className={classes.headerMenuButton}
           aria-controls="profile-menu"
           onClick={e => setProfileMenu(e.currentTarget)}
         >
-          <AccountIcon classes={{ root: classes.headerIcon }} />
-        </IconButton>
-        <Menu
+          <StyledHeaderIcon>
+            <AccountIcon />
+          </StyledHeaderIcon>
+        </StyledHeaderMenuButton>
+        
+        <StyledHeaderMenu
           id="mail-menu"
           open={Boolean(mailMenu)}
           anchorEl={mailMenu}
           onClose={() => setMailMenu(null)}
-          MenuListProps={{ className: classes.headerMenuList }}
-          className={classes.headerMenu}
-          classes={{ paper: classes.profileMenu }}
+          MenuListProps={{ component: StyledHeaderMenuList }}
+          component={StyledProfileMenu} // This applies classes.profileMenu to the paper
           disableAutoFocusItem
         >
-          <div className={classes.profileMenuUser}>
+          <StyledProfileMenuUser>
             <Typography variant="h4" weight="medium">
               New Messages
             </Typography>
-            <Typography
-              className={classes.profileMenuLink}
+            <StyledProfileMenuLink
               component="a"
               color="secondary"
             >
               {messages.length} New Messages
-            </Typography>
-          </div>
+            </StyledProfileMenuLink>
+          </StyledProfileMenuUser>
           {messages.map(message => (
-            <MenuItem key={message.id} className={classes.messageNotification}>
-              <div className={classes.messageNotificationSide}>
-                <UserAvatar color={message.variant} name={message.name} />
-                <Typography size="sm" color="text" colorBrightness="secondary">
-                  {message.time}
-                </Typography>
-              </div>
-              <div
-                className={classNames(
-                  classes.messageNotificationSide,
-                  classes.messageNotificationBodySide,
-                )}
-              >
-                <Typography weight="medium" gutterBottom>
-                  {message.name}
-                </Typography>
-                <Typography color="text" colorBrightness="secondary">
-                  {message.message}
-                </Typography>
-              </div>
+            <MenuItem key={message.id}>
+              <StyledMessageNotification>
+                <StyledMessageNotificationSide>
+                  <UserAvatar color={message.variant} name={message.name} />
+                  <Typography size="sm" color="text" colorBrightness="secondary">
+                    {message.time}
+                  </Typography>
+                </StyledMessageNotificationSide>
+                <StyledMessageNotificationBodySide>
+                  <Typography weight="medium" gutterBottom>
+                    {message.name}
+                  </Typography>
+                  <Typography color="text" colorBrightness="secondary">
+                    {message.message}
+                  </Typography>
+                </StyledMessageNotificationBodySide>
+              </StyledMessageNotification>
             </MenuItem>
           ))}
           <Fab
             variant="extended"
             color="primary"
             aria-label="Add"
-            className={classes.sendMessageButton}
+            component={StyledSendMessageButton}
           >
             Send New Message
-            <SendIcon className={classes.sendButtonIcon} />
+            <StyledSendButtonIcon>
+              <SendIcon />
+            </StyledSendButtonIcon>
           </Fab>
-        </Menu>
-        <Menu
+        </StyledHeaderMenu>
+        <StyledHeaderMenu
           id="notifications-menu"
           open={Boolean(notificationsMenu)}
           anchorEl={notificationsMenu}
           onClose={() => setNotificationsMenu(null)}
-          className={classes.headerMenu}
           disableAutoFocusItem
         >
           {notifications.map(notification => (
-            <MenuItem
+            <StyledHeaderMenuItem
               key={notification.id}
               onClick={() => setNotificationsMenu(null)}
-              className={classes.headerMenuItem}
             >
               <Notification {...notification} typographyVariant="inherit" />
-            </MenuItem>
+            </StyledHeaderMenuItem>
           ))}
-        </Menu>
-        <Menu
+        </StyledHeaderMenu>
+        <StyledProfileMenu
           id="profile-menu"
           open={Boolean(profileMenu)}
           anchorEl={profileMenu}
           onClose={() => setProfileMenu(null)}
-          className={classes.headerMenu}
-          classes={{ paper: classes.profileMenu }}
           disableAutoFocusItem
         >
-          {/* <div className={classes.profileMenuUser}>
+          {/* <StyledProfileMenuUser>
             <Typography variant="h4" weight="medium">
               {user.usuario}
             </Typography> */}
-            {/* <Typography
-              className={classes.profileMenuLink}
+          {/* <StyledProfileMenuLink
               component="a"
               color="primary"
               href=""
             >
               Sole
-            </Typography> */}
-          {/* </div> */}
-          {/* <MenuItem
-            className={classNames(
-              classes.profileMenuItem,
-              classes.headerMenuItem,
-            )}
-          >
-            <AccountIcon className={classes.profileMenuIcon} /> Profile
-          </MenuItem> */}
-          {/* <MenuItem
-            className={classNames(
-              classes.profileMenuItem,
-              classes.headerMenuItem,
-            )}
-          >
-            <AccountIcon className={classes.profileMenuIcon} /> Tasks
-          </MenuItem> */}
-          {/* <MenuItem
-            className={classNames(
-              classes.profileMenuItem,
-              classes.headerMenuItem,
-            )}
-          >
-            <AccountIcon className={classes.profileMenuIcon} /> Messages
-          </MenuItem> */}
-          <div className={classes.profileMenuUser}>
-            <Typography
-              className={classes.profileMenuLink}
+            </StyledProfileMenuLink> */}
+          {/* </StyledProfileMenuUser> */}
+          {/* <StyledProfileMenuItem>
+            <StyledProfileMenuIcon /> Profile
+          </StyledProfileMenuItem> */}
+          {/* <StyledProfileMenuItem>
+            <StyledProfileMenuIcon /> Tasks
+          </StyledProfileMenuItem> */}
+          <StyledProfileMenuItem>
+            <StyledProfileMenuIcon /> Messages
+          </StyledProfileMenuItem>
+          <StyledProfileMenuUser>
+            <StyledProfileMenuLink
               color="primary"
               onClick={() => handleLogout()}
               to="/login"
             >
               Log out
-            </Typography>
-          </div>
-        </Menu>
-      </Toolbar>
-    </AppBar>
+            </StyledProfileMenuLink>
+          </StyledProfileMenuUser>
+        </StyledProfileMenu>
+      </StyledToolbar>
+    </StyledAppBar>
   );
 }
 function mapStateToProps(state) {
   const { users, authentication } = state;
   const { user } = authentication;
   return {
-      user,
-      users
+    user,
+    users
   };
 }
 const connectedHeader = connect(mapStateToProps)(Header);

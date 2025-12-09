@@ -23,11 +23,10 @@ import {
     LocalizationProvider,
     TimePicker,
     DatePicker,
-} from '@mui/lab';
-//import DateFnsUtils from '@date-io/date-fns';
-import MomentUtils from "@date-io/moment";
-import moment from "moment";
-import "moment/locale/es";
+} from '@mui/x-date-pickers';
+import DateFnsUtils from '@date-io/date-fns';
+import { es } from "date-fns/locale";
+
 
 import Button from '@mui/material/Button';
 
@@ -138,21 +137,11 @@ class EasyTextField_ extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        // if (this.props.state !== nextProps.state) {
-        //     console.log("EasyTextfield changing...")
-        //     console.log("#----------->Actual Props<------------#")
-        //     console.log(this.props)
-        //     console.log("#----------->Next Props<------------#")
-        //     console.log(nextProps)
-        // }
-
         return this.props !== nextProps || this.state !== nextState; //props que cambian, sólo con esas se renderiza
 
     }
 
     handleClickShowPassword = () => {
-        console.log("Visibility change")
-        console.log(this.state.showPassword)
         this.setState({ showPassword: !this.state.showPassword });
     };
 
@@ -207,13 +196,10 @@ class EasyTextField_ extends Component {
                         onKeyPress={(ev) => {
                             if (this.props.press) {
                                 const pressKey = this.props.presskey ? this.props.presskey : 'Enter';
-                                console.log("Tecla presionada: " + ev.keyCode)
                                 if (ev.key === pressKey) {
                                     this.props.press()
                                 }
-                            }//else
-                            //console.log("No se envió la propiedad press")
-
+                            }
                         }}
                         {...newProps}
 
@@ -280,32 +266,11 @@ EasyTextField_.defaultProps = {
 class EasyPicker_ extends Component {
     constructor(props) {
         super(props);
-        this.locale = this.props.locale ? this.props.locale : "es"
+        this.locale = this.props.locale ? this.props.locale : es
     }
 
 
-    componentDidMount() {
-        // console.log(this.locale)
-        // console.log(this.props)
-        moment.locale(this.locale);
-
-    }
     shouldComponentUpdate(nextProps, nextState) {
-        // console.log("EasyPicker ###########Debugging changing...")
-        // Object.entries(this.props).forEach(([key, value]) => {
-        //     if (value !== nextProps[key]) {
-        //         console.log("#!ALERTA!")
-        //         console.log(value)
-        //         console.log(nextProps[key])
-        //     }
-        // })
-        // if (this.props.state !== nextProps.state) {
-        //     console.log("EasyPicker changing...")
-        //     console.log("#----------->Actual Props<------------#")
-        //     console.log(this.props)
-        //     console.log("#----------->Next Props<------------#")
-        //     console.log(nextProps)
-        // }
         return this.props.state !== nextProps.state; //props que cambian, sólo con esas se renderiza
     }
 
@@ -319,7 +284,7 @@ class EasyPicker_ extends Component {
         switch (this.props.type) {
             case 'time':
                 return (
-                    <LocalizationProvider utils={(MomentUtils)} libInstance={moment} locale={this.locale}>
+                    <LocalizationProvider dateAdapter={DateFnsUtils} locale={this.locale}>
                         <StyledPicker>
                             <TimePicker
                                 margin="normal"
@@ -338,7 +303,7 @@ class EasyPicker_ extends Component {
                 );
             case 'date':
                 return (
-                    <LocalizationProvider utils={(MomentUtils)} libInstance={moment} locale={this.locale}>
+                    <LocalizationProvider dateAdapter={DateFnsUtils} locale={this.locale}>
                         <StyledPicker>
                             <DatePicker
                                 margin="normal"
@@ -350,8 +315,8 @@ class EasyPicker_ extends Component {
                                     'aria-label': 'change time',
                                 }}
                                 cancelLabel="Cancelar"
-                                format={this.props.formatDate ? this.props.formatDate : "YYYY/MM/DD"}
-                                views={this.props.views ? this.props.views : ["year", "month", "date"]}
+                                format={this.props.formatDate ? this.props.formatDate : "yyyy/MM/dd"}
+                                views={this.props.views ? this.props.views : ["year", "month", "day"]}
                                 {...newProps}
                             />
                         </StyledPicker>
@@ -458,11 +423,6 @@ class EasyAutoSelect_ extends Component { //RSE Pendiente revisión de performan
         return this.props.dataset.map(item => ({ value: item.id, label: item.value }))
     }
     shouldComponentUpdate(nextProps, nextState) {
-
-        if (this.props.dataset !== nextProps.dataset || this.props.state !== nextProps.state)
-            console.log("EasyAutoselect changing...")
-
-
         return this.props.dataset !== nextProps.dataset || this.props.state !== nextProps.state; //props que cambian, sólo con esas se renderiza
     }
     render() {
@@ -489,22 +449,6 @@ class EasyMaterialTable_ extends Component {
 
 
     shouldComponentUpdate(nextProps, nextState) {
-
-        console.log("#----------------START----------------#")
-        /*
-        console.log("#----------->Actual State<------------#")
-        console.log(this.state)
-        console.log("#----------->Next State<------------#")
-        console.log(nextState)
-        console.log("#-----------------------------------#")
-        */
-        console.log("#----------->Actual Props<------------#")
-        console.log(this.props)
-        console.log("#----------->Next Props<------------#")
-        console.log(nextProps)
-        console.log("#----------------END----------------#")
-        //var rsp = (this.props !== nextProps);
-        //console.log("Should component update? rsp: "+rsp)
         return this.props.state !== nextProps.state;
     }
     render() {
@@ -518,14 +462,6 @@ class EasyMuiDataTable_ extends Component {
         super(props);
     }*/
     shouldComponentUpdate(nextProps, nextState) {
-
-        // console.log("#----------->Actual Props<------------#")
-        // console.log(this.props)
-        // console.log("#----------->Next Props<------------#")
-        // console.log(nextProps)
-        // console.log("#----------------END----------------#")
-        const msg = (this.props.state !== nextProps.state) ? "Render MuiDatatable!" : "No Render MuiDatatable"
-        console.log(msg);
         return this.props.state !== nextProps.state;
     }
     abortController = new AbortController();
@@ -610,21 +546,12 @@ class EasyDialog_ extends Component {
         }
     }
     shouldComponentUpdate(nextProps, nextState) {
-
-        // console.log("#----------->Actual Props<------------#")
-        // console.log(this.props)
-        // console.log("#----------->Next Props<------------#")
-        // console.log(nextProps)
-        // console.log("#----------------END----------------#")
-        const msg = (this.props.state !== nextProps.state) ? "Render Dialog!" : "No Render Dialog"
-        console.log(msg);
         if (this.props.state) //Sólo en caso de propiedad state para formulario valida la diferencia
             return this.props.state !== nextProps.state;
         return true;
     }
     //Handle para confirm y form
     handleOK = (value) => {
-        console.log("Valor elegido del confirmDialog: " + value);
         this.setState({ isOK: value });
         //this.setState({isOpen: false});
         //Envía al el valor elegido: true o false, al handle dialog: arrow externa
@@ -774,7 +701,6 @@ const EasySlider_ = memo((props) => {
     }
 
     const defaultValueText = (value) => {
-        //console.log("TEXT " + value)
         return `${value}%`;
     }
     return (

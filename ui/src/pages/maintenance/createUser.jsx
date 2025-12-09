@@ -5,8 +5,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import LockIcon from '@mui/icons-material/Lock';
 
 //STYLE
-import { withStyles } from "@mui/styles";
-import style from "./style";
+import useStyles from "./styles";
 
 //EASY_MATERIAL
 import Widget from "components/Widget/Widget";
@@ -81,7 +80,6 @@ const FormButton = (props) => {
         );
     }
     else {
-        console.log("Button Type doesn't exist")
         return (<></>)
     }
 }
@@ -137,8 +135,6 @@ class createUser_ extends Component {
     }
 
     handleOverride = (value, name) => {
-        console.log("Value handleOverride", value);
-        console.log("handleOverride of " + name + ": " + value);
         if (value !== null) {
             this.setState({ [name]: value });
         } else {
@@ -149,8 +145,6 @@ class createUser_ extends Component {
     }
 
     comparePasword = (name, value) => {
-        console.log("validate COMPARE")
-        console.log(name, value)
         if (this.state.updatePassword) {
             switch (name) {
                 case 'validate_user_password':
@@ -185,7 +179,6 @@ class createUser_ extends Component {
     }
 
     resetForm = (name, table) => {
-        console.log('CANCELAR FORMULARIO ' + name)
         this.setState({
             button_type: "create",
             id_user: "",
@@ -204,7 +197,6 @@ class createUser_ extends Component {
 
     getRoles = () => {
         fotchAuth.get("/role", obj => {
-            console.log(obj);
             var format_roles = []
             if (!obj.error) {
                 var roles = obj.response.data;
@@ -228,7 +220,6 @@ class createUser_ extends Component {
         var obtainRoleName = (id_role) => { for (var role of this.state.roles_list) if (id_role === role.id) return capitalize(role.name) }
         this.props.dispatch(fotchActions.processing("Getting users..."))
         fotchAuth.get("/user", obj => {
-            console.log(obj);
             if (!obj.error) {
                 var users = obj.response.data;
                 let format_users = users.map(item => ({
@@ -301,7 +292,6 @@ class createUser_ extends Component {
         // Change id_role for the name
         var obtainRoleName = (id_role) => { for (var role of this.state.roles_list) if (id_role === role.id) return { value: role.id, label: capitalize(role.name) } }
 
-        console.log(dataIndex)
         if (dataIndex || dataIndex === 0) {
             const user = this.state.user_table.data[dataIndex];
             this.setState({
@@ -367,7 +357,6 @@ class createUser_ extends Component {
     }
 
     handleDelete = dataIndex => {
-        console.log(dataIndex)
         if (dataIndex || dataIndex === 0) {
             const user = this.state.user_table.data[dataIndex];
             this.deleteRole(user.id)
@@ -379,7 +368,6 @@ class createUser_ extends Component {
 
     deleteRole = id_user => {
         fotchAuth.del("/user/" + id_user, obj => {
-            console.log(obj);
             this.props.dispatch(fotchActions.processing("Deleting user..."))
             if (!obj.error) {
                 this.props.notisuccess(obj.response.msg)
@@ -396,6 +384,7 @@ class createUser_ extends Component {
     }
 
     render() {
+        const { classes } = this.props;
         return (
             <>
                 <PageTitle title={this.state.titulo} />
@@ -572,6 +561,10 @@ class createUser_ extends Component {
     }
 }
 
-const createUser = withStyles(style)(createUser_);
-const connectedComponent = connect()(createUser)
+const CreateUserWrapper = (props) => {
+    const { classes } = useStyles();
+    return <createUser_ {...props} classes={classes} />;
+};
+
+const connectedComponent = connect()(CreateUserWrapper);
 export { connectedComponent as createUser };

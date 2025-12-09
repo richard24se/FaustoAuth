@@ -43,16 +43,9 @@ export default function SidebarLink({
 
 
   useEffect(() => {
-    console.log("SiderbarLink debug ------->")
-    console.log(`l ${link} p ${location.pathname} i ${location.pathname.indexOf(link)} e ${location.pathname === link || location.pathname.indexOf(link) !== -1}`)
     if (myItemRef.current && myItemRef.current.firstChild) { // Add check for firstChild
-      console.log(myItemRef)
-      console.log(myItemRef.current.innerHTML)
       const { scrollWidth, offsetWidth } = myItemRef.current.firstChild;
-      console.log(label)
-      console.log(scrollWidth, offsetWidth)
       if (scrollWidth - offsetWidth > 1) {
-        console.log(scrollWidth - offsetWidth)
         setNeedTooltip(true)
       }
     }
@@ -73,8 +66,8 @@ export default function SidebarLink({
     return (
       <StyledLink
         button
-        component={link && Link}
-        to={link}
+        component={Link}
+        to={link || ''}
         isActive={isLinkActive && !nested}
         isNested={nested}
         disableRipple
@@ -107,8 +100,9 @@ export default function SidebarLink({
     <>
       <StyledLink
         button
-        component={link && Link}
+        component={Link}
         onClick={toggleCollapse}
+        to={link || ''}
         isActive={isLinkActive}
         hasRightBorder={isLinkActive}
         isRightBorderHidden={!isLinkActive}

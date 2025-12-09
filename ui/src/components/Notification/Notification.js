@@ -42,7 +42,7 @@ const typesIcons = {
 };
 
 export default function Notification({ variant, ...props }) {
-  var classes = useStyles();
+  const { classes } = useStyles();
   var theme = useTheme();
 
   const icon = getIconByType(props.type);

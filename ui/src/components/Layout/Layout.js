@@ -1,9 +1,8 @@
 import React from "react";
 import {
   Route,
-  Switch,
-  Redirect,
-  withRouter,
+  Routes,
+  Navigate,
 } from "react-router-dom";
 import classnames from "classnames";
 
@@ -36,40 +35,40 @@ function Layout(props) {
   return (
     <StyledRoot>
       <>
-        <Header history={props.history} />
+        <Header />
         <Sidebar />
         <StyledContent
           isShifted={layoutState.isSidebarOpened}
         >
           <StyledFakeToolbar />
-          <Switch>
+          <Routes>
             {
               routes.map(e => {
-                return <Route exact path={e.path} component={e.component} />
+                return <Route exact path={e.path.replace("/app", "")} element={<e.component />} />
               })
             }
 
 
 
-            <Route path="/app/typography" component={Typography} />
-            <Route path="/app/tables" component={Tables} />
-            <Route path="/app/notifications" component={Notifications} />
+            <Route path="/typography" element={<Typography />} />
+            <Route path="/tables" element={<Tables />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route
               exact
-              path="/app/ui"
-              render={() => <Redirect to="/app/ui/icons" />}
+              path="/ui"
+              element={<Navigate to="/app/ui/icons" />}
             />
-            <Route path="/app/ui/maps" component={Maps} />
-            {/* <Route path="/app/ui/icons" component={Icons} /> */}
-            <Route path="/app/ui/charts" component={Charts} />
+            <Route path="/ui/maps" element={<Maps />} />
+            {/* <Route path="/ui/icons" element={<Icons />} /> */}
+            <Route path="/ui/charts" element={<Charts />} />
 
 
-            <Redirect to='/' />
-          </Switch>
+            <Route path="*" element={<Navigate to='/' />} />
+          </Routes>
         </StyledContent>
       </>
     </StyledRoot>
   );
 }
 
-export default withRouter(Layout);
+export default Layout;

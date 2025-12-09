@@ -42,7 +42,7 @@ const PieChartData = [
 ];
 
 export default function Dashboard(props) {
-  var classes = useStyles();
+  const { classes } = useStyles();
   var theme = useTheme();
 
   // local

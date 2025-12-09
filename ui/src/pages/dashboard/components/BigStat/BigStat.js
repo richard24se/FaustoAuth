@@ -14,7 +14,7 @@ import { Typography } from "../../../../components/Wrappers";
 
 export default function BigStat(props) {
   var { product, total, color, registrations, bounce } = props;
-  var classes = useStyles();
+  const { classes } = useStyles();
   var theme = useTheme();
 
   // local

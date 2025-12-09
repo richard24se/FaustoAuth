@@ -1,10 +1,7 @@
 import { tss } from "tss-react/mui";
 
 const useStyles = tss.create(({ theme }) => ({
-  mapContainer: {
-    height: "100%",
-    margin: -theme.spacing(1) * 3,
-  },
+  // Add your styles here
 }));
 
 export default useStyles;

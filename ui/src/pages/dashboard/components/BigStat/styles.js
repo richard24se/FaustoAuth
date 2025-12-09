@@ -1,6 +1,6 @@
-import { makeStyles } from "@mui/styles";
+import { tss } from "tss-react/mui";
 
-export default makeStyles(theme => ({
+const useStyles = tss.create(({ theme }) => ({
   title: {
     display: "flex",
     flexDirection: "row",
@@ -43,3 +43,5 @@ export default makeStyles(theme => ({
     },
   },
 }));
+
+export default useStyles;

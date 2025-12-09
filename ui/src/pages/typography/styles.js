@@ -1,6 +1,6 @@
-import { makeStyles } from "@mui/styles";
+import { tss } from "tss-react/mui";
 
-export default makeStyles(theme => ({
+const useStyles = tss.create(({ theme }) => ({
   dashedBorder: {
     border: "1px dashed",
     borderColor: theme.palette.primary.main,
@@ -13,3 +13,5 @@ export default makeStyles(theme => ({
     marginBottom: theme.spacing(2),
   },
 }));
+
+export default useStyles;

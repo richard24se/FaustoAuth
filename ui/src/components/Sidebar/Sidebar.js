@@ -16,7 +16,7 @@ import {
   ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-import { withRouter } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import classNames from "classnames";
 
 // styles
@@ -68,8 +68,9 @@ const structure = [
   { id: 11, label: "FAQ", link: "https://flatlogic.com/templates/react-material-admin-full", icon: <FAQIcon /> },
 ];
 
-function Sidebar({ location, history }) {
+function Sidebar() {
   var theme = useTheme();
+  const location = useLocation();
 
   // global
   var { isSidebarOpened } = useLayoutState();
@@ -126,4 +127,4 @@ function Sidebar({ location, history }) {
   }
 }
 
-export default withRouter(Sidebar);
+export default Sidebar;

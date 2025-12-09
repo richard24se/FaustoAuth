@@ -1,6 +1,6 @@
-import { makeStyles } from "@mui/styles";
+import { tss } from "tss-react/mui";
 
-export default makeStyles(theme => ({
+const useStyles = tss.create(({ theme }) => ({
   card: {
     minHeight: "100%",
     display: "flex",
@@ -113,3 +113,5 @@ export default makeStyles(theme => ({
     marginLeft: theme.spacing(1),
   },
 }));
+
+export default useStyles;

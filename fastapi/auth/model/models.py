@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, SmallInteger, String, Text, func
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, SmallInteger, String, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # All tables in this model will be created in the 'auth' schema.
@@ -25,7 +25,7 @@ class AuditType(Base):
     __tablename__ = "audit_type"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     created_date: Mapped[datetime] = mapped_column(
         DateTime(True), server_default=func.now(), nullable=False
@@ -43,7 +43,7 @@ class ObjectType(Base):
     __tablename__ = "object_type"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     created_date: Mapped[datetime] = mapped_column(
         DateTime(True), server_default=func.now(), nullable=False
@@ -61,7 +61,7 @@ class PermissionType(Base):
     __tablename__ = "permission_type"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     created_date: Mapped[datetime] = mapped_column(
         DateTime(True), server_default=func.now(), nullable=False
@@ -81,7 +81,7 @@ class Role(Base):
     __tablename__ = "role"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     display_name: Mapped[Optional[str]] = mapped_column(String(50))
     created_date: Mapped[datetime] = mapped_column(
@@ -103,7 +103,7 @@ class Object(Base):
     __tablename__ = "object"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     display_name: Mapped[Optional[str]] = mapped_column(Text)
     id_object_type: Mapped[int] = mapped_column(
@@ -127,16 +127,17 @@ class User(Base):
     __tablename__ = "user"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     password: Mapped[str] = mapped_column(Text, nullable=False)
     names: Mapped[Optional[str]] = mapped_column(Text)
     surnames: Mapped[Optional[str]] = mapped_column(Text)
-    # email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
-    # is_active: Mapped[bool] = mapped_column(server_default="true", nullable=False)
+    email: Mapped[str] = mapped_column(Text, nullable=False, unique=True, index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, server_default="true", nullable=False)
     id_role: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.role.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
+        index=True,
     )
     created_date: Mapped[datetime] = mapped_column(
         DateTime(True), server_default=func.now(), nullable=False
@@ -158,13 +159,18 @@ class Audit(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     data: Mapped[Optional[str]] = mapped_column(Text)
     input: Mapped[Optional[str]] = mapped_column(Text)
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45))
+    user_agent: Mapped[Optional[str]] = mapped_column(Text)
+    status: Mapped[Optional[str]] = mapped_column(String(20))
     id_user: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.user.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
+        index=True,
     )
     id_audit_type: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.audit_type.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
+        index=True,
     )
     created_date: Mapped[datetime] = mapped_column(
         DateTime(True), server_default=func.now(), nullable=False

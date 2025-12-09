@@ -3,7 +3,7 @@ from auth.model.pydantic import LoginCredentials
 from auth.service.auth import AuthService
 from config.databases import get_async_db
 from fausto.fapi import Response, fapi_get_bearer_token
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status  # Import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(
@@ -19,6 +19,7 @@ router = APIRouter(
     summary="Log in to get access token",
 )
 async def login(
+    request: Request,
     credential: LoginCredentials,
     s: AsyncSession = Depends(get_async_db),
     refresh: bool = False,
@@ -30,6 +31,7 @@ async def login(
     long-lived refresh token.
 
     Args:
+        request (Request): The request object (for IP and User-Agent).
         credential (LoginCredentials): User's login credentials (username and password).
         s (AsyncSession): The database session.
         refresh (bool): If True, a refresh token is also returned. Defaults to False.
@@ -42,6 +44,8 @@ async def login(
         username=credential.username,
         password=credential.password,
         refresh_token=refresh,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent")
     )
     return Response(message="Login successful", data=token_data)
 

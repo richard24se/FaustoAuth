@@ -171,6 +171,8 @@ async def test_user(db_session: AsyncSession, test_role: int):  # test_role is n
         password=hashed_password,
         names="Test",
         surnames="User",
+        email="test@example.com",
+        is_active=True,
         id_role=test_role,  # Use test_role_id directly
     )
     db_session.add(user)
@@ -190,6 +192,7 @@ def create_test_user_data():
             "password": "newpassword",
             "names": "New",
             "surnames": "User",
+            "email": "new@example.com",
             "id_role": test_role_id,
         }
     return _create_data

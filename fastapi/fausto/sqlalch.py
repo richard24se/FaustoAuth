@@ -77,7 +77,11 @@ def async_sqlalch_wrapper(func: F) -> Callable[..., Any]: # No longer takes sqla
         # We assume it's already managed by FastAPI's Depends.
         session: AsyncSession | None = kwargs.get("s")
         if session is None and args:
-            session = args[0]
+            possible_session = args[0]
+            if isinstance(possible_session, AsyncSession):
+                session = possible_session
+            elif hasattr(possible_session, "session") and isinstance(possible_session.session, AsyncSession):
+                session = possible_session.session
 
         if not isinstance(session, AsyncSession):
             logging.error("async_sqlalch_wrapper: Session object is not AsyncSession or not found.")
@@ -106,9 +110,16 @@ def async_sqlalch_wrapper(func: F) -> Callable[..., Any]: # No longer takes sqla
         except ControllerError as e:
             logging.debug("ControllerError in %s: %s", func.__name__, e)
             await session.rollback() # Rollback on ControllerError as well
-            if len(e.args) > 1:
-                return {"error": True, "msg": e.args[0], "data": e.args[1]}
-            return {"error": True, "msg": str(e)}
+            error_dict = {"error": True, "msg": e.msg if hasattr(e, "msg") else str(e)}
+            if hasattr(e, "data") and e.data:
+                error_dict["data"] = e.data
+            elif len(e.args) > 1:
+                 error_dict["data"] = e.args[1]
+            
+            if hasattr(e, "status_code"):
+                error_dict["status_code"] = e.status_code
+            
+            return error_dict
         except Exception as e:
             logging.exception("Unhandled exception in %s", func.__name__)
             await session.rollback()

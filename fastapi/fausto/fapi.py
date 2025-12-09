@@ -72,7 +72,8 @@ def fapi_wrapper(_func: F | None = None, *, status_code: int = 500):
                 }
 
             if response_dict.get("error"):
-                raise HTTPException(status_code=status_code, detail=response_dict)
+                code = response_dict.get("status_code", status_code)
+                raise HTTPException(status_code=int(code), detail=response_dict)
 
             response_dict.setdefault("error", False)
             return response_dict

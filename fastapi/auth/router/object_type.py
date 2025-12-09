@@ -2,13 +2,7 @@ from typing import Any
 
 from auth.handlers import JWTBearer
 from auth.model.pydantic import ObjectTypeCreate, ObjectTypeUpdate
-from auth.service.object_type import (
-    create_object_type,
-    delete_object_type,
-    get_object_type,
-    get_object_types,
-    update_object_type,
-)
+from auth.service.object_type import ObjectTypeService
 from config.databases import get_async_db
 from fausto.fapi import Response
 from fastapi import APIRouter, Body, Depends, status
@@ -29,7 +23,7 @@ async def list_object_types(s: AsyncSession = Depends(get_async_db)):
     Returns:
         Response: A response object containing a list of object types.
     """
-    return await get_object_types(s=s)
+    return await ObjectTypeService.get_object_types(s=s)
 
 
 @router.get(
@@ -46,7 +40,7 @@ async def read_object_type(
     Returns:
         Response: A response object containing the object type data.
     """
-    return await get_object_type(s=s, object_type_id=object_type_id)
+    return await ObjectTypeService.get_object_type(s=s, object_type_id=object_type_id)
 
 
 @router.post(
@@ -66,7 +60,7 @@ async def creating_object_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await create_object_type(s=s, data=object_type)
+    return await ObjectTypeService.create_object_type(s=s, data=object_type)
 
 
 @router.put(
@@ -86,7 +80,7 @@ async def updating_object_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await update_object_type(
+    return await ObjectTypeService.update_object_type(
         s=s, object_type_id=object_type_id, data=object_type
     )
 
@@ -107,7 +101,7 @@ async def deleting_object_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await delete_object_type(s=s, object_type_id=object_type_id)
+    return await ObjectTypeService.delete_object_type(s=s, object_type_id=object_type_id)
 
 
 router_object_type = router

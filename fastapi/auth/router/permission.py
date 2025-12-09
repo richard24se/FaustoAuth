@@ -2,13 +2,7 @@ from typing import Any, Optional
 
 from auth.handlers import JWTBearer
 from auth.model.pydantic import PermissionCreate, PermissionUpdate
-from auth.service.permission import (
-    create_permission,
-    delete_permission,
-    get_permission,
-    get_permissions,
-    update_permission,
-)
+from auth.service.permission import PermissionService
 from config.databases import get_async_db
 from fausto.fapi import Response
 from fastapi import APIRouter, Body, Depends, status
@@ -22,9 +16,13 @@ router = APIRouter(
 )
 
 
+async def get_permission_service(s: AsyncSession = Depends(get_async_db)) -> PermissionService:
+    return PermissionService(s)
+
+
 @router.get("/", response_model=Response, summary="List all permissions")
 async def list_permissions(
-    s: AsyncSession = Depends(get_async_db),
+    service: PermissionService = Depends(get_permission_service),
     obj_name: Optional[str] = None,
     username: Optional[str] = None,
     role_id: Optional[int] = None,
@@ -44,15 +42,17 @@ async def list_permissions(
     Returns:
         Response: A response object containing a list of permissions.
     """
-    return await get_permissions(
-        s=s, obj_name=obj_name, username=username, role_id=role_id
+    return await service.get_permissions(
+        obj_name=obj_name, username=username, role_id=role_id
     )
 
 
 @router.get(
     "/{permission_id}", response_model=Response, summary="Get a permission by ID"
 )
-async def read_permission(permission_id: int, s: AsyncSession = Depends(get_async_db)):
+async def read_permission(
+    permission_id: int, service: PermissionService = Depends(get_permission_service)
+):
     """Retrieve a single permission by its ID.
 
     Args:
@@ -61,7 +61,7 @@ async def read_permission(permission_id: int, s: AsyncSession = Depends(get_asyn
     Returns:
         Response: A response object containing the permission data.
     """
-    return await get_permission(s=s, permission_id=permission_id)
+    return await service.get(id=permission_id)
 
 
 @router.post(
@@ -71,7 +71,8 @@ async def read_permission(permission_id: int, s: AsyncSession = Depends(get_asyn
     summary="Create a new permission",
 )
 async def creating_permission(
-    permission: PermissionCreate, s: AsyncSession = Depends(get_async_db)
+    permission: PermissionCreate,
+    service: PermissionService = Depends(get_permission_service),
 ):
     """Create a new permission.
 
@@ -81,14 +82,16 @@ async def creating_permission(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await create_permission(s=s, data=permission)
+    return await service.create(obj_in=permission)
 
 
 @router.put(
     "/{permission_id}", response_model=Response, summary="Update a permission"
 )
 async def updating_permission(
-    permission_id: int, permission: PermissionUpdate, s: AsyncSession = Depends(get_async_db)
+    permission_id: int,
+    permission: PermissionUpdate,
+    service: PermissionService = Depends(get_permission_service),
 ):
     """Update an existing permission by its ID.
 
@@ -99,7 +102,7 @@ async def updating_permission(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await update_permission(s=s, permission_id=permission_id, data=permission)
+    return await service.update(id=permission_id, obj_in=permission)
 
 
 @router.delete(
@@ -107,7 +110,9 @@ async def updating_permission(
     response_model=Response,
     summary="Delete a permission",
 )
-async def deleting_permission(permission_id: int, s: AsyncSession = Depends(get_async_db)):
+async def deleting_permission(
+    permission_id: int, service: PermissionService = Depends(get_permission_service)
+):
     """Delete a permission by its ID.
 
     Args:
@@ -116,7 +121,7 @@ async def deleting_permission(permission_id: int, s: AsyncSession = Depends(get_
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await delete_permission(s=s, permission_id=permission_id)
+    return await service.remove(id=permission_id)
 
 
 router_permission = router

@@ -1,11 +1,6 @@
 from auth.handlers import JWTBearer
 from auth.model.pydantic import LoginCredentials
-from auth.service.auth import (
-    check_blacklist_user,
-    refresh_user,
-    revoke_user,
-    validate_user,
-)
+from auth.service.auth import AuthService
 from config.databases import get_async_db
 from fausto.fapi import Response, fapi_get_bearer_token
 from fastapi import APIRouter, Depends, status
@@ -37,7 +32,7 @@ async def login(
     Returns:
         Response: A response object containing the access token and optionally a refresh token.
     """
-    return await validate_user(
+    return await AuthService.validate_user(
         s=s,
         username=credential.username,
         password=credential.password,
@@ -62,7 +57,7 @@ async def logout(token: str = Depends(fapi_get_bearer_token)):
     Returns:
         Response: A response object indicating successful logout.
     """
-    return await revoke_user(token=token)
+    return await AuthService.revoke_user(token=token)
 
 
 @router.get(
@@ -83,7 +78,7 @@ async def validate_token(token: str = Depends(fapi_get_bearer_token)):
     Returns:
         Response: A response object indicating the token's validity.
     """
-    return await check_blacklist_user(token=token)
+    return await AuthService.check_blacklist_user(token=token)
 
 
 @router.post(
@@ -101,7 +96,7 @@ async def refresh_token(token: str = Depends(fapi_get_bearer_token)):
     Returns:
         Response: A response object containing the new access token.
     """
-    return await refresh_user(token=token)
+    return await AuthService.refresh_user(token=token)
 
 
 router_auth = router

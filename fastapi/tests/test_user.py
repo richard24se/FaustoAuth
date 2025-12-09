@@ -10,40 +10,11 @@ from config.security import pwd_context
 from config.databases import get_async_db as get_app_async_db
 
 
-def create_test_user_data(test_role_id: int):
-    """
-    Helper function to provide valid user data for creation.
-    """
-    return {
-        "username": "newuser",
-        "password": "newpassword",
-        "names": "New",
-        "surnames": "User",
-        "id_role": test_role_id,
-    }
 
-
-@pytest_asyncio.fixture
-async def authenticated_client(test_client: AsyncClient, test_user: int, db_session: AsyncSession):
-    """
-    Fixture to provide an authenticated client.
-    """
-    # We need to fetch the user object from the database using the ID
-    # This is a workaround because test_user fixture now returns an ID
-    # and the login endpoint expects a username.
-    # In a real scenario, the test_user fixture would return the full object.
-    user_obj = await db_session.get(User, test_user)
-    username = user_obj.username
-    
-    login_data = {"username": username, "password": "testpassword"}
-    response = await test_client.post("/auth/login", json=login_data)
-    access_token = response.json()["data"]["access_token"]
-    test_client.headers["Authorization"] = f"Bearer {access_token}"
-    return test_client
 
 
 @pytest.mark.asyncio
-async def test_create_user_success(authenticated_client: AsyncClient, test_role: int):
+async def test_create_user_success(authenticated_client: AsyncClient, test_role: int, create_test_user_data):
     """
     Test successful user creation.
     """
@@ -57,7 +28,7 @@ async def test_create_user_success(authenticated_client: AsyncClient, test_role:
 
 @pytest.mark.asyncio
 async def test_create_user_duplicate_username(
-    authenticated_client: AsyncClient, test_user: int, test_role: int
+    authenticated_client: AsyncClient, test_user: int, test_role: int, create_test_user_data
 ):
     """
     Test creating a user with an existing username.

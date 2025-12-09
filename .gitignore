@@ -7,3 +7,5 @@ __pycache__
 *.lock
 *node_modules/
 *node_modules
+*coverage*
+*debug*

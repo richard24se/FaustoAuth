@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from logging.config import dictConfig
 from typing import Any
 
-from auth.controller import (
+from auth.router import (
     router_audit,
     router_audit_type,
     router_auth,
@@ -29,6 +29,8 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from sqlalchemy import text  # Added import
 from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
+from fausto import ControllerError
+from fausto.exceptions import controller_error_handler
 
 # --- OpenAPI Metadata ---
 tags_metadata = [
@@ -87,6 +89,8 @@ app = FastAPI(
     openapi_tags=tags_metadata,
     lifespan=lifespan,
 )
+
+app.add_exception_handler(ControllerError, controller_error_handler)
 
 # --- Middleware ---
 app.add_middleware(

@@ -6,7 +6,11 @@ from typing import Any, NamedTuple
 class ControllerError(Exception):
     """Custom exception for controller-level errors."""
 
-    pass
+    def __init__(self, msg: str, data: Any = None, status_code: int = 400):
+        super().__init__(msg)
+        self.msg = msg
+        self.data = data
+        self.status_code = status_code
 
 
 class ValidationResult(NamedTuple):

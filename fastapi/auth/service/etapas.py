@@ -1,3 +1,4 @@
+from typing import List
 from config.databases import SQLALCH_RECLUTAMIENTO
 from pydantic import BaseModel
 from reclutamiento.models import RecluEtapa, RecluPostulanteEtapa
@@ -9,44 +10,37 @@ class Etapa(BaseModel):
     etapa: str
 
 
-@sqlalch_wrapper(SQLALCH_RECLUTAMIENTO)
-def obtener_etapas(s) -> dict:
-    datos = s.query(RecluEtapa).all()
-    datos = [Etapa(**qf_sqlalch(x)) for x in datos]
-    return {"msg": "Esta es la lista de etapas", "error": False, "data": datos}
+class EtapaService:
+    """Etapa Service"""
 
+    @staticmethod
+    @sqlalch_wrapper(SQLALCH_RECLUTAMIENTO)
+    def obtener_etapas(s) -> List[Etapa]:
+        datos = s.query(RecluEtapa).all()
+        return [Etapa(**qf_sqlalch(x)) for x in datos]
 
-@sqlalch_wrapper(SQLALCH_RECLUTAMIENTO)
-def obtener_grupo_etapas(s, fecha) -> dict:
-    datos = (
-        s.query(RecluPostulanteEtapa.grupo_postulante_etapa_id)
-        .distinct()
-        .filter(
-            RecluPostulanteEtapa.fecha_hora_inicio.like(fecha + "%"),
-            RecluPostulanteEtapa.grupo_postulante_etapa_id != None,
+    @staticmethod
+    @sqlalch_wrapper(SQLALCH_RECLUTAMIENTO)
+    def obtener_grupo_etapas(s, fecha) -> list:
+        datos = (
+            s.query(RecluPostulanteEtapa.grupo_postulante_etapa_id)
+            .distinct()
+            .filter(
+                RecluPostulanteEtapa.fecha_hora_inicio.like(fecha + "%"),
+                RecluPostulanteEtapa.grupo_postulante_etapa_id != None,
+            )
         )
-    )
-    datos = [qf_sqlalch(x) for x in datos]
-    return {
-        "msg": "Esta es la lista de grupos de postulantes etapas",
-        "error": False,
-        "data": datos,
-    }
+        return [qf_sqlalch(x) for x in datos]
 
-
-@sqlalch_wrapper(SQLALCH_RECLUTAMIENTO)
-def obtener_postulantes(s, grupo_postulante_id, etapa_id) -> dict:
-    query = s.query(RecluPostulanteEtapa)
-    if grupo_postulante_id:
-        query = query.filter(
-            RecluPostulanteEtapa.grupo_postulante_etapa_id == grupo_postulante_id
-        )
-    if etapa_id:
-        query = query.filter(RecluPostulanteEtapa.etapa_id == etapa_id)
-    datos = query.all()
-    datos = [filter_fields_sqlalch(qf_sqlalch(x), ["postulante_id"]) for x in datos]
-    return {
-        "msg": "Esta es la lista de grupos de postulantes etapas",
-        "error": False,
-        "data": datos,
-    }
+    @staticmethod
+    @sqlalch_wrapper(SQLALCH_RECLUTAMIENTO)
+    def obtener_postulantes(s, grupo_postulante_id, etapa_id) -> list:
+        query = s.query(RecluPostulanteEtapa)
+        if grupo_postulante_id:
+            query = query.filter(
+                RecluPostulanteEtapa.grupo_postulante_etapa_id == grupo_postulante_id
+            )
+        if etapa_id:
+            query = query.filter(RecluPostulanteEtapa.etapa_id == etapa_id)
+        datos = query.all()
+        return [filter_fields_sqlalch(qf_sqlalch(x), ["postulante_id"]) for x in datos]

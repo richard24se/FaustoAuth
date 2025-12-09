@@ -2,14 +2,7 @@ from typing import Any, Optional
 
 from auth.handlers import JWTBearer
 from auth.model.pydantic import ObjectCreate, ObjectUpdate
-from auth.service.object import (
-    create_object,
-    delete_object,
-    get_object,
-    get_object_role,
-    get_objects,
-    update_object,
-)
+from auth.service.object import ObjectService
 from config.databases import get_async_db
 from fausto.fapi import Response
 from fastapi import APIRouter, Body, Depends, status
@@ -39,8 +32,8 @@ async def list_objects(
         Response: A response object containing a list of objects.
     """
     if role_id:
-        return await get_object_role(s=s, role_id=role_id)
-    return await get_objects(s=s)
+        return await ObjectService.get_object_role(s=s, role_id=role_id)
+    return await ObjectService.get_objects(s=s)
 
 
 @router.get("/{object_id}", response_model=Response, summary="Get an object by ID")
@@ -53,7 +46,7 @@ async def read_object(object_id: int, s: AsyncSession = Depends(get_async_db)):
     Returns:
         Response: A response object containing the object data.
     """
-    return await get_object(s=s, object_id=object_id)
+    return await ObjectService.get_object(s=s, object_id=object_id)
 
 
 @router.post(
@@ -71,7 +64,7 @@ async def creating_object(obj: ObjectCreate, s: AsyncSession = Depends(get_async
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await create_object(s=s, data=obj)
+    return await ObjectService.create_object(s=s, data=obj)
 
 
 @router.put("/{object_id}", response_model=Response, summary="Update an object")
@@ -87,7 +80,7 @@ async def updating_object(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await update_object(s=s, object_id=object_id, data=obj)
+    return await ObjectService.update_object(s=s, object_id=object_id, data=obj)
 
 
 @router.delete(
@@ -104,7 +97,7 @@ async def deleting_object(object_id: int, s: AsyncSession = Depends(get_async_db
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await delete_object(s=s, object_id=object_id)
+    return await ObjectService.delete_object(s=s, object_id=object_id)
 
 
 router_object = router

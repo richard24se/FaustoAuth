@@ -2,13 +2,7 @@ from typing import Any
 
 from auth.handlers import JWTBearer
 from auth.model.pydantic import AuditTypeCreate, AuditTypeUpdate
-from auth.service.audit_type import (
-    create_audit_type,
-    delete_audit_type,
-    get_audit_type,
-    get_audit_types,
-    update_audit_type,
-)
+from auth.service.audit_type import AuditTypeService
 from config.databases import get_async_db
 from fausto.fapi import Response
 from fastapi import APIRouter, Body, Depends, status
@@ -29,7 +23,7 @@ async def list_audit_types(s: AsyncSession = Depends(get_async_db)):
     Returns:
         Response: A response object containing a list of audit types.
     """
-    return await get_audit_types(s=s)
+    return await AuditTypeService.get_audit_types(s=s)
 
 
 @router.get(
@@ -46,7 +40,7 @@ async def read_audit_type(
     Returns:
         Response: A response object containing the audit type data.
     """
-    return await get_audit_type(s=s, audit_type_id=audit_type_id)
+    return await AuditTypeService.get_audit_type(s=s, audit_type_id=audit_type_id)
 
 
 @router.post(
@@ -66,7 +60,7 @@ async def creating_audit_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await create_audit_type(s=s, data=audit_type)
+    return await AuditTypeService.create_audit_type(s=s, data=audit_type)
 
 
 @router.put(
@@ -86,7 +80,7 @@ async def updating_audit_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await update_audit_type(
+    return await AuditTypeService.update_audit_type(
         s=s, audit_type_id=audit_type_id, data=audit_type
     )
 
@@ -107,7 +101,7 @@ async def deleting_audit_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await delete_audit_type(s=s, audit_type_id=audit_type_id)
+    return await AuditTypeService.delete_audit_type(s=s, audit_type_id=audit_type_id)
 
 
 router_audit_type = router

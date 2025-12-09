@@ -1,11 +1,7 @@
 from typing import Optional
 
 from pydantic import BaseModel
-from reclutamiento.service.etapas import (
-    obtener_etapas,
-    obtener_grupo_etapas,
-    obtener_postulantes,
-)
+from auth.service.etapas import EtapaService
 from utils.fastapi import Response
 
 from fastapi import APIRouter, Body
@@ -25,15 +21,17 @@ class Etapa(BaseModel):
 
 @router.get("/", response_model=Response)
 async def read_items():
-    data = obtener_etapas()
-    respuesta = Response(**data)
+    data = EtapaService.obtener_etapas()
+    respuesta = Response(msg="Esta es la lista de etapas", error=False, data=data)
     return respuesta
 
 
 @router.get("/grupos_postulantes", response_model=Response)
 async def read_obtener_grupo_etapas(fecha: str):
-    data = obtener_grupo_etapas(fecha)
-    respuesta = Response(**data)
+    data = EtapaService.obtener_grupo_etapas(fecha)
+    respuesta = Response(
+        msg="Esta es la lista de grupos de postulantes etapas", error=False, data=data
+    )
     return respuesta
 
 
@@ -41,8 +39,10 @@ async def read_obtener_grupo_etapas(fecha: str):
 async def read_obtener_postulantes(
     grupo_postulante_id: str = None, etapa_id: int = None
 ):
-    data = obtener_postulantes(grupo_postulante_id, etapa_id)
-    respuesta = Response(**data)
+    data = EtapaService.obtener_postulantes(grupo_postulante_id, etapa_id)
+    respuesta = Response(
+        msg="Esta es la lista de grupos de postulantes etapas", error=False, data=data
+    )
     return respuesta
 
 

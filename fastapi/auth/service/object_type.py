@@ -6,150 +6,125 @@ from auth.model.pydantic import ObjectTypeCreate, ObjectTypeUpdate
 from config.databases import SQLALCH_AUTH
 from fausto import ControllerError
 from fausto.fapi import fapi_wrapper
-from fausto.sqlalch import async_sqlalch_wrapper, to_dict # Use async_sqlalch_wrapper
-from fastapi import Depends # Import Depends
-from sqlalchemy import desc, select, update, delete # Import select, update, delete
-from sqlalchemy.ext.asyncio import AsyncSession # Import AsyncSession
+from fausto.sqlalch import async_sqlalch_wrapper, to_dict
+from fastapi import Depends
+from sqlalchemy import desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
-@fapi_wrapper
-@async_sqlalch_wrapper
-async def create_object_type(s: AsyncSession = Depends(SQLALCH_AUTH), *, data: ObjectTypeCreate) -> str:
-    """Creates a new object type.
+class ObjectTypeService:
+    """Object Type Service"""
 
-    Args:
-        s (AsyncSession): The SQLAlchemy asynchronous session.
-        data (ObjectTypeCreate): The Pydantic model containing the object type data.
-
-    Returns:
-        str: A success message.
-
-    Raises:
-        ControllerError: If an object type with the same name already exists.
-    """
-    result = await s.execute(select(ObjectType).filter(ObjectType.name == data.name))
-    existing = result.scalars().first()
-    if existing:
-        raise ControllerError(f"The object type '{data.name}' already exists.")
-
-    new_obj_type = ObjectType(**data.model_dump())
-    s.add(new_obj_type)
-    # Commit is handled by the async_sqlalch_wrapper
-    logging.info("Successfully created object type '%s'.", new_obj_type.name)
-    return "Saved successful!"
-
-
-@fapi_wrapper
-@async_sqlalch_wrapper
-async def update_object_type(
-    s: AsyncSession = Depends(SQLALCH_AUTH), *, object_type_id: int, data: ObjectTypeUpdate
-) -> str:
-    """Updates an existing object type.
-
-    Args:
-        s (AsyncSession): The SQLAlchemy asynchronous session.
-        object_type_id (int): The ID of the object type to update.
-        data (ObjectTypeUpdate): A Pydantic model containing the fields to update.
-
-    Returns:
-        str: A success message.
-    """
-    if not object_type_id:
-        raise ControllerError("Object type ID must be provided.")
-
-    result = await s.execute(select(ObjectType).filter(ObjectType.id == object_type_id))
-    obj_type = result.scalars().first()
-    if not obj_type:
-        raise ControllerError("Object type not found.")
-
-    if data.name and data.name != obj_type.name:
-        result = await s.execute(
-            select(ObjectType).filter(
-                ObjectType.name == data.name, ObjectType.id != object_type_id
-            )
-        )
+    @staticmethod
+    @fapi_wrapper
+    @async_sqlalch_wrapper
+    async def create_object_type(
+        s: AsyncSession = Depends(SQLALCH_AUTH), *, data: ObjectTypeCreate
+    ) -> dict:
+        """Creates a new object type."""
+        result = await s.execute(select(ObjectType).filter(ObjectType.name == data.name))
         existing = result.scalars().first()
         if existing:
             raise ControllerError(f"The object type '{data.name}' already exists.")
 
-    # Use update statement for async
-    result = await s.execute(
-        update(ObjectType)
-        .where(ObjectType.id == object_type_id)
-        .values(**data.model_dump(exclude_unset=True))
-    )
-    # Commit is handled by the async_sqlalch_wrapper
+        new_obj_type = ObjectType(**data.model_dump())
+        s.add(new_obj_type)
+        await s.flush()
+        await s.refresh(new_obj_type)
+        logging.info("Successfully created object type '%s'.", new_obj_type.name)
+        return {"msg": "Saved successful!", "data": to_dict(new_obj_type)}
 
-    if result.rowcount == 0: # Check rowcount for update
-        raise ControllerError("Object type not found or data is the same.")
+    @staticmethod
+    @fapi_wrapper
+    @async_sqlalch_wrapper
+    async def update_object_type(
+        s: AsyncSession = Depends(SQLALCH_AUTH),
+        *,
+        object_type_id: int,
+        data: ObjectTypeUpdate,
+    ) -> dict:
+        """Updates an existing object type."""
+        if not object_type_id:
+            raise ControllerError("Object type ID must be provided.")
 
-    logging.info("Successfully updated object type with ID %d.", object_type_id)
-    return "Update successful!"
-
-
-@fapi_wrapper
-@async_sqlalch_wrapper
-async def delete_object_type(s: AsyncSession = Depends(SQLALCH_AUTH), *, object_type_id: int) -> str:
-    """Deletes an object type.
-
-    Args:
-        s (AsyncSession): The SQLAlchemy asynchronous session.
-        object_type_id (int): The ID of the object type to delete.
-
-    Returns:
-        str: A success message.
-    """
-    result = await s.execute(select(ObjectType).filter(ObjectType.id == object_type_id))
-    obj_type = result.scalars().first()
-    if not obj_type:
-        raise ControllerError(
-            "Object type not found, it may have already been deleted."
+        result = await s.execute(
+            select(ObjectType).filter(ObjectType.id == object_type_id)
         )
+        obj_type = result.scalars().first()
+        if not obj_type:
+            raise ControllerError("Object type not found.", status_code=404)
 
-    await s.delete(obj_type)
-    # Commit is handled by the async_sqlalch_wrapper
-    logging.info("Successfully deleted object type with ID %d.", object_type_id)
-    return "Deleted successful!"
+        if data.name and data.name != obj_type.name:
+            result = await s.execute(
+                select(ObjectType).filter(
+                    ObjectType.name == data.name, ObjectType.id != object_type_id
+                )
+            )
+            existing = result.scalars().first()
+            if existing:
+                raise ControllerError(f"The object type '{data.name}' already exists.")
 
+        update_data = data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(obj_type, key, value)
 
-@fapi_wrapper
-@async_sqlalch_wrapper
-async def get_object_type(
-    s: AsyncSession = Depends(SQLALCH_AUTH), *, object_type_id: int
-) -> tuple[str, dict[str, Any]]:
-    """Retrieves a single object type by its ID.
+        s.add(obj_type)
+        await s.flush()
+        await s.refresh(obj_type)
 
-    Args:
-        s (AsyncSession): The SQLAlchemy asynchronous session.
-        object_type_id (int): The ID of the object type to retrieve.
+        logging.info("Successfully updated object type with ID %d.", object_type_id)
+        return {"msg": "Update successful!", "data": to_dict(obj_type)}
 
-    Returns:
-        tuple[str, dict[str, Any]]: A tuple containing a success message and the object type data.
-    """
-    result = await s.execute(select(ObjectType).filter(ObjectType.id == object_type_id))
-    obj_type = result.scalars().first()
-    if not obj_type:
-        raise ControllerError("Object type not found.")
+    @staticmethod
+    @fapi_wrapper
+    @async_sqlalch_wrapper
+    async def delete_object_type(
+        s: AsyncSession = Depends(SQLALCH_AUTH), *, object_type_id: int
+    ) -> dict:
+        """Deletes an object type."""
+        result = await s.execute(
+            select(ObjectType).filter(ObjectType.id == object_type_id)
+        )
+        obj_type = result.scalars().first()
+        if not obj_type:
+            raise ControllerError(
+                "Object type not found, it may have already been deleted.",
+                status_code=404
+            )
 
-    logging.debug("Found object type with ID %d.", object_type_id)
-    return "Object type was found!", to_dict(obj_type)
+        obj_type_dict = to_dict(obj_type)
+        await s.delete(obj_type)
+        logging.info("Successfully deleted object type with ID %d.", object_type_id)
+        return {"msg": "Deleted successful!", "data": obj_type_dict}
 
+    @staticmethod
+    @fapi_wrapper
+    @async_sqlalch_wrapper
+    async def get_object_type(
+        s: AsyncSession = Depends(SQLALCH_AUTH), *, object_type_id: int
+    ) -> dict[str, Any]:
+        """Retrieves a single object type by its ID."""
+        result = await s.execute(
+            select(ObjectType).filter(ObjectType.id == object_type_id)
+        )
+        obj_type = result.scalars().first()
+        if not obj_type:
+            raise ControllerError("Object type not found.", status_code=404)
 
-@fapi_wrapper
-@async_sqlalch_wrapper
-async def get_object_types(s: AsyncSession = Depends(SQLALCH_AUTH)) -> tuple[str, List[dict[str, Any]]]:
-    """Retrieves all object types.
+        logging.debug("Found object type with ID %d.", object_type_id)
+        return {"msg": "Found", "data": to_dict(obj_type)}
 
-    Args:
-        s (AsyncSession): The SQLAlchemy asynchronous session.
+    @staticmethod
+    @fapi_wrapper
+    @async_sqlalch_wrapper
+    async def get_object_types(
+        s: AsyncSession = Depends(SQLALCH_AUTH),
+    ) -> List[dict[str, Any]]:
+        """Retrieves all object types."""
+        result = await s.execute(select(ObjectType).order_by(desc(ObjectType.id)))
+        obj_types = result.scalars().all()
+        if not obj_types:
+            raise ControllerError("No object types found.", [])
 
-    Returns:
-        tuple[str, List[dict[str, Any]]]: A tuple containing a success message and a list of object types.
-    """
-    result = await s.execute(select(ObjectType).order_by(desc(ObjectType.id)))
-    obj_types = result.scalars().all()
-    if not obj_types:
-        raise ControllerError("No object types found.", [])
-
-    logging.debug("Retrieved %d object types.", len(obj_types))
-    return "Object types were found!", to_dict(obj_types)
+        logging.debug("Retrieved %d object types.", len(obj_types))
+        return {"msg": "Found", "data": to_dict(obj_types)}

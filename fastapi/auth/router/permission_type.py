@@ -2,13 +2,7 @@ from typing import Any
 
 from auth.handlers import JWTBearer
 from auth.model.pydantic import PermissionTypeCreate, PermissionTypeUpdate
-from auth.service.permission_type import (
-    create_permission_type,
-    delete_permission_type,
-    get_permission_type,
-    get_permission_types,
-    update_permission_type,
-)
+from auth.service.permission_type import PermissionTypeService
 from config.databases import get_async_db
 from fausto.fapi import Response
 from fastapi import APIRouter, Body, Depends, status
@@ -29,7 +23,7 @@ async def list_permission_types(s: AsyncSession = Depends(get_async_db)):
     Returns:
         Response: A response object containing a list of permission types.
     """
-    return await get_permission_types(s=s)
+    return await PermissionTypeService.get_permission_types(s=s)
 
 
 @router.get(
@@ -48,7 +42,9 @@ async def read_permission_type(
     Returns:
         Response: A response object containing the permission type data.
     """
-    return await get_permission_type(s=s, permission_type_id=permission_type_id)
+    return await PermissionTypeService.get_permission_type(
+        s=s, permission_type_id=permission_type_id
+    )
 
 
 @router.post(
@@ -68,7 +64,7 @@ async def creating_permission_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await create_permission_type(s=s, data=permission_type)
+    return await PermissionTypeService.create_permission_type(s=s, data=permission_type)
 
 
 @router.put(
@@ -90,7 +86,7 @@ async def updating_permission_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await update_permission_type(
+    return await PermissionTypeService.update_permission_type(
         s=s, permission_type_id=permission_type_id, data=permission_type
     )
 
@@ -111,7 +107,9 @@ async def deleting_permission_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await delete_permission_type(s=s, permission_type_id=permission_type_id)
+    return await PermissionTypeService.delete_permission_type(
+        s=s, permission_type_id=permission_type_id
+    )
 
 
 router_permission_type = router

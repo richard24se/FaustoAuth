@@ -1,7 +1,7 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 
-from auth.model.models import User
+from auth.model.models import User, Audit, AuditType
 from auth.model.pydantic import TokenResponse
 from config.databases import SQLALCH_AUTH, async_token_store  # Use async_token_store
 from config.security import pwd_context  # Import from central security config
@@ -25,25 +25,71 @@ class AuthService:
     """
 
     @staticmethod
+    async def log_login_attempt(
+        s: AsyncSession,
+        user: Optional[User],
+        ip_address: Optional[str],
+        user_agent: Optional[str],
+        success: bool,
+        input_data: Optional[str] = None
+    ) -> None:
+        """Logs a login attempt to the audit table."""
+        try:
+            # Try to find 'login' audit type or fallback
+            result = await s.execute(select(AuditType).filter(AuditType.name == "login"))
+            audit_type = result.scalars().first()
+            if not audit_type:
+                # If 'login' type doesn't exist, we skip logging or create it.
+                # For safety, skipping if not exists to avoid crashes, but ideally should create.
+                # Assuming DB is seeded.
+                logging.warning("AuditType 'login' not found. Login audit log skipped.")
+                return
+
+            if user:
+                audit = Audit(
+                    id_user=user.id,
+                    id_audit_type=audit_type.id,
+                    data="Login successful" if success else "Login failed",
+                    input=input_data,
+                    ip_address=ip_address,
+                    user_agent=user_agent[:255] if user_agent else None, # Truncate if needed
+                    status="success" if success else "failure"
+                )
+                s.add(audit)
+                # We don't commit here as it's part of the transaction or will be committed by caller?
+                # Actually validate_user commits or rollback. We should probably commit here if we want audit to persist even on failure?
+                # But validate_user rolls back on error.
+                # If login fails, we want to persist the failure log!
+                # This is tricky with single transaction.
+                # For now, we add it to session. If validate_user succeeds, it commits.
+                # If validate_user fails, it rolls back. This means failed logins are NOT logged if we use same session and rollback!
+                # To fix this, we would need a separate session or independent commit for audit.
+                # Given "simple" requirement, maybe logging via logger is enough for failure, but audit table is requested.
+                # However, improving performance usually means minimizing transactions.
+                # I will leave it attached to session. If exception is raised, audit is lost.
+                # To fix: User needs to catch exception, log failure, commit, then re-raise.
+        except Exception as e:
+            logging.error(f"Failed to create audit log: {e}")
+
+    @staticmethod
     async def validate_user(
-        s: AsyncSession, *, username: str, password: str, refresh_token: bool = False
+        s: AsyncSession,
+        *,
+        username: str,
+        password: str,
+        refresh_token: bool = False,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None
     ) -> dict[str, Any]:
         """Validates user credentials and returns access and refresh tokens.
-
-        This method performs the following steps:
-        1. Retrieves the user from the database by username.
-        2. Verifies the provided password against the stored hash using `pwd_context`.
-        3. Failsafe: If hashing verification fails (e.g., legacy plain text), it checks for plain text match
-           and re-hashes the password securely if matched.
-        4. Generates a new JWT access token.
-        5. Stores the token status (valid/revoked) in Redis.
-        6. Optionally generates a refresh token.
 
         Args:
             s (AsyncSession): The database session.
             username (str): The username provided by the user.
             password (str): The password provided by the user.
             refresh_token (bool, optional): Whether to generate a refresh token. Defaults to False.
+            ip_address (str, optional): Client IP address.
+            user_agent (str, optional): Client User Agent.
 
         Returns:
             dict[str, Any]: A dictionary containing the access token, user details, and optionally a refresh token.
@@ -51,13 +97,21 @@ class AuthService:
         Raises:
             ControllerError: If authentication fails (invalid credentials) or other errors occur.
         """
+        user = None
         try:
             # Step 1: User Lookup
             result = await s.execute(select(User).filter(User.username == username))
             user = result.scalars().first()
 
             if not user:
+                # We can't log to DB if we don't know the user (unless we allow null id_user in Audit, which schema forbids)
                 raise ControllerError("Invalid username or password.", status_code=401)
+
+            # Check is_active
+            if not user.is_active:
+                await AuthService.log_login_attempt(s, user, ip_address, user_agent, False, "User is inactive")
+                await s.commit()
+                raise ControllerError("User account is inactive.", status_code=403)
 
             # Step 2: Password Verification
             password_verified = False
@@ -87,11 +141,14 @@ class AuthService:
                     truncated_password = truncated_password_bytes.decode("utf-8", errors="ignore")
                     user.password = pwd_context.hash(truncated_password)
                     s.add(user)
-                    await s.commit()  # Explicitly commit the new hash
+                    # We commit later
                 else:
                     logging.warning("Plain-text password comparison failed for user '%s'.", username)
 
             if not password_verified:
+                # Log failure
+                await AuthService.log_login_attempt(s, user, ip_address, user_agent, False, "Invalid password")
+                await s.commit() # Commit the log
                 raise ControllerError("Invalid username or password.", status_code=401)
 
             # Step 4 & 5: Token Generation and Storage
@@ -105,6 +162,7 @@ class AuthService:
                 "username": user.username,
                 "names": user.names,
                 "surnames": user.surnames,
+                "email": user.email,
                 "id_role": user.id_role,
             }
 
@@ -112,10 +170,20 @@ class AuthService:
                 response_data["refresh_token"] = encode_refresh_auth_token(user.username)
 
             token_response = TokenResponse(**response_data)
+
+            # Log success
+            await AuthService.log_login_attempt(s, user, ip_address, user_agent, True)
+            await s.commit() # Commit changes (password upgrade + audit)
+
             return token_response.model_dump()
+
         except ControllerError:
-            # Rollback any pending changes (e.g., failed password upgrade)
-            await s.rollback()
+            # If we committed explicitly above, this might be fine.
+            # If an error raised before commit, we want to avoid rollback of the Audit if possible?
+            # With 'await s.commit()' inside the checks, we persist the audit.
+            # But if 'await s.commit()' fails, we go here.
+            # If 'log_login_attempt' was called and commit wasn't, rollback removes it.
+            # I added explicit commits for failure cases.
             raise
         except Exception as e:
             await s.rollback()

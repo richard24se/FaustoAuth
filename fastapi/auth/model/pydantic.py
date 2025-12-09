@@ -43,6 +43,8 @@ class UserBase(BaseModel):
     username: str
     names: Optional[str] = None
     surnames: Optional[str] = None
+    email: str
+    is_active: bool = True
     id_role: int
 
 
@@ -55,6 +57,9 @@ class PermissionBase(BaseModel):
 class AuditBase(BaseModel):
     data: Optional[str] = None
     input: Optional[str] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    status: Optional[str] = None
     id_user: int
     id_audit_type: int
 
@@ -126,6 +131,8 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     names: Optional[str] = None
     surnames: Optional[str] = None
+    email: Optional[str] = None
+    is_active: Optional[bool] = None
     id_role: Optional[int] = None
 
 
@@ -138,6 +145,9 @@ class PermissionUpdate(BaseModel):
 class AuditUpdate(BaseModel):
     data: Optional[str] = None
     input: Optional[str] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    status: Optional[str] = None
     id_user: Optional[int] = None
     id_audit_type: Optional[int] = None
 
@@ -227,4 +237,5 @@ class TokenResponse(BaseModel):
     username: str
     names: Optional[str] = None
     surnames: Optional[str] = None
+    email: Optional[str] = None
     id_role: int

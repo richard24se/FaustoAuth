@@ -32,8 +32,10 @@ async def list_objects(
         Response: A response object containing a list of objects.
     """
     if role_id:
-        return await ObjectService.get_object_role(s=s, role_id=role_id)
-    return await ObjectService.get_objects(s=s)
+        objects = await ObjectService.get_object_role(s=s, role_id=role_id)
+    else:
+        objects = await ObjectService.get_objects(s=s)
+    return Response(message="Found", data=objects)
 
 
 @router.get("/{object_id}", response_model=Response, summary="Get an object by ID")
@@ -46,7 +48,8 @@ async def read_object(object_id: int, s: AsyncSession = Depends(get_async_db)):
     Returns:
         Response: A response object containing the object data.
     """
-    return await ObjectService.get_object(s=s, object_id=object_id)
+    obj = await ObjectService.get_object(s=s, object_id=object_id)
+    return Response(message="Found", data=obj)
 
 
 @router.post(
@@ -64,7 +67,8 @@ async def creating_object(obj: ObjectCreate, s: AsyncSession = Depends(get_async
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await ObjectService.create_object(s=s, data=obj)
+    new_obj = await ObjectService.create_object(s=s, data=obj.model_dump())
+    return Response(message="Saved successful!", data=new_obj)
 
 
 @router.put("/{object_id}", response_model=Response, summary="Update an object")
@@ -80,7 +84,8 @@ async def updating_object(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await ObjectService.update_object(s=s, object_id=object_id, data=obj)
+    updated_obj = await ObjectService.update_object(s=s, object_id=object_id, data=obj.model_dump(exclude_unset=True))
+    return Response(message="Update successful!", data=updated_obj)
 
 
 @router.delete(
@@ -97,7 +102,8 @@ async def deleting_object(object_id: int, s: AsyncSession = Depends(get_async_db
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await ObjectService.delete_object(s=s, object_id=object_id)
+    deleted_obj = await ObjectService.delete_object(s=s, object_id=object_id)
+    return Response(message="Deleted successful!", data=deleted_obj)
 
 
 router_object = router

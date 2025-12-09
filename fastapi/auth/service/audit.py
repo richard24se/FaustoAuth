@@ -16,94 +16,125 @@ class AuditService:
     """Audit Service"""
 
     @staticmethod
-    @fapi_wrapper
-    @async_sqlalch_wrapper
     async def create_audit(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, data: AuditCreate
-    ) -> dict:
+        s: AsyncSession = Depends(SQLALCH_AUTH), *, data: AuditCreate | dict[str, Any]
+    ) -> dict[str, Any]:
         """Creates a new audit log."""
-        new_audit = Audit(**data.model_dump())
-        s.add(new_audit)
-        await s.flush()
-        await s.refresh(new_audit)
-        logging.info("Successfully created audit log.")
-        return {"msg": "Saved successful!", "data": to_dict(new_audit)}
+        try:
+            if isinstance(data, dict):
+                audit_data = data
+            else:
+                audit_data = data.model_dump()
+
+            new_audit = Audit(**audit_data)
+            s.add(new_audit)
+            await s.commit() # Commit explicitly
+            await s.refresh(new_audit)
+            logging.info("Successfully created audit log.")
+            return to_dict(new_audit)
+        except ControllerError:
+            await s.rollback()
+            raise
+        except Exception as e:
+            await s.rollback()
+            raise ControllerError(str(e))
 
     @staticmethod
-    @fapi_wrapper
-    @async_sqlalch_wrapper
     async def update_audit(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int, data: AuditUpdate
-    ) -> dict:
+        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int, data: AuditUpdate | dict[str, Any]
+    ) -> dict[str, Any]:
         """Updates an existing audit log."""
-        if not audit_id:
-            raise ControllerError("Audit ID must be provided.")
+        try:
+            if not audit_id:
+                raise ControllerError("Audit ID must be provided.")
 
-        result = await s.execute(select(Audit).filter_by(id=audit_id))
-        audit = result.scalars().one_or_none()
+            result = await s.execute(select(Audit).filter_by(id=audit_id))
+            audit = result.scalars().one_or_none()
 
-        if not audit:
-            raise ControllerError("Audit not found.")
+            if not audit:
+                raise ControllerError("Audit not found.", status_code=404)
 
-        update_data = data.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(audit, key, value)
+            if isinstance(data, dict):
+                update_data = data
+            else:
+                update_data = data.model_dump(exclude_unset=True)
 
-        s.add(audit)
-        await s.flush()
-        await s.refresh(audit)
+            for key, value in update_data.items():
+                setattr(audit, key, value)
 
-        logging.info("Successfully updated audit log with ID %d.", audit_id)
-        return {"msg": "Update successful!", "data": to_dict(audit)}
+            s.add(audit)
+            await s.commit()
+            await s.refresh(audit)
+
+            logging.info("Successfully updated audit log with ID %d.", audit_id)
+            return to_dict(audit)
+        except ControllerError:
+            await s.rollback()
+            raise
+        except Exception as e:
+            await s.rollback()
+            raise ControllerError(str(e))
 
     @staticmethod
-    @fapi_wrapper
-    @async_sqlalch_wrapper
     async def delete_audit(
         s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Deletes an audit log."""
-        result = await s.execute(select(Audit).filter_by(id=audit_id))
-        audit = result.scalars().first()
+        try:
+            result = await s.execute(select(Audit).filter_by(id=audit_id))
+            audit = result.scalars().first()
 
-        if not audit:
-            raise ControllerError(
-                "Audit not found, it may have already been deleted.",
-                status_code=404
-            )
+            if not audit:
+                raise ControllerError(
+                    "Audit not found, it may have already been deleted.",
+                    status_code=404
+                )
 
-        audit_dict = to_dict(audit)
-        await s.delete(audit)
+            audit_dict = to_dict(audit)
+            await s.delete(audit)
+            await s.commit()
 
-        logging.info("Successfully deleted audit log with ID %d.", audit_id)
-        return {"msg": "Deleted successful!", "data": audit_dict}
+            logging.info("Successfully deleted audit log with ID %d.", audit_id)
+            return audit_dict
+        except ControllerError:
+            await s.rollback()
+            raise
+        except Exception as e:
+            await s.rollback()
+            raise ControllerError(str(e))
 
     @staticmethod
-    @fapi_wrapper
-    @async_sqlalch_wrapper
     async def get_audit(
         s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int
     ) -> dict[str, Any]:
         """Retrieves a single audit log by its ID."""
-        result = await s.execute(select(Audit).filter(Audit.id == audit_id))
-        audit = result.scalars().first()
+        try:
+            result = await s.execute(select(Audit).filter(Audit.id == audit_id))
+            audit = result.scalars().first()
 
-        if not audit:
-            raise ControllerError("Audit not found.", status_code=404)
+            if not audit:
+                raise ControllerError("Audit not found.", status_code=404)
 
-        logging.debug("Found audit with ID %d.", audit_id)
-        return {"msg": "Found", "data": to_dict(audit)}
+            logging.debug("Found audit with ID %d.", audit_id)
+            return to_dict(audit)
+        except ControllerError:
+            raise
+        except Exception as e:
+            raise ControllerError(str(e))
 
     @staticmethod
-    @fapi_wrapper
-    @async_sqlalch_wrapper
     async def get_audits(s: AsyncSession = Depends(SQLALCH_AUTH)) -> List[dict[str, Any]]:
         """Retrieves all audit logs."""
-        result = await s.execute(select(Audit))
-        audits = result.scalars().all()
+        try:
+            result = await s.execute(select(Audit))
+            audits = result.scalars().all()
 
-        if not audits:
-            raise ControllerError("No audits found.", [])
+            if not audits:
+                raise ControllerError("No audits found.", [], status_code=404)
 
-        logging.debug("Retrieved %d audit logs.", len(audits))
-        return {"msg": "Found", "data": to_dict(audits)}
+            logging.debug("Retrieved %d audit logs.", len(audits))
+            return to_dict(audits)
+        except ControllerError:
+            raise
+        except Exception as e:
+            raise ControllerError(str(e))

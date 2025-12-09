@@ -6,9 +6,9 @@ from typing import Any, NamedTuple
 class ControllerError(Exception):
     """Custom exception for controller-level errors."""
 
-    def __init__(self, msg: str, data: Any = None, status_code: int = 400):
-        super().__init__(msg)
-        self.msg = msg
+    def __init__(self, message: str, data: Any = None, status_code: int = 400):
+        super().__init__(message)
+        self.message = message
         self.data = data
         self.status_code = status_code
 
@@ -17,7 +17,7 @@ class ValidationResult(NamedTuple):
     """Structured result for validation functions."""
 
     ok: bool
-    msg: str
+    message: str
     data: dict[str, Any] | None = None
     filtered: dict[str, Any] | None = None
 
@@ -50,16 +50,16 @@ def validate_required_data(
             error_messages.append(f"Unknown keys: {', '.join(sorted(extra_keys))}")
 
         if not error_messages:
-            return ValidationResult(ok=True, msg="Validation successful.")
+            return ValidationResult(ok=True, message="Validation successful.")
 
         return ValidationResult(
             ok=False,
-            msg="; ".join(error_messages),
+            message="; ".join(error_messages),
             data={"missing": list(missing_keys), "unknown": list(extra_keys)},
         )
     except Exception as e:
         logging.exception("Error during data validation: %s", e)
-        return ValidationResult(ok=False, msg="An internal error occurred during validation.")
+        return ValidationResult(ok=False, message="An internal error occurred during validation.")
 
 
 def args_parser(args: dict[str, list]) -> dict[str, Any]:

@@ -13,14 +13,14 @@ F = TypeVar("F", bound=Callable[..., Any])
 class Response(BaseModel):
     """Standard API response model."""
 
-    msg: str
+    message: str
     error: bool = False
     data: Optional[Any] = None
 
 
 def _unpack_tuple_response(response: tuple) -> dict[str, Any]:
     """Unpacks a tuple response into a dictionary."""
-    msg = ""
+    message = ""
     data = None
     error = False
     for item in response:
@@ -29,8 +29,8 @@ def _unpack_tuple_response(response: tuple) -> dict[str, Any]:
         elif isinstance(item, (dict, list)) or item is None:
             data = item
         elif isinstance(item, str):
-            msg = item
-    return {"msg": msg, "error": error, "data": data}
+            message = item
+    return {"message": message, "error": error, "data": data}
 
 
 def fapi_wrapper(_func: F | None = None, *, status_code: int = 500):
@@ -39,8 +39,8 @@ def fapi_wrapper(_func: F | None = None, *, status_code: int = 500):
     with support for both synchronous and asynchronous functions.
 
     It wraps the function's return value in a standardized dictionary format.
-    - If the function returns a tuple, it's unpacked into {msg, data, error}.
-    - If it returns a string, it's wrapped as {msg, error=False, data=None}.
+    - If the function returns a tuple, it's unpacked into {message, data, error}.
+    - If it returns a string, it's wrapped as {message, error=False, data=None}.
     - If it returns a dictionary, it's used as is.
 
     If the resulting dictionary has 'error': True, it raises an HTTPException.
@@ -59,14 +59,14 @@ def fapi_wrapper(_func: F | None = None, *, status_code: int = 500):
             if isinstance(response, tuple):
                 response_dict = _unpack_tuple_response(response)
             elif isinstance(response, str):
-                response_dict = {"msg": response, "error": False, "data": None}
+                response_dict = {"message": response, "error": False, "data": None}
             elif isinstance(response, dict):
                 response_dict = response
             else:
                 # This case is not expected based on current service implementations,
                 # but we handle it defensively.
                 response_dict = {
-                    "msg": "Unhandled response type from service",
+                    "message": "Unhandled response type from service",
                     "error": True,
                     "data": str(response),
                 }

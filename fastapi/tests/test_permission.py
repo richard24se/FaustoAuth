@@ -74,7 +74,7 @@ async def test_create_permission_duplicate(authenticated_client: AsyncClient, db
         },
     )
     assert response.status_code == 400
-    assert response.json()["msg"] == "The permission 'dup_permission' already exists."
+    assert response.json()["message"] == "The permission 'dup_permission' already exists."
 
 
 @pytest.mark.asyncio
@@ -138,7 +138,7 @@ async def test_read_permission_not_found(authenticated_client: AsyncClient):
     """Test reading a non-existent permission."""
     response = await authenticated_client.get("/permission/99999")
     assert response.status_code == 404
-    assert response.json()["msg"] == "Permission not found."
+    assert response.json()["message"] == "Permission not found."
 
 
 @pytest.mark.asyncio
@@ -180,7 +180,7 @@ async def test_update_permission_not_found(authenticated_client: AsyncClient):
         json={"name": "updated_permission"},
     )
     assert response.status_code == 404
-    assert response.json()["msg"] == "Permission not found."
+    assert response.json()["message"] == "Permission not found."
 
 
 @pytest.mark.asyncio
@@ -207,7 +207,7 @@ async def test_delete_permission(authenticated_client: AsyncClient, db_session: 
 
     response = await authenticated_client.delete(f"/permission/{perm.id}")
     assert response.status_code == 200
-    assert response.json()["msg"] == "Deleted successful!"
+    assert response.json()["message"] == "Deleted successful!"
 
     # Verify deletion
     response = await authenticated_client.get(f"/permission/{perm.id}")
@@ -219,4 +219,4 @@ async def test_delete_permission_not_found(authenticated_client: AsyncClient):
     """Test deleting a non-existent permission."""
     response = await authenticated_client.delete("/permission/99999")
     assert response.status_code == 404
-    assert response.json()["msg"] == "Permission not found, it may have already been deleted."
+    assert response.json()["message"] == "Permission not found, it may have already been deleted."

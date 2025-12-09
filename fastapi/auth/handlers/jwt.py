@@ -73,7 +73,7 @@ class JWTBearer(HTTPBearer):
         if isinstance(decoded, str):
             # An error message string was returned from decode_auth_token
             logging.warning("JWT verification failed: %s", decoded)
-            return {"error": True, "msg": decoded}
+            return {"error": True, "message": decoded}
 
         # Token is valid, payload was returned
-        return {"error": False, "msg": "Token is valid", "payload": decoded}
+        return {"error": False, "message": "Token is valid", "payload": decoded}

@@ -30,7 +30,7 @@ class AuditTypeService:
         await s.flush()
         await s.refresh(new_audit_type)
         logging.info("Successfully created audit type '%s'.", new_audit_type.name)
-        return {"msg": "Saved successful!", "data": to_dict(new_audit_type)}
+        return {"message": "Saved successful!", "data": to_dict(new_audit_type)}
 
     @staticmethod
     @fapi_wrapper
@@ -71,7 +71,7 @@ class AuditTypeService:
         await s.refresh(audit_type)
 
         logging.info("Successfully updated audit type with ID %d.", audit_type_id)
-        return {"msg": "Update successful!", "data": to_dict(audit_type)}
+        return {"message": "Update successful!", "data": to_dict(audit_type)}
 
     @staticmethod
     @fapi_wrapper
@@ -93,7 +93,7 @@ class AuditTypeService:
         audit_type_dict = to_dict(audit_type)
         await s.delete(audit_type)
         logging.info("Successfully deleted audit type with ID %d.", audit_type_id)
-        return {"msg": "Deleted successful!", "data": audit_type_dict}
+        return {"message": "Deleted successful!", "data": audit_type_dict}
 
     @staticmethod
     @fapi_wrapper
@@ -110,7 +110,7 @@ class AuditTypeService:
             raise ControllerError("Audit type not found.", status_code=404)
 
         logging.debug("Found audit type with ID %d.", audit_type_id)
-        return {"msg": "Found", "data": to_dict(audit_type)}
+        return {"message": "Found", "data": to_dict(audit_type)}
 
     @staticmethod
     @fapi_wrapper
@@ -125,4 +125,4 @@ class AuditTypeService:
             raise ControllerError("No audit types found.", [])
 
         logging.debug("Retrieved %d audit types.", len(audit_types))
-        return {"msg": "Found", "data": to_dict(audit_types)}
+        return {"message": "Found", "data": to_dict(audit_types)}

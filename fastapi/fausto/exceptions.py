@@ -8,7 +8,7 @@ async def controller_error_handler(request: Request, exc: ControllerError):
     Converts ControllerError into a standard JSON response.
     """
     error_content = {
-        "msg": exc.msg,
+        "message": exc.message,
         "error": True,
         "data": exc.data,
     }

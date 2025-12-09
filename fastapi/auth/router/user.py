@@ -27,7 +27,8 @@ async def list_users(
     Returns:
         Response: A response object containing a list of users.
     """
-    return await service.get_multi()
+    users = await service.get_multi()
+    return Response(message="Found", data=users)
 
 
 @router.get("/{user_id}", response_model=Response, summary="Get a user by ID")
@@ -43,7 +44,8 @@ async def read_user(
     Returns:
         Response: A response object containing the user data.
     """
-    return await service.get(id=user_id)
+    user = await service.get(id=user_id)
+    return Response(message="Found", data=user)
 
 
 @router.get(
@@ -63,7 +65,8 @@ async def read_user_permission(
     Returns:
         Response: A response object containing the user data with permissions.
     """
-    return await service.get_user_name(username=username)
+    user_data = await service.get_user_name(username=username)
+    return Response(message="Found", data=user_data)
 
 
 @router.post(
@@ -84,7 +87,8 @@ async def creating_user(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await service.create(obj_in=user)
+    new_user = await service.create(obj_in=user.model_dump())
+    return Response(message="Saved successful!", data=new_user)
 
 
 @router.put("/{user_id}", response_model=Response, summary="Update a user")
@@ -102,7 +106,8 @@ async def updating_user(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await service.update(id=user_id, obj_in=user)
+    updated_user = await service.update(id=user_id, obj_in=user.model_dump(exclude_unset=True))
+    return Response(message="Update successful!", data=updated_user)
 
 
 @router.delete(
@@ -122,7 +127,8 @@ async def deleting_user(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await service.remove(id=user_id)
+    deleted_user = await service.remove(id=user_id)
+    return Response(message="Deleted successful!", data=deleted_user)
 
 
 router_user = router

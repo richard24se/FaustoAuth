@@ -32,7 +32,7 @@ async def test_create_permission_type_duplicate(authenticated_client: AsyncClien
     )
     assert response.status_code == 400
     assert response.status_code == 400
-    assert "already exists" in response.json()["msg"]
+    assert "already exists" in response.json()["message"]
 
 
 @pytest.mark.asyncio

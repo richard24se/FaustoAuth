@@ -23,7 +23,7 @@ async def test_create_user_success(authenticated_client: AsyncClient, test_role:
 
     assert response.status_code == 201
     assert response.json()["error"] is False
-    assert response.json()["msg"] == "Saved successful!"
+    assert response.json()["message"] == "Saved successful!"
 
 
 @pytest.mark.asyncio
@@ -45,7 +45,7 @@ async def test_create_user_duplicate_username(
 
     assert response.status_code == 400
     assert response.json()["error"] is True
-    assert "already exists" in response.json()["msg"]
+    assert "already exists" in response.json()["message"]
 
 
 @pytest.mark.asyncio
@@ -94,7 +94,7 @@ async def test_get_non_existent_user(authenticated_client: AsyncClient):
 
     assert response.status_code == 404
     assert response.json()["error"] is True
-    assert response.json()["msg"] == "User not found."
+    assert response.json()["message"] == "User not found."
 
 
 @pytest.mark.asyncio
@@ -109,7 +109,7 @@ async def test_update_user_success(
 
     assert response.status_code == 200
     assert response.json()["error"] is False
-    assert response.json()["msg"] == "Update successful!"
+    assert response.json()["message"] == "Update successful!"
 
     # Verify update in database
     result = await db_session.execute(select(User).filter_by(id=test_user))
@@ -127,7 +127,7 @@ async def test_update_non_existent_user(authenticated_client: AsyncClient):
 
     assert response.status_code == 404
     assert response.json()["error"] is True
-    assert response.json()["msg"] == "User not found."
+    assert response.json()["message"] == "User not found."
 
 
 @pytest.mark.asyncio
@@ -160,7 +160,7 @@ async def test_update_user_duplicate_username(
 
     assert response.status_code == 400
     assert response.json()["error"] is True
-    assert "already exists" in response.json()["msg"]
+    assert "already exists" in response.json()["message"]
 
 
 @pytest.mark.asyncio
@@ -187,7 +187,7 @@ async def test_delete_user_success(
 
     assert response.status_code == 200
     assert response.json()["error"] is False
-    assert response.json()["msg"] == "Deleted successful!"
+    assert response.json()["message"] == "Deleted successful!"
 
     # Verify deletion in database
     result = await db_session.execute(select(User).filter_by(id=user_to_delete.id))
@@ -204,4 +204,4 @@ async def test_delete_non_existent_user(authenticated_client: AsyncClient):
 
     assert response.status_code == 404
     assert response.json()["error"] is True
-    assert response.json()["msg"] == "User not found, it may have already been deleted."
+    assert response.json()["message"] == "User not found, it may have already been deleted."

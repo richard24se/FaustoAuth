@@ -23,7 +23,8 @@ async def list_object_types(s: AsyncSession = Depends(get_async_db)):
     Returns:
         Response: A response object containing a list of object types.
     """
-    return await ObjectTypeService.get_object_types(s=s)
+    obj_types = await ObjectTypeService.get_object_types(s=s)
+    return Response(message="Found", data=obj_types)
 
 
 @router.get(
@@ -40,7 +41,8 @@ async def read_object_type(
     Returns:
         Response: A response object containing the object type data.
     """
-    return await ObjectTypeService.get_object_type(s=s, object_type_id=object_type_id)
+    obj_type = await ObjectTypeService.get_object_type(s=s, object_type_id=object_type_id)
+    return Response(message="Found", data=obj_type)
 
 
 @router.post(
@@ -60,7 +62,8 @@ async def creating_object_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await ObjectTypeService.create_object_type(s=s, data=object_type)
+    new_obj_type = await ObjectTypeService.create_object_type(s=s, data=object_type.model_dump())
+    return Response(message="Saved successful!", data=new_obj_type)
 
 
 @router.put(
@@ -80,9 +83,10 @@ async def updating_object_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await ObjectTypeService.update_object_type(
-        s=s, object_type_id=object_type_id, data=object_type
+    updated_obj_type = await ObjectTypeService.update_object_type(
+        s=s, object_type_id=object_type_id, data=object_type.model_dump(exclude_unset=True)
     )
+    return Response(message="Update successful!", data=updated_obj_type)
 
 
 @router.delete(
@@ -101,7 +105,8 @@ async def deleting_object_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await ObjectTypeService.delete_object_type(s=s, object_type_id=object_type_id)
+    deleted_obj_type = await ObjectTypeService.delete_object_type(s=s, object_type_id=object_type_id)
+    return Response(message="Deleted successful!", data=deleted_obj_type)
 
 
 router_object_type = router

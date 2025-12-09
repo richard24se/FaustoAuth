@@ -21,7 +21,7 @@ from auth.router import (
     router_role_permission,
     router_user,
 )
-from config.databases import SQLALCH_AUTH, async_redis_pool, async_token_store, async_engine  # Import async_engine
+from config.databases import SQLALCH_AUTH, async_redis_pool, async_token_store, async_engine, AsyncSessionFactory  # Import AsyncSessionFactory
 from config.settings import settings
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -63,7 +63,7 @@ async def lifespan(app: FastAPI):
     logging.info("Connecting to database and Redis...")
     try:
         # Test database connection
-        async with SQLALCH_AUTH() as session:  # Use async with and call SQLALCH_AUTH (which is get_async_db)
+        async with AsyncSessionFactory() as session:  # Use AsyncSessionFactory directly
             await session.execute(text("SELECT 1"))  # Await execute
         logging.info("Database connection successful.")
         # Test Redis connection
@@ -92,7 +92,10 @@ app = FastAPI(
 
 app.add_exception_handler(ControllerError, controller_error_handler)
 
+from middleware.exception_handler import GlobalExceptionMiddleware
+
 # --- Middleware ---
+app.add_middleware(GlobalExceptionMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # In production, restrict this to specific domains
@@ -114,7 +117,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     Returns:
         JSONResponse: A JSON response with consistent error format.
     """
-    content = {"error": True, "msg": exc.detail, "data": None}
+    content = {"error": True, "message": exc.detail, "data": None}
     if isinstance(exc.detail, dict):
         # If the detail is already a dict, use it as the base
         content = {**content, **exc.detail}

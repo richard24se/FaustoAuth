@@ -42,9 +42,10 @@ async def list_permissions(
     Returns:
         Response: A response object containing a list of permissions.
     """
-    return await service.get_permissions(
+    permissions = await service.get_permissions(
         obj_name=obj_name, username=username, role_id=role_id
     )
+    return Response(message="Found", data=permissions)
 
 
 @router.get(
@@ -61,7 +62,8 @@ async def read_permission(
     Returns:
         Response: A response object containing the permission data.
     """
-    return await service.get(id=permission_id)
+    permission = await service.get(id=permission_id)
+    return Response(message="Found", data=permission)
 
 
 @router.post(
@@ -82,7 +84,8 @@ async def creating_permission(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await service.create(obj_in=permission)
+    new_permission = await service.create(obj_in=permission.model_dump())
+    return Response(message="Saved successful!", data=new_permission)
 
 
 @router.put(
@@ -102,7 +105,8 @@ async def updating_permission(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await service.update(id=permission_id, obj_in=permission)
+    updated_permission = await service.update(id=permission_id, obj_in=permission.model_dump(exclude_unset=True))
+    return Response(message="Update successful!", data=updated_permission)
 
 
 @router.delete(
@@ -121,7 +125,8 @@ async def deleting_permission(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await service.remove(id=permission_id)
+    deleted_permission = await service.remove(id=permission_id)
+    return Response(message="Deleted successful!", data=deleted_permission)
 
 
 router_permission = router

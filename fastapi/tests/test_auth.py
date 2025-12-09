@@ -38,7 +38,7 @@ async def test_login_incorrect_password(test_client: AsyncClient, test_user: int
 
     assert response.status_code == 401
     assert response.json()["error"] is True
-    assert response.json()["msg"] == "Invalid username or password."
+    assert response.json()["message"] == "Invalid username or password."
 
 
 @pytest.mark.asyncio
@@ -51,7 +51,7 @@ async def test_login_non_existent_user(test_client: AsyncClient):
 
     assert response.status_code == 401
     assert response.json()["error"] is True
-    assert response.json()["msg"] == "Invalid username or password."
+    assert response.json()["message"] == "Invalid username or password."
 
 
 @pytest.mark.asyncio
@@ -75,7 +75,7 @@ async def test_logout_success(
 
     assert response.status_code == 200
     assert response.json()["error"] is False
-    assert response.json()["msg"] == "User logout successful, token revoked."
+    assert response.json()["message"] == "User logout successful, token revoked."
 
     # Verify Redis interaction for revocation
     mock_redis.set.assert_called_once_with(
@@ -110,7 +110,7 @@ async def test_validate_token_valid(
 
     assert response.status_code == 200
     assert response.json()["error"] is False
-    assert response.json()["msg"] == "Token is valid."
+    assert response.json()["message"] == "Token is valid."
     mock_redis.get.assert_called_once_with(access_token)
 
 
@@ -139,7 +139,7 @@ async def test_validate_token_revoked(
 
     assert response.status_code == 403
     assert response.json()["error"] is True
-    assert response.json()["msg"] == "Token has been revoked."
+    assert response.json()["message"] == "Token has been revoked."
     mock_redis.get.assert_called_once_with(access_token)
 
 
@@ -199,7 +199,7 @@ async def test_refresh_token_with_access_token(
 
     assert response.status_code == 403
     assert response.json()["error"] is True
-    assert response.json()["msg"] == "An access token cannot be used for refresh."
+    assert response.json()["message"] == "An access token cannot be used for refresh."
 
 
 @pytest.mark.asyncio
@@ -227,5 +227,5 @@ async def test_refresh_token_revoked(
 
     assert response.status_code == 403
     assert response.json()["error"] is True
-    assert response.json()["msg"] == "This refresh token has been revoked."
+    assert response.json()["message"] == "This refresh token has been revoked."
     mock_redis.get.assert_called_once_with(refresh_token)

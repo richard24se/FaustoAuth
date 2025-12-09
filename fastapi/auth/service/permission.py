@@ -18,20 +18,27 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
     def __init__(self, session: AsyncSession):
         super().__init__(Permission, session)
 
-    async def create(self, *, obj_in: PermissionCreate) -> dict:
+    async def create(self, *, obj_in: PermissionCreate | dict[str, Any]) -> dict[str, Any]:
         """Creates a new permission."""
         try:
-            result = await self.session.execute(select(Permission).filter(Permission.name == obj_in.name))
+            if isinstance(obj_in, dict):
+                perm_data = obj_in
+                name = perm_data.get("name")
+            else:
+                perm_data = obj_in.model_dump()
+                name = obj_in.name
+
+            result = await self.session.execute(select(Permission).filter(Permission.name == name))
             existing = result.scalars().first()
             if existing:
-                raise ControllerError(f"The permission '{obj_in.name}' already exists.", status_code=400)
+                raise ControllerError(f"The permission '{name}' already exists.", status_code=400)
 
-            new_permission = Permission(**obj_in.model_dump())
+            new_permission = Permission(**perm_data)
             self.session.add(new_permission)
             await self.session.commit()
             await self.session.refresh(new_permission)
             logging.info("Successfully created permission '%s'.", new_permission.name)
-            return {"msg": "Saved successful!", "data": self._process_data(new_permission)}
+            return self._process_data(new_permission)
         except ControllerError:
             await self.session.rollback()
             raise
@@ -43,8 +50,8 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
         self,
         *,
         id: int,
-        obj_in: PermissionUpdate,
-    ) -> dict:
+        obj_in: PermissionUpdate | dict[str, Any],
+    ) -> dict[str, Any]:
         """Updates an existing permission."""
         try:
             result = await self.session.execute(select(Permission).filter_by(id=id))
@@ -52,18 +59,30 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
             if not permission:
                 raise ControllerError("Permission not found.", status_code=404)
 
-            if obj_in.name and obj_in.name != permission.name:
+            if isinstance(obj_in, dict):
+                update_data = obj_in
+                name = update_data.get("name")
+            else:
+                update_data = obj_in.model_dump(exclude_unset=True)
+                name = obj_in.name
+
+            if name and name != permission.name:
                 result = await self.session.execute(
                     select(Permission).filter(
-                        Permission.name == obj_in.name, Permission.id != id
+                        Permission.name == name, Permission.id != id
                     )
                 )
                 existing = result.scalars().first()
                 if existing:
-                    raise ControllerError(f"The permission '{obj_in.name}' already exists.", status_code=400)
+                    raise ControllerError(f"The permission '{name}' already exists.", status_code=400)
 
-            update_data = obj_in.model_dump(exclude_unset=True)
-            update_data["modificated_date"] = datetime.now(timezone.utc)
+            if isinstance(obj_in, dict):
+                # Ensure modificated_date is set if not present or explicit override needed
+                update_data["modificated_date"] = datetime.now(timezone.utc)
+            else:
+                 update_data = obj_in.model_dump(exclude_unset=True)
+                 update_data["modificated_date"] = datetime.now(timezone.utc)
+
 
             for key, value in update_data.items():
                 setattr(permission, key, value)
@@ -73,7 +92,7 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
             await self.session.refresh(permission)
             
             logging.info("Successfully updated permission with ID %d.", id)
-            return {"msg": "Update successful!", "data": self._process_data(permission)}
+            return self._process_data(permission)
         except ControllerError:
             await self.session.rollback()
             raise
@@ -119,7 +138,7 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
                     "permissions": to_dict(permissions),
                     "enabled": True,
                 }
-                return {"msg": "Found", "data": response_data}
+                return response_data
 
             elif role_id:
                 query = (
@@ -137,7 +156,7 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
             if not permissions:
                 raise ControllerError("No permissions found.", [], status_code=404)
 
-            return {"msg": "Found", "data": [self._process_data(p) for p in permissions]}
+            return [self._process_data(p) for p in permissions]
         except ControllerError:
             raise
         except Exception as e:

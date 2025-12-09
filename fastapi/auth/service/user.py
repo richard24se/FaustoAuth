@@ -16,30 +16,56 @@ SUPER_USER_USERNAME = "admin"
 
 
 class UserService(CRUDBase[User, UserCreate, UserUpdate]):
-    """User Service"""
+    """Service for managing User entities.
+
+    This service handles the creation, update, retrieval, and deletion of users.
+    It includes specific logic for password hashing during creation and updates,
+    as well as protection for the super-user account.
+    """
 
     def __init__(self, session: AsyncSession):
         super().__init__(User, session, exclude_fields=["password"])
 
-    async def create(self, *, obj_in: UserCreate) -> dict:
-        """Creates a new user."""
-        try:
-            result = await self.session.execute(select(User).filter(User.username == obj_in.username))
-            if result.scalars().first():
-                raise ControllerError(f"The username '{obj_in.username}' already exists.", status_code=400)
+    async def create(self, *, obj_in: UserCreate | dict[str, Any]) -> dict[str, Any]:
+        """Creates a new user.
 
-            user_data = obj_in.model_dump()
+        Hashes the provided password before storing it in the database.
+        Checks for username uniqueness.
+
+        Args:
+            obj_in (UserCreate | dict[str, Any]): The data to create the user with.
+
+        Returns:
+            dict[str, Any]: A dictionary representation of the created user (excluding valid password).
+
+        Raises:
+            ControllerError: If the username already exists or other errors occur.
+        """
+        try:
+            if isinstance(obj_in, dict):
+                user_data = obj_in
+                username = user_data.get("username")
+            else:
+                user_data = obj_in.model_dump()
+                username = obj_in.username
+
+            result = await self.session.execute(select(User).filter(User.username == username))
+            if result.scalars().first():
+                raise ControllerError(f"The username '{username}' already exists.", status_code=400)
+
+            # Hash the password
             password_bytes = user_data["password"].encode("utf-8")
             truncated_password_bytes = password_bytes[:72]
             truncated_password = truncated_password_bytes.decode("utf-8", errors="ignore")
             user_data["password"] = pwd_context.hash(truncated_password)
+            
             new_user = User(**user_data)
 
             self.session.add(new_user)
             await self.session.commit()
             await self.session.refresh(new_user)
             logging.info("Successfully created user '%s'.", new_user.username)
-            return {"msg": "Saved successful!", "data": self._process_data(new_user)}
+            return self._process_data(new_user)
         except ControllerError:
             await self.session.rollback()
             raise
@@ -47,8 +73,22 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
             await self.session.rollback()
             raise ControllerError(str(e))
 
-    async def update(self, *, id: int, obj_in: UserUpdate) -> dict:
-        """Updates an existing user."""
+    async def update(self, *, id: int, obj_in: UserUpdate | dict[str, Any]) -> dict[str, Any]:
+        """Updates an existing user.
+
+        Handles password re-hashing if a new password is provided.
+        Prevents updates to the 'admin' super-user username.
+
+        Args:
+            id (int): The ID of the user to update.
+            obj_in (UserUpdate | dict[str, Any]): The update data.
+
+        Returns:
+            dict[str, Any]: A dictionary representation of the updated user.
+
+        Raises:
+            ControllerError: If user is not found, username exists, or super-user protection is triggered.
+        """
         try:
             result = await self.session.execute(select(User).filter_by(id=id))
             user = result.scalars().one_or_none()
@@ -57,14 +97,20 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
             if user.username == SUPER_USER_USERNAME:
                 raise ControllerError("Cannot update the super-user.", status_code=400)
 
-            if obj_in.username and obj_in.username != user.username:
+            if isinstance(obj_in, dict):
+                update_data = obj_in
+                new_username = update_data.get("username")
+            else:
+                update_data = obj_in.model_dump(exclude_unset=True)
+                new_username = obj_in.username
+
+            if new_username and new_username != user.username:
                 result = await self.session.execute(
-                    select(User).filter(User.username == obj_in.username)
+                    select(User).filter(User.username == new_username)
                 )
                 if result.scalars().first():
-                    raise ControllerError(f"The username '{obj_in.username}' already exists.", status_code=400)
+                    raise ControllerError(f"The username '{new_username}' already exists.", status_code=400)
 
-            update_data = obj_in.model_dump(exclude_unset=True)
             if "password" in update_data and update_data["password"]:
                 password_bytes = update_data["password"].encode("utf-8")
                 truncated_password_bytes = password_bytes[:72]
@@ -78,7 +124,7 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
             await self.session.commit()
             await self.session.refresh(user)
             logging.info("Successfully updated user ID %d.", id)
-            return {"msg": "Update successful!", "data": self._process_data(user)}
+            return self._process_data(user)
         except ControllerError:
             await self.session.rollback()
             raise
@@ -86,7 +132,7 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
             await self.session.rollback()
             raise ControllerError(str(e))
 
-    async def remove(self, *, id: int) -> dict:
+    async def remove(self, *, id: int) -> dict[str, Any]:
         """Deletes a user."""
         try:
             result = await self.session.execute(select(User).filter_by(id=id))
@@ -97,10 +143,11 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
             if not user:
                 raise ControllerError("User not found, it may have already been deleted.", status_code=404)
             
+            data = self._process_data(user)
             await self.session.delete(user)
             await self.session.commit()
             logging.info("Successfully deleted user with ID %d.", id)
-            return {"msg": "Deleted successful!", "data": self._process_data(user)}
+            return data
         except ControllerError:
             await self.session.rollback()
             raise
@@ -129,7 +176,7 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
             # Remove password from response
             user_dict = remove_fields_sqlalch(user_dict, ["password"])
 
-            return {"msg": "Found", "data": user_dict}
+            return user_dict
         except ControllerError:
             raise
         except Exception as e:

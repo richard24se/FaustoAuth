@@ -22,7 +22,7 @@ class Etapa(BaseModel):
 @router.get("/", response_model=Response)
 async def read_items():
     data = EtapaService.obtener_etapas()
-    respuesta = Response(msg="Esta es la lista de etapas", error=False, data=data)
+    respuesta = Response(message="Esta es la lista de etapas", error=False, data=data)
     return respuesta
 
 
@@ -30,7 +30,7 @@ async def read_items():
 async def read_obtener_grupo_etapas(fecha: str):
     data = EtapaService.obtener_grupo_etapas(fecha)
     respuesta = Response(
-        msg="Esta es la lista de grupos de postulantes etapas", error=False, data=data
+        message="Esta es la lista de grupos de postulantes etapas", error=False, data=data
     )
     return respuesta
 
@@ -41,7 +41,7 @@ async def read_obtener_postulantes(
 ):
     data = EtapaService.obtener_postulantes(grupo_postulante_id, etapa_id)
     respuesta = Response(
-        msg="Esta es la lista de grupos de postulantes etapas", error=False, data=data
+        message="Esta es la lista de grupos de postulantes etapas", error=False, data=data
     )
     return respuesta
 

@@ -30,7 +30,7 @@ async def test_create_role_duplicate(authenticated_client: AsyncClient, test_rol
         json={"name": "test_role", "display_name": "Duplicate Role", "permissions": []},
     )
     assert response.status_code == 400
-    assert response.json()["msg"] == "The role 'test_role' already exists."
+    assert response.json()["message"] == "The role 'test_role' already exists."
 
 
 @pytest.mark.asyncio
@@ -58,7 +58,7 @@ async def test_read_role_not_found(authenticated_client: AsyncClient):
     """Test reading a non-existent role."""
     response = await authenticated_client.get("/role/99999")
     assert response.status_code == 404
-    assert response.json()["msg"] == "Role not found."
+    assert response.json()["message"] == "Role not found."
 
 
 @pytest.mark.asyncio
@@ -82,7 +82,7 @@ async def test_update_role_not_found(authenticated_client: AsyncClient):
         json={"name": "updated_role"},
     )
     assert response.status_code == 404
-    assert response.json()["msg"] == "Role not found."
+    assert response.json()["message"] == "Role not found."
 
 
 @pytest.mark.asyncio
@@ -96,7 +96,7 @@ async def test_delete_role(authenticated_client: AsyncClient, db_session: AsyncS
 
     response = await authenticated_client.delete(f"/role/{role.id}")
     assert response.status_code == 200
-    assert response.json()["msg"] == "Deleted successful!"
+    assert response.json()["message"] == "Deleted successful!"
 
     # Verify deletion
     response = await authenticated_client.get(f"/role/{role.id}")
@@ -108,4 +108,4 @@ async def test_delete_role_not_found(authenticated_client: AsyncClient):
     """Test deleting a non-existent role."""
     response = await authenticated_client.delete("/role/99999")
     assert response.status_code == 404
-    assert response.json()["msg"] == "Role not found, it may have already been deleted."
+    assert response.json()["message"] == "Role not found, it may have already been deleted."

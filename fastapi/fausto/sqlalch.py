@@ -97,20 +97,20 @@ def async_sqlalch_wrapper(func: F) -> Callable[..., Any]: # No longer takes sqla
             await session.rollback()
             return {
                 "error": True,
-                "msg": "Data integrity conflict. A similar record may already exist.",
+                "message": "Data integrity conflict. A similar record may already exist.",
             }
         except OperationalError as e:
             logging.exception("SQLAlchemy OperationalError in %s", func.__name__)
             await session.rollback()
-            return {"error": True, "msg": f"Database connection error: {e}"}
+            return {"error": True, "message": f"Database connection error: {e}"}
         except SQLAlchemyError as e:
             logging.exception("SQLAlchemyError in %s", func.__name__)
             await session.rollback()
-            return {"error": True, "msg": f"A database error occurred: {e}"}
+            return {"error": True, "message": f"A database error occurred: {e}"}
         except ControllerError as e:
             logging.debug("ControllerError in %s: %s", func.__name__, e)
             await session.rollback() # Rollback on ControllerError as well
-            error_dict = {"error": True, "msg": e.msg if hasattr(e, "msg") else str(e)}
+            error_dict = {"error": True, "message": e.message if hasattr(e, "message") else str(e)}
             if hasattr(e, "data") and e.data:
                 error_dict["data"] = e.data
             elif len(e.args) > 1:
@@ -123,7 +123,7 @@ def async_sqlalch_wrapper(func: F) -> Callable[..., Any]: # No longer takes sqla
         except Exception as e:
             logging.exception("Unhandled exception in %s", func.__name__)
             await session.rollback()
-            return {"error": True, "msg": "An unexpected server error occurred."}
+            return {"error": True, "message": "An unexpected server error occurred."}
         finally:
             # Session closing is handled by FastAPI's Depends(get_async_db)
             pass

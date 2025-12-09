@@ -44,13 +44,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             return remove_fields_sqlalch(data, self.exclude_fields)
         return data
 
-    async def get(self, id: Any) -> dict[str, Any]:
+    async def get(self, id: Any) -> dict[str, Any] | None:
         try:
             result = await self.session.execute(select(self.model).filter(self.model.id == id))
             obj = result.scalars().first()
             if not obj:
                 raise ControllerError(f"{self.model.__name__} not found.", status_code=404)
-            return {"msg": "Found", "data": self._process_data(obj)}
+            return self._process_data(obj)
         except ControllerError:
             raise
         except Exception as e:
@@ -63,7 +63,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         limit: int = 100,
         filters: dict[str, Any] | None = None,
         order_by: list[str] | None = None,
-    ) -> dict[str, Any]:
+    ) -> list[dict[str, Any]]:
         try:
             query = select(self.model)
 
@@ -81,21 +81,22 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             result = await self.session.execute(query)
             objects = result.scalars().all()
 
-            return {
-                "msg": "Found",
-                "data": [self._process_data(obj) for obj in objects],
-            }
+            return [self._process_data(obj) for obj in objects]
         except Exception as e:
             raise ControllerError(str(e))
 
-    async def create(self, *, obj_in: CreateSchemaType) -> dict[str, Any]:
+    async def create(self, *, obj_in: CreateSchemaType | dict[str, Any]) -> dict[str, Any]:
         try:
-            obj_in_data = jsonable_encoder(obj_in)
+            if isinstance(obj_in, dict):
+                obj_in_data = obj_in
+            else:
+                obj_in_data = jsonable_encoder(obj_in)
+            
             db_obj = self.model(**obj_in_data)
             self.session.add(db_obj)
             await self.session.commit()
             await self.session.refresh(db_obj)
-            return {"msg": "Saved successful!", "data": self._process_data(db_obj)}
+            return self._process_data(db_obj)
         except Exception as e:
             await self.session.rollback()
             raise ControllerError(str(e))
@@ -125,7 +126,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             self.session.add(db_obj)
             await self.session.commit()
             await self.session.refresh(db_obj)
-            return {"msg": "Update successful!", "data": self._process_data(db_obj)}
+            return self._process_data(db_obj)
         except ControllerError:
             await self.session.rollback()
             raise
@@ -144,7 +145,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             data = self._process_data(obj)
             await self.session.delete(obj)
             await self.session.commit()
-            return {"msg": "Deleted successful!", "data": data}
+            return data
         except ControllerError:
             await self.session.rollback()
             raise

@@ -46,8 +46,8 @@ class TestCRUDBaseCreate:
             with patch("auth.service.base.to_dict", return_value={"id": 1, "name": "new_role", "display_name": "New Role"}):
                 result = await role_service.create(obj_in=mock_input)
         
-        assert result["msg"] == "Saved successful!"
-        assert result["data"]["name"] == "new_role"
+        # assert result["message"] == "Saved successful!" # Removed
+        assert result["name"] == "new_role"
         mock_async_session.add.assert_called_once()
         mock_async_session.commit.assert_called_once()
         mock_async_session.refresh.assert_called_once()

@@ -118,7 +118,7 @@ async def test_client_fixture(
                 result = await f(*args, **kwargs)
                 return to_dict(result) if result else result
             except ControllerError as e:
-                error_dict = {"error": True, "msg": e.msg if hasattr(e, "msg") else str(e)}
+                error_dict = {"error": True, "message": e.message if hasattr(e, "message") else str(e)}
                 if hasattr(e, "data") and e.data:
                     error_dict["data"] = e.data
                 elif len(e.args) > 1:

@@ -25,7 +25,8 @@ async def list_roles(service: RoleService = Depends(get_role_service)):
     Returns:
         Response: A response object containing a list of roles.
     """
-    return await service.get_multi()
+    roles = await service.get_multi()
+    return Response(message="Found", data=roles)
 
 
 @router.get("/{role_id}", response_model=Response, summary="Get a role by ID")
@@ -38,7 +39,8 @@ async def read_role(role_id: int, service: RoleService = Depends(get_role_servic
     Returns:
         Response: A response object containing the role data.
     """
-    return await service.get(id=role_id)
+    role = await service.get(id=role_id)
+    return Response(message="Found", data=role)
 
 
 @router.post(
@@ -60,7 +62,8 @@ async def creating_role(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await service.create(obj_in=role)
+    new_role = await service.create(obj_in=role.model_dump())
+    return Response(message="Saved successful!", data=new_role)
 
 
 @router.put("/{role_id}", response_model=Response, summary="Update a role")
@@ -76,7 +79,8 @@ async def updating_role(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await service.update(id=role_id, obj_in=role)
+    updated_role = await service.update(id=role_id, obj_in=role.model_dump(exclude_unset=True))
+    return Response(message="Update successful!", data=updated_role)
 
 
 @router.delete(
@@ -95,7 +99,8 @@ async def deleting_role(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await service.remove(id=role_id)
+    deleted_role = await service.remove(id=role_id)
+    return Response(message="Deleted successful!", data=deleted_role)
 
 
 router_role = router

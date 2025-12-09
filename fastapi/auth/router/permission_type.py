@@ -23,7 +23,8 @@ async def list_permission_types(s: AsyncSession = Depends(get_async_db)):
     Returns:
         Response: A response object containing a list of permission types.
     """
-    return await PermissionTypeService.get_permission_types(s=s)
+    perm_types = await PermissionTypeService.get_permission_types(s=s)
+    return Response(message="Found", data=perm_types)
 
 
 @router.get(
@@ -42,9 +43,10 @@ async def read_permission_type(
     Returns:
         Response: A response object containing the permission type data.
     """
-    return await PermissionTypeService.get_permission_type(
+    perm_type = await PermissionTypeService.get_permission_type(
         s=s, permission_type_id=permission_type_id
     )
+    return Response(message="Found", data=perm_type)
 
 
 @router.post(
@@ -64,7 +66,8 @@ async def creating_permission_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await PermissionTypeService.create_permission_type(s=s, data=permission_type)
+    new_perm_type = await PermissionTypeService.create_permission_type(s=s, data=permission_type.model_dump())
+    return Response(message="Saved successful!", data=new_perm_type)
 
 
 @router.put(
@@ -86,9 +89,10 @@ async def updating_permission_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await PermissionTypeService.update_permission_type(
-        s=s, permission_type_id=permission_type_id, data=permission_type
+    updated_perm_type = await PermissionTypeService.update_permission_type(
+        s=s, permission_type_id=permission_type_id, data=permission_type.model_dump(exclude_unset=True)
     )
+    return Response(message="Update successful!", data=updated_perm_type)
 
 
 @router.delete(
@@ -107,9 +111,10 @@ async def deleting_permission_type(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await PermissionTypeService.delete_permission_type(
+    deleted_perm_type = await PermissionTypeService.delete_permission_type(
         s=s, permission_type_id=permission_type_id
     )
+    return Response(message="Deleted successful!", data=deleted_perm_type)
 
 
 router_permission_type = router

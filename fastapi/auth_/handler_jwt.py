@@ -21,10 +21,10 @@ class JWTBearer(HTTPBearer):
                 )
             # if not self.verify_jwt(credentials.credentials):
             if self.verify_jwt(credentials.credentials).get("error") == True:
-                # msg = "Invalid token or expired token."
+                # message = "Invalid token or expired token."
                 raise HTTPException(
                     status_code=403,
-                    detail={"msg": self.verify_jwt(credentials.credentials).get("msg")},
+                    detail={"message": self.verify_jwt(credentials.credentials).get("message")},
                 )
                 # return {"failure": True}
             return credentials.credentials
@@ -35,17 +35,17 @@ class JWTBearer(HTTPBearer):
         payload: dict = {}
         try:
             is_token_valid: bool = False
-            msg = None
+            message = None
             payload = decode_auth_token(jwtoken)
             if not isinstance(payload, str):
                 is_token_valid = True
-                msg = "token válido"
+                message = "token válido"
             else:
                 is_token_valid = False
-                msg = payload
-            payload = {"error": not is_token_valid, "msg": msg}
+                message = payload
+            payload = {"error": not is_token_valid, "message": message}
         except Exception as err:
             logging.exception(err)
-            payload = {"error": True, "msg": str(err)}
+            payload = {"error": True, "message": str(err)}
 
         return payload

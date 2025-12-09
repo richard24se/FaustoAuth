@@ -29,7 +29,8 @@ async def read_role_permission(role_id: int, s: AsyncSession = Depends(get_async
     Returns:
         Response: A response object containing the permissions grouped by object.
     """
-    return await RolePermissionService.get_role_permission(s=s, role_id=role_id)
+    permissions = await RolePermissionService.get_role_permission(s=s, role_id=role_id)
+    return Response(message="Found", data=permissions)
 
 
 router_role_permission = router

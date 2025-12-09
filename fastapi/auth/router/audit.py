@@ -23,7 +23,8 @@ async def list_audits(s: AsyncSession = Depends(get_async_db)):
     Returns:
         Response: A response object containing a list of audit records.
     """
-    return await AuditService.get_audits(s=s)
+    audits = await AuditService.get_audits(s=s)
+    return Response(message="Found", data=audits)
 
 
 @router.get("/{audit_id}", response_model=Response, summary="Get an audit log by ID")
@@ -36,7 +37,8 @@ async def read_audit(audit_id: int, s: AsyncSession = Depends(get_async_db)):
     Returns:
         Response: A response object containing the audit record data.
     """
-    return await AuditService.get_audit(s=s, audit_id=audit_id)
+    audit = await AuditService.get_audit(s=s, audit_id=audit_id)
+    return Response(message="Found", data=audit)
 
 
 @router.post(
@@ -54,7 +56,8 @@ async def creating_audit(audit: AuditCreate, s: AsyncSession = Depends(get_async
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await AuditService.create_audit(s=s, data=audit)
+    new_audit = await AuditService.create_audit(s=s, data=audit.model_dump())
+    return Response(message="Saved successful!", data=new_audit)
 
 
 @router.put("/{audit_id}", response_model=Response, summary="Update an audit log")
@@ -70,7 +73,8 @@ async def updating_audit(
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await AuditService.update_audit(s=s, audit_id=audit_id, data=audit)
+    updated_audit = await AuditService.update_audit(s=s, audit_id=audit_id, data=audit.model_dump(exclude_unset=True))
+    return Response(message="Update successful!", data=updated_audit)
 
 
 @router.delete(
@@ -87,7 +91,8 @@ async def deleting_audit(audit_id: int, s: AsyncSession = Depends(get_async_db))
     Returns:
         Response: A response object indicating success or failure.
     """
-    return await AuditService.delete_audit(s=s, audit_id=audit_id)
+    deleted_audit = await AuditService.delete_audit(s=s, audit_id=audit_id)
+    return Response(message="Deleted successful!", data=deleted_audit)
 
 
 router_audit = router

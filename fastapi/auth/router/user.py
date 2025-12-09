@@ -6,6 +6,14 @@ from fausto.fapi import Response
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+"""
+User Management Router.
+
+This module provides CRUD (Create, Read, Update, Delete) endpoints for ensuring
+lifecycle management of system users. All endpoints (except potential future public ones)
+are protected by JWT authentication.
+"""
+
 router = APIRouter(
     prefix="/user",
     tags=["Users"],

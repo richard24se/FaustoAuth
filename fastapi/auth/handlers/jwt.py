@@ -14,13 +14,15 @@ class JWTBearer(HTTPBearer):
     and raises appropriate HTTP exceptions for invalid or expired tokens.
     """
 
-    def __init__(self, auto_error: bool = True):
+    def __init__(self, auto_error: bool = True, scopes: list[str] = None):
         """
         Initializes the JWTBearer dependency.
 
         :param auto_error: If True, automatically raises HTTPException on error.
+        :param scopes: List of required scopes for this endpoint.
         """
         super().__init__(auto_error=auto_error)
+        self.scopes = scopes or []
 
     async def __call__(self, request: Request) -> str:
         """
@@ -74,6 +76,15 @@ class JWTBearer(HTTPBearer):
             # An error message string was returned from decode_auth_token
             logging.warning("JWT verification failed: %s", decoded)
             return {"error": True, "message": decoded}
+
+        # Check for required scopes
+        if self.scopes:
+            token_scopes = decoded.get("scope", "").split()
+            for required_scope in self.scopes:
+                if required_scope not in token_scopes:
+                    error_msg = f"Not enough permissions. Missing scope: {required_scope}"
+                    logging.warning(error_msg)
+                    return {"error": True, "message": error_msg}
 
         # Token is valid, payload was returned
         return {"error": False, "message": "Token is valid", "payload": decoded}

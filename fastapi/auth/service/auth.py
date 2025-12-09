@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from auth.model.models import User
+from auth.model.models import User, Role, RolePermission, Permission
 from auth.model.pydantic import TokenResponse, AuditCreate
 from config.databases import SQLALCH_AUTH, async_token_store  # Use async_token_store
 from config.security import pwd_context  # Import from central security config
@@ -65,8 +65,17 @@ class AuthService:
         from auth.service.audit import AuditService
 
         try:
-            # Step 1: User Lookup
-            result = await s.execute(select(User).filter(User.username == username))
+            # Step 1: User Lookup with Eager Loading of Permissions
+            # We need to traverse: User -> Role -> RolePermission -> Permission
+            from sqlalchemy.orm import selectinload
+
+            result = await s.execute(
+                select(User)
+                .options(
+                    selectinload(User.role).selectinload(Role.role_permissions).selectinload(RolePermission.permission)
+                )
+                .filter(User.username == username)
+            )
             user = result.scalars().first()
 
             if not user:
@@ -98,7 +107,8 @@ class AuthService:
                     )
                     # Automatically upgrade the password to a secure hash
                     password_bytes = password.encode("utf-8")
-                    truncated_password_bytes = password_bytes[:72]  # Truncate for safety with some hashers
+                    # truncated_password_bytes = password_bytes[:72]  # Truncate for safety with some hashers
+                    truncated_password_bytes = password_bytes  # Truncate for safety with some hashers
                     truncated_password = truncated_password_bytes.decode("utf-8", errors="ignore")
                     user.password = pwd_context.hash(truncated_password)
                     s.add(user)
@@ -129,6 +139,14 @@ class AuthService:
             user_surnames = user.surnames
             user_id_role = user.id_role
             user_tenant_id = user.tenant_id
+            user_role_name = user.role.name if user.role else None,
+
+            # Helper to extract scopes from permissions
+            scopes = []
+            if user.role and user.role.role_permissions:
+                for rp in user.role.role_permissions:
+                    if rp.permission:
+                        scopes.append(rp.permission.name)
 
             # Audit SUCCESS
             auth_create = AuditDTO(
@@ -144,7 +162,15 @@ class AuthService:
             await AuditService.create_audit(s=s, data=auth_create)
 
             # Step 4 & 5: Token Generation and Storage
-            access_token = encode_auth_token(user_username)
+            # Pass extracted scopes and performance claims to the token generator
+            access_token = encode_auth_token(
+                user_username,
+                scopes=scopes,
+                user_id=user_id,
+                tenant_id=user_tenant_id,
+                role=user_role_name,
+                name=user_names,
+            )
             # Mark the token as valid (value="false" means NOT revoked) in Redis
             await redis_create_key(key=access_token, value="false")
 
@@ -169,6 +195,7 @@ class AuthService:
             raise
         except Exception as e:
             await s.rollback()
+            logging.error(f"Unexpected error during user validation: {e}")
             raise ControllerError(str(e))
 
     @staticmethod

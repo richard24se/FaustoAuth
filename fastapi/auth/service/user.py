@@ -26,6 +26,13 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
     def __init__(self, session: AsyncSession):
         super().__init__(User, session, exclude_fields=["password"])
 
+    async def _hash_password(self, password: str) -> str:
+        """Helper to securely hash a password."""
+        password_bytes = password.encode("utf-8")
+        # Truncate for safety with some hashers (e.g. Bcrypt 72 byte limit)
+        truncated_password = password_bytes.decode("utf-8", errors="ignore")
+        return pwd_context.hash(truncated_password)
+
     async def create(self, *, obj_in: UserCreate | dict[str, Any]) -> dict[str, Any]:
         """Creates a new user.
 
@@ -54,10 +61,8 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
                 raise ControllerError(f"The username '{username}' already exists.", status_code=400)
 
             # Hash the password
-            password_bytes = user_data["password"].encode("utf-8")
-            truncated_password_bytes = password_bytes[:72]
-            truncated_password = truncated_password_bytes.decode("utf-8", errors="ignore")
-            user_data["password"] = pwd_context.hash(truncated_password)
+            # Hash the password
+            user_data["password"] = await self._hash_password(user_data["password"])
             
             new_user = User(**user_data)
 
@@ -112,10 +117,7 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
                     raise ControllerError(f"The username '{new_username}' already exists.", status_code=400)
 
             if "password" in update_data and update_data["password"]:
-                password_bytes = update_data["password"].encode("utf-8")
-                truncated_password_bytes = password_bytes[:72]
-                truncated_password = truncated_password_bytes.decode("utf-8", errors="ignore")
-                update_data["password"] = pwd_context.hash(truncated_password)
+                update_data["password"] = await self._hash_password(update_data["password"])
 
             for key, value in update_data.items():
                 setattr(user, key, value)

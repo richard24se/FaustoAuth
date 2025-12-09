@@ -50,6 +50,7 @@ COPY auth.role (id, name, display_name, created_date, modificated_date, tenant_i
 
 COPY auth."user" (id, username, password, names, surnames, created_date, modificated_date, id_role, tenant_id) FROM stdin;
 2	admin@faustoauth.app	$admin	FaustoAuth	Administrator	2020-06-25 02:14:50.36715+00	\N	1	1
+3	test@faustoauth.app	1234567	Test	Test	2020-06-25 02:14:50.36715+00	\N	1	1
 \.
 
 

@@ -10,7 +10,14 @@ TokenType = Literal["access", "refresh"]
 
 
 def _create_token(
-    identity: str, token_type: TokenType, expires_delta: timedelta
+    identity: str,
+    token_type: TokenType,
+    expires_delta: timedelta,
+    scopes: list[str] | None = None,
+    user_id: int | None = None,
+    tenant_id: int | None = None,
+    role: str | None = None,
+    name: str | None = None,
 ) -> str:
     """
     Helper function to create a JWT.
@@ -18,6 +25,11 @@ def _create_token(
     :param identity: The identity of the user.
     :param token_type: The type of token (access or refresh).
     :param expires_delta: The lifespan of the token.
+    :param scopes: Optional list of OAuth2 scopes.
+    :param user_id: The database ID of the user (claims: sub).
+    :param tenant_id: The tenant ID (claims: tenant_id).
+    :param role: The user's role name (claims: role).
+    :param name: The user's display name or 'names' (claims: name).
     :return: The encoded JWT.
     """
     try:
@@ -28,7 +40,19 @@ def _create_token(
             "system": settings.JWT_SYSTEM,
             "identity": identity,  # The actual user identifier
             "type": token_type,
+            "scope": " ".join(scopes) if scopes else "",
         }
+
+        # Add performance optimization claims if provided
+        if user_id is not None:
+            payload["sub"] = str(user_id)  # Standard JWT 'subject' claim
+        if tenant_id is not None:
+            payload["tenant_id"] = tenant_id
+        if role:
+            payload["role"] = role
+        if name:
+            payload["name"] = name
+
         token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm="HS256")
         logging.debug("Generated %s token for identity '%s'", token_type, identity)
         return token
@@ -37,15 +61,36 @@ def _create_token(
         raise
 
 
-def encode_auth_token(identity: str) -> str:
+def encode_auth_token(
+    identity: str,
+    scopes: list[str] | None = None,
+    user_id: int | None = None,
+    tenant_id: int | None = None,
+    role: str | None = None,
+    name: str | None = None,
+) -> str:
     """
     Encodes an access token for a given identity.
 
     :param identity: The identity of the user.
+    :param scopes: Optional list of OAuth2 scopes.
+    :param user_id: User's database ID.
+    :param tenant_id: User's tenant ID.
+    :param role: User's role name.
+    :param name: User's display name.
     :return: The encoded access token.
     """
     expires = timedelta(seconds=settings.JWT_TOKEN_EXPIRES)
-    return _create_token(identity, "access", expires)
+    return _create_token(
+        identity,
+        "access",
+        expires,
+        scopes=scopes,
+        user_id=user_id,
+        tenant_id=tenant_id,
+        role=role,
+        name=name,
+    )
 
 
 def encode_refresh_auth_token(identity: str) -> str:

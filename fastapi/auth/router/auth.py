@@ -6,6 +6,14 @@ from fausto.fapi import Response, fapi_get_bearer_token
 from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+"""
+Authentication Router.
+
+This module provides endpoints for user authentication, including login, logout,
+token validation, and token refreshing. It handles the issuance and management
+of JWT access and refresh tokens.
+"""
+
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"],

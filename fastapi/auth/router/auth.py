@@ -3,7 +3,7 @@ from auth.model.pydantic import LoginCredentials
 from auth.service.auth import AuthService
 from config.databases import get_async_db
 from fausto.fapi import Response, fapi_get_bearer_token
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(
@@ -20,6 +20,7 @@ router = APIRouter(
 )
 async def login(
     credential: LoginCredentials,
+    request: Request,
     s: AsyncSession = Depends(get_async_db),
     refresh: bool = False,
 ):
@@ -31,6 +32,7 @@ async def login(
 
     Args:
         credential (LoginCredentials): User's login credentials (username and password).
+        request (Request): The HTTP request object (for forensic logging).
         s (AsyncSession): The database session.
         refresh (bool): If True, a refresh token is also returned. Defaults to False.
 
@@ -42,7 +44,10 @@ async def login(
         username=credential.username,
         password=credential.password,
         refresh_token=refresh,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
     )
+    
     return Response(message="Login successful", data=token_data)
 
 

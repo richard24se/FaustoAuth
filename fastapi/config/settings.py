@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -42,11 +42,11 @@ class Settings(BaseSettings):
         """
         return timedelta(seconds=self.JWT_TOKEN_EXPIRES)
 
-    class Config:
-        # This allows pydantic to read from a .env file if python-dotenv is installed
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False
+    )
 
 
 # Make a single, importable instance of the settings

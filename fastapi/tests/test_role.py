@@ -5,13 +5,18 @@ from sqlalchemy import select
 from auth.model.models import Role
 
 @pytest.mark.asyncio
-async def test_create_role(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_create_role(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
     """Test creating a new role."""
     response = await authenticated_client.post(
         "/role/",
-        json={"name": "new_role", "display_name": "New Role", "permissions": []},
+        json={
+            "name": "new_role", 
+            "display_name": "New Role", 
+            "permissions": [],
+            "tenant_id": test_tenant
+        },
     )
-    assert response.status_code == 201
+    assert response.status_code == 201, f"Failed with {response.status_code}: {response.text}"
     data = response.json()
     assert data["data"]["name"] == "new_role"
     assert data["data"]["display_name"] == "New Role"
@@ -23,11 +28,16 @@ async def test_create_role(authenticated_client: AsyncClient, db_session: AsyncS
 
 
 @pytest.mark.asyncio
-async def test_create_role_duplicate(authenticated_client: AsyncClient, test_role: int):
+async def test_create_role_duplicate(authenticated_client: AsyncClient, test_role: int, test_tenant: int):
     """Test creating a duplicate role."""
     response = await authenticated_client.post(
         "/role/",
-        json={"name": "test_role", "display_name": "Duplicate Role", "permissions": []},
+        json={
+            "name": "test_role", 
+            "display_name": "Duplicate Role", 
+            "permissions": [],
+            "tenant_id": test_tenant
+        },
     )
     assert response.status_code == 400
     assert response.json()["message"] == "The role 'test_role' already exists."
@@ -86,10 +96,10 @@ async def test_update_role_not_found(authenticated_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_delete_role(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_delete_role(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
     """Test deleting a role."""
     # Create a role to delete
-    role = Role(name="role_to_delete", display_name="Role To Delete")
+    role = Role(name="role_to_delete", display_name="Role To Delete", tenant_id=test_tenant)
     db_session.add(role)
     await db_session.commit()
     await db_session.refresh(role)

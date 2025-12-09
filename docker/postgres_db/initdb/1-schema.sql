@@ -44,6 +44,36 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
+-- Name: tenant; Type: TABLE; Schema: auth; Owner: postgres
+--
+
+CREATE TABLE auth.tenant (
+    id bigint NOT NULL,
+    name character varying(100) NOT NULL,
+    slug character varying(50) NOT NULL,
+    domain character varying(100),
+    is_active boolean DEFAULT true NOT NULL,
+    created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    modificated_date timestamp with time zone
+);
+
+
+ALTER TABLE auth.tenant OWNER TO postgres;
+
+--
+-- Name: tenant_id_seq; Type: SEQUENCE; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE auth.tenant ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME auth.tenant_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+--
 -- Name: audit; Type: TABLE; Schema: auth; Owner: postgres
 --
 
@@ -54,7 +84,11 @@ CREATE TABLE auth.audit (
     modificated_date timestamp with time zone,
     input text,
     id_user smallint NOT NULL,
-    id_audit_type smallint NOT NULL
+    id_audit_type smallint NOT NULL,
+    tenant_id bigint NOT NULL,
+    ip_address character varying(45),
+    user_agent text,
+    status character varying(20)
 );
 
 
@@ -112,7 +146,8 @@ CREATE TABLE auth.object (
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     modificated_date timestamp with time zone,
     id_object_type smallint NOT NULL,
-    display_name text
+    display_name text,
+    tenant_id bigint NOT NULL
 );
 
 
@@ -170,7 +205,8 @@ CREATE TABLE auth.permission (
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     modificated_date timestamp with time zone,
     id_permission_type smallint NOT NULL,
-    id_object smallint NOT NULL
+    id_object smallint NOT NULL,
+    tenant_id bigint NOT NULL
 );
 
 
@@ -227,7 +263,8 @@ CREATE TABLE auth.role (
     name text,
     display_name character varying(50),
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    modificated_date timestamp with time zone
+    modificated_date timestamp with time zone,
+    tenant_id bigint NOT NULL
 );
 
 
@@ -287,7 +324,8 @@ CREATE TABLE auth."user" (
     surnames text,
     created_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     modificated_date timestamp with time zone,
-    id_role smallint NOT NULL
+    id_role smallint NOT NULL,
+    tenant_id bigint NOT NULL
 );
 
 
@@ -313,6 +351,22 @@ ALTER TABLE auth."user" ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 ALTER TABLE ONLY auth."user"
     ADD CONSTRAINT "User_pk" PRIMARY KEY (id);
+
+
+--
+-- Name: tenant tenant_pk; Type: CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth.tenant
+    ADD CONSTRAINT tenant_pk PRIMARY KEY (id);
+
+
+--
+-- Name: tenant tenant_slug_key; Type: CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth.tenant
+    ADD CONSTRAINT tenant_slug_key UNIQUE (slug);
 
 
 --
@@ -441,6 +495,46 @@ ALTER TABLE ONLY auth."user"
 
 ALTER TABLE ONLY auth.audit
     ADD CONSTRAINT user_fk FOREIGN KEY (id_user) REFERENCES auth."user"(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: audit tenant_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth.audit
+    ADD CONSTRAINT tenant_fk FOREIGN KEY (tenant_id) REFERENCES auth.tenant(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: object tenant_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth.object
+    ADD CONSTRAINT tenant_fk FOREIGN KEY (tenant_id) REFERENCES auth.tenant(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: permission tenant_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth.permission
+    ADD CONSTRAINT tenant_fk FOREIGN KEY (tenant_id) REFERENCES auth.tenant(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: role tenant_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth.role
+    ADD CONSTRAINT tenant_fk FOREIGN KEY (tenant_id) REFERENCES auth.tenant(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: user tenant_fk; Type: FK CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth."user"
+    ADD CONSTRAINT tenant_fk FOREIGN KEY (tenant_id) REFERENCES auth.tenant(id) MATCH FULL ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --

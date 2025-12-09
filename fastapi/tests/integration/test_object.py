@@ -18,7 +18,7 @@ async def test_object_type(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_create_object(
-    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type
+    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type, test_tenant
 ):
     """Test creating a new object."""
     response = await authenticated_client.post(
@@ -26,6 +26,7 @@ async def test_create_object(
         json={
             "name": "test_object",
             "id_object_type": test_object_type,
+            "tenant_id": test_tenant
         },
     )
     assert response.status_code == 201
@@ -35,10 +36,10 @@ async def test_create_object(
 
 @pytest.mark.asyncio
 async def test_create_object_duplicate(
-    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type
+    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type, test_tenant
 ):
     """Test creating a duplicate object."""
-    obj = Object(name="dup_object", id_object_type=test_object_type)
+    obj = Object(name="dup_object", id_object_type=test_object_type, tenant_id=test_tenant)
     db_session.add(obj)
     await db_session.commit()
     await db_session.refresh(obj)
@@ -48,19 +49,19 @@ async def test_create_object_duplicate(
         json={
             "name": "dup_object",
             "id_object_type": test_object_type,
+            "tenant_id": test_tenant
         },
     )
-    assert response.status_code == 400
     assert response.status_code == 400
     assert "already exists" in response.json()["message"]
 
 
 @pytest.mark.asyncio
 async def test_list_objects(
-    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type
+    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type, test_tenant
 ):
     """Test listing all objects."""
-    obj = Object(name="list_test_object", id_object_type=test_object_type)
+    obj = Object(name="list_test_object", id_object_type=test_object_type, tenant_id=test_tenant)
     db_session.add(obj)
     await db_session.commit()
     await db_session.refresh(obj)
@@ -73,10 +74,10 @@ async def test_list_objects(
 
 @pytest.mark.asyncio
 async def test_read_object(
-    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type
+    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type, test_tenant
 ):
     """Test reading a single object."""
-    obj = Object(name="read_test_object", id_object_type=test_object_type)
+    obj = Object(name="read_test_object", id_object_type=test_object_type, tenant_id=test_tenant)
     db_session.add(obj)
     await db_session.commit()
     await db_session.refresh(obj)
@@ -98,10 +99,10 @@ async def test_read_object_not_found(authenticated_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_update_object(
-    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type
+    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type, test_tenant
 ):
     """Test updating an object."""
-    obj = Object(name="update_test_object", id_object_type=test_object_type)
+    obj = Object(name="update_test_object", id_object_type=test_object_type, tenant_id=test_tenant)
     db_session.add(obj)
     await db_session.commit()
     await db_session.refresh(obj)
@@ -128,10 +129,10 @@ async def test_update_object_not_found(authenticated_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_delete_object(
-    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type
+    authenticated_client: AsyncClient, db_session: AsyncSession, test_object_type, test_tenant
 ):
     """Test deleting an object."""
-    obj = Object(name="delete_test_object", id_object_type=test_object_type)
+    obj = Object(name="delete_test_object", id_object_type=test_object_type, tenant_id=test_tenant)
     db_session.add(obj)
     await db_session.commit()
     await db_session.refresh(obj)

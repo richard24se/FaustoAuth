@@ -18,7 +18,7 @@ async def audit_type_id(db_session: AsyncSession):
 
 
 @pytest.fixture
-async def user_id(db_session: AsyncSession):
+async def user_id(db_session: AsyncSession, test_tenant: int):
     """Get the test user ID from the authenticated client fixture."""
     # The test_user is created by other fixtures, we need to get its ID
     from sqlalchemy import select
@@ -31,7 +31,8 @@ async def user_id(db_session: AsyncSession):
     user = User(
         name="audit_test_user",
         rol_id=1,
-        password=pwd_context.hash("test123")
+        password=pwd_context.hash("test123"),
+        tenant_id=test_tenant
     )
     db_session.add(user)
     await db_session.commit()
@@ -41,7 +42,7 @@ async def user_id(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_create_audit(
-    authenticated_client: AsyncClient, db_session: AsyncSession, audit_type_id, user_id
+    authenticated_client: AsyncClient, db_session: AsyncSession, audit_type_id, user_id, test_tenant
 ):
     """Test creating a new audit log."""
     response = await authenticated_client.post(
@@ -51,6 +52,7 @@ async def test_create_audit(
             "id_audit_type": audit_type_id,
             "data": "Test audit data",
             "input": "Test audit input",
+            "tenant_id": test_tenant
         },
     )
     assert response.status_code == 201
@@ -60,13 +62,14 @@ async def test_create_audit(
 
 @pytest.mark.asyncio
 async def test_list_audits(
-    authenticated_client: AsyncClient, db_session: AsyncSession, audit_type_id, user_id
+    authenticated_client: AsyncClient, db_session: AsyncSession, audit_type_id, user_id, test_tenant
 ):
     """Test listing all audit logs."""
     audit = Audit(
         id_user=user_id,
         id_audit_type=audit_type_id,
-        data="List test audit"
+        data="List test audit",
+        tenant_id=test_tenant
     )
     db_session.add(audit)
     await db_session.commit()
@@ -80,13 +83,14 @@ async def test_list_audits(
 
 @pytest.mark.asyncio
 async def test_read_audit(
-    authenticated_client: AsyncClient, db_session: AsyncSession, audit_type_id, user_id
+    authenticated_client: AsyncClient, db_session: AsyncSession, audit_type_id, user_id, test_tenant
 ):
     """Test reading a single audit log."""
     audit = Audit(
         id_user=user_id,
         id_audit_type=audit_type_id,
-        data="Read test audit"
+        data="Read test audit",
+        tenant_id=test_tenant
     )
     db_session.add(audit)
     await db_session.commit()
@@ -109,13 +113,14 @@ async def test_read_audit_not_found(authenticated_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_delete_audit(
-    authenticated_client: AsyncClient, db_session: AsyncSession, audit_type_id, user_id
+    authenticated_client: AsyncClient, db_session: AsyncSession, audit_type_id, user_id, test_tenant
 ):
     """Test deleting an audit log."""
     audit = Audit(
         id_user=user_id,
         id_audit_type=audit_type_id,
-        data="Delete test audit"
+        data="Delete test audit",
+        tenant_id=test_tenant
     )
     db_session.add(audit)
     await db_session.commit()

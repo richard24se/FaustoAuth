@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from auth.model.models import User
-from auth.model.pydantic import TokenResponse
+from auth.model.pydantic import TokenResponse, AuditCreate
 from config.databases import SQLALCH_AUTH, async_token_store  # Use async_token_store
 from config.security import pwd_context  # Import from central security config
 from config.settings import settings
@@ -14,6 +14,7 @@ from fausto.sqlalch import async_sqlalch_wrapper, to_dict  # Use async_sqlalch_w
 from fastapi import Depends  # Import Depends
 from sqlalchemy import select  # Import select
 from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
+from auth.service.audit import AuditService, AuditDTO
 
 
 class AuthService:
@@ -26,7 +27,13 @@ class AuthService:
 
     @staticmethod
     async def validate_user(
-        s: AsyncSession, *, username: str, password: str, refresh_token: bool = False
+        s: AsyncSession,
+        *,
+        username: str,
+        password: str,
+        refresh_token: bool = False,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> dict[str, Any]:
         """Validates user credentials and returns access and refresh tokens.
 
@@ -34,16 +41,19 @@ class AuthService:
         1. Retrieves the user from the database by username.
         2. Verifies the provided password against the stored hash using `pwd_context`.
         3. Failsafe: If hashing verification fails (e.g., legacy plain text), it checks for plain text match
-           and re-hashes the password securely if matched.
-        4. Generates a new JWT access token.
-        5. Stores the token status (valid/revoked) in Redis.
-        6. Optionally generates a refresh token.
+            and re-hashes the password securely if matched.
+        4. Audit Logging: Logs 'SUCCESS' or 'FAILURE' (for valid users) to the audit table.
+        5. Generates a new JWT access token.
+        6. Stores the token status (valid/revoked) in Redis.
+        7. Optionally generates a refresh token.
 
         Args:
             s (AsyncSession): The database session.
             username (str): The username provided by the user.
             password (str): The password provided by the user.
             refresh_token (bool, optional): Whether to generate a refresh token. Defaults to False.
+            ip_address (str | None): Source IP address for audit.
+            user_agent (str | None): User Agent string for audit.
 
         Returns:
             dict[str, Any]: A dictionary containing the access token, user details, and optionally a refresh token.
@@ -51,12 +61,17 @@ class AuthService:
         Raises:
             ControllerError: If authentication fails (invalid credentials) or other errors occur.
         """
+        # Import here to avoid circular dependencies if any (though AuditService is likely safe)
+        from auth.service.audit import AuditService
+
         try:
             # Step 1: User Lookup
             result = await s.execute(select(User).filter(User.username == username))
             user = result.scalars().first()
 
             if not user:
+                # User not found: Cannot audit (no id_user).
+                # Security Best Practice: Don't reveal user existence.
                 raise ControllerError("Invalid username or password.", status_code=401)
 
             # Step 2: Password Verification
@@ -92,24 +107,59 @@ class AuthService:
                     logging.warning("Plain-text password comparison failed for user '%s'.", username)
 
             if not password_verified:
+                # Audit FAILURE
+                auth_create_fail = AuditDTO(
+                    id_audit_type=1,  # Assume 1 = LOGIN
+                    id_user=user.id,
+                    tenant_id=user.tenant_id,
+                    data="Login failed: Invalid password.",
+                    status="FAILURE",
+                    ip_address=ip_address,
+                    user_agent=user_agent,
+                )
+
+                await AuditService.create_audit(s=s, data=auth_create_fail)
                 raise ControllerError("Invalid username or password.", status_code=401)
 
+            # Extract user data BEFORE calling AuditService (which acts on the session and may commit/expire objects)
+            # This prevents specific MissingGreenlet errors caused by accessing expired attributes on the user object after a commit.
+            user_id = user.id
+            user_username = user.username
+            user_names = user.names
+            user_surnames = user.surnames
+            user_id_role = user.id_role
+            user_tenant_id = user.tenant_id
+
+            # Audit SUCCESS
+            auth_create = AuditDTO(
+                id_audit_type=1,  # Assume 1 = LOGIN
+                id_user=user_id,
+                tenant_id=user_tenant_id,
+                data="User logged in successfully.",
+                status="SUCCESS",
+                ip_address=ip_address,
+                user_agent=user_agent,
+            )
+
+            await AuditService.create_audit(s=s, data=auth_create)
+
             # Step 4 & 5: Token Generation and Storage
-            access_token = encode_auth_token(user.username)
+            access_token = encode_auth_token(user_username)
             # Mark the token as valid (value="false" means NOT revoked) in Redis
             await redis_create_key(key=access_token, value="false")
 
             response_data = {
                 "access_token": access_token,
-                "id": user.id,
-                "username": user.username,
-                "names": user.names,
-                "surnames": user.surnames,
-                "id_role": user.id_role,
+                "id": user_id,
+                "username": user_username,
+                "names": user_names,
+                "surnames": user_surnames,
+                "id_role": user_id_role,
+                "tenant_id": user_tenant_id,
             }
 
             if refresh_token:
-                response_data["refresh_token"] = encode_refresh_auth_token(user.username)
+                response_data["refresh_token"] = encode_refresh_auth_token(user_username)
 
             token_response = TokenResponse(**response_data)
             return token_response.model_dump()
@@ -128,7 +178,7 @@ class AuthService:
         This marks the token as revoked in the Redis store, preventing further use.
 
         Args:
-             token (str): The access token to revoke.
+            token (str): The access token to revoke.
 
         Raises:
             ControllerError: If an error occurs during the revocation process.

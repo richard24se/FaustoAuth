@@ -14,14 +14,14 @@ from config.databases import get_async_db as get_app_async_db
 
 
 @pytest.mark.asyncio
-async def test_create_user_success(authenticated_client: AsyncClient, test_role: int, create_test_user_data):
+async def test_create_user_success(authenticated_client: AsyncClient, test_role: int, test_tenant: int, create_test_user_data):
     """
     Test successful user creation.
     """
-    user_data = create_test_user_data(test_role)
+    user_data = create_test_user_data(test_role, test_tenant)
     response = await authenticated_client.post("/user/", json=user_data)
 
-    assert response.status_code == 201
+    assert response.status_code == 201, f"Failed with {response.status_code}: {response.text}"
     assert response.json()["error"] is False
     assert response.json()["message"] == "Saved successful!"
 
@@ -136,6 +136,7 @@ async def test_update_user_duplicate_username(
     db_session: AsyncSession,
     test_user: int,
     test_role: int,
+    test_tenant: int,
 ):
     """
     Test updating a user's username to an already existing one.
@@ -148,6 +149,7 @@ async def test_update_user_duplicate_username(
         names="Another",
         surnames="User",
         id_role=test_role,
+        tenant_id=test_tenant # Added tenant_id
     )
     db_session.add(another_user)
     await db_session.commit()
@@ -165,7 +167,7 @@ async def test_update_user_duplicate_username(
 
 @pytest.mark.asyncio
 async def test_delete_user_success(
-    authenticated_client: AsyncClient, db_session: AsyncSession, test_user: int
+    authenticated_client: AsyncClient, db_session: AsyncSession, test_role: int, test_tenant: int
 ):
     """
     Test successful user deletion.
@@ -177,7 +179,8 @@ async def test_delete_user_success(
         password=pwd_context.hash("deletepass"),
         names="To",
         surnames="Delete",
-        id_role=test_user, # Use test_user_id directly
+        id_role=test_role,
+        tenant_id=test_tenant # Added tenant_id
     )
     db_session.add(user_to_delete)
     await db_session.commit()

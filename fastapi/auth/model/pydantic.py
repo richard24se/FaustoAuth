@@ -10,7 +10,7 @@ the SQLAlchemy ORM models.
 from __future__ import annotations  # For forward references
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 # --- Base Models (common fields) ---
@@ -31,12 +31,14 @@ class PermissionTypeBase(BaseModel):
 class RoleBase(BaseModel):
     name: str
     display_name: Optional[str] = Field(None, max_length=50)
+    tenant_id: int
 
 
 class ObjectBase(BaseModel):
     name: str
     display_name: Optional[str] = None
     id_object_type: int
+    tenant_id: int
 
 
 class UserBase(BaseModel):
@@ -44,12 +46,14 @@ class UserBase(BaseModel):
     names: Optional[str] = None
     surnames: Optional[str] = None
     id_role: int
+    tenant_id: int
 
 
 class PermissionBase(BaseModel):
     name: str = Field(..., max_length=50)
     id_permission_type: int
     id_object: int
+    tenant_id: int
 
 
 class AuditBase(BaseModel):
@@ -57,6 +61,10 @@ class AuditBase(BaseModel):
     input: Optional[str] = None
     id_user: int
     id_audit_type: int
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    status: Optional[str] = None
+    tenant_id: int
 
 
 # --- Create Models (for POST requests) ---
@@ -140,6 +148,9 @@ class AuditUpdate(BaseModel):
     input: Optional[str] = None
     id_user: Optional[int] = None
     id_audit_type: Optional[int] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    status: Optional[str] = None
 
 
 # --- Output Models (for GET responses) ---
@@ -149,45 +160,39 @@ class AuditUpdate(BaseModel):
 class AuditTypeOut(AuditTypeBase):
     id: int
 
-    class Config:
-        orm_mode = True  # Enable ORM mode for SQLAlchemy compatibility
+    model_config = ConfigDict(from_attributes=True)  # Enable ORM mode for SQLAlchemy compatibility
 
 
 class ObjectTypeOut(ObjectTypeBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PermissionTypeOut(PermissionTypeBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RoleOut(RoleBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ObjectOut(ObjectBase):
     id: int
     object_type: Optional[ObjectTypeOut] = None  # Nested relationship
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserOut(UserBase):
     id: int
     role: Optional[RoleOut] = None  # Nested relationship
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AuditOut(AuditBase):
@@ -195,8 +200,7 @@ class AuditOut(AuditBase):
     user: Optional[UserOut] = None  # Nested relationship
     audit_type: Optional[AuditTypeOut] = None  # Nested relationship
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PermissionOut(PermissionBase):
@@ -204,8 +208,7 @@ class PermissionOut(PermissionBase):
     permission_type: Optional[PermissionTypeOut] = None  # Nested relationship
     object: Optional[ObjectOut] = None  # Nested relationship
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Custom Pydantic Models for specific API interactions ---
@@ -228,3 +231,4 @@ class TokenResponse(BaseModel):
     names: Optional[str] = None
     surnames: Optional[str] = None
     id_role: int
+    tenant_id: int

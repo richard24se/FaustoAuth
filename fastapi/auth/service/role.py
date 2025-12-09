@@ -39,18 +39,20 @@ class RoleService(CRUDBase[Role, RoleCreate, RoleUpdate]):
                 name = role_data.get("name")
                 display_name = role_data.get("display_name")
                 permissions = role_data.get("permissions")
+                tenant_id = role_data.get("tenant_id")
             else:
                 role_data = obj_in.model_dump()
                 name = obj_in.name
                 display_name = obj_in.display_name
                 permissions = obj_in.permissions
+                tenant_id = obj_in.tenant_id
 
             result = await self.session.execute(select(Role).filter_by(name=name))
             existing_role = result.scalars().first()
             if existing_role:
                 raise ControllerError(f"The role '{name}' already exists.", status_code=400)
 
-            new_role = Role(name=name, display_name=display_name)
+            new_role = Role(name=name, display_name=display_name, tenant_id=tenant_id)
             self.session.add(new_role)
             await self.session.flush()
 

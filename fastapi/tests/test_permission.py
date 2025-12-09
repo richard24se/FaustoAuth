@@ -5,7 +5,7 @@ from sqlalchemy import select
 from auth.model.models import Permission, Object, PermissionType, ObjectType
 
 @pytest.mark.asyncio
-async def test_create_permission(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_create_permission(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
     """Test creating a new permission."""
     # Create dependencies
     obj_type = ObjectType(name="test_obj_type")
@@ -13,7 +13,7 @@ async def test_create_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="test_object", id_object_type=obj_type.id)
+    obj = Object(name="test_object", id_object_type=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="test_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -26,7 +26,8 @@ async def test_create_permission(authenticated_client: AsyncClient, db_session: 
         json={
             "name": "new_permission",
             "id_object": obj.id,
-            "id_permission_type": perm_type.id
+            "id_permission_type": perm_type.id,
+            "tenant_id": test_tenant
         },
     )
     assert response.status_code == 201
@@ -40,7 +41,7 @@ async def test_create_permission(authenticated_client: AsyncClient, db_session: 
 
 
 @pytest.mark.asyncio
-async def test_create_permission_duplicate(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_create_permission_duplicate(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
     """Test creating a duplicate permission."""
     # Create dependencies
     obj_type = ObjectType(name="dup_obj_type")
@@ -48,7 +49,7 @@ async def test_create_permission_duplicate(authenticated_client: AsyncClient, db
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="dup_object", id_object_type=obj_type.id)
+    obj = Object(name="dup_object", id_object_type=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="dup_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -61,7 +62,7 @@ async def test_create_permission_duplicate(authenticated_client: AsyncClient, db
     perm_type_id = perm_type.id
 
     # Create first permission
-    perm = Permission(name="dup_permission", id_object=obj_id, id_permission_type=perm_type_id)
+    perm = Permission(name="dup_permission", id_object=obj_id, id_permission_type=perm_type_id, tenant_id=test_tenant)
     db_session.add(perm)
     await db_session.commit()
 
@@ -70,7 +71,8 @@ async def test_create_permission_duplicate(authenticated_client: AsyncClient, db
         json={
             "name": "dup_permission",
             "id_object": obj_id,
-            "id_permission_type": perm_type_id
+            "id_permission_type": perm_type_id,
+            "tenant_id": test_tenant
         },
     )
     assert response.status_code == 400
@@ -78,7 +80,7 @@ async def test_create_permission_duplicate(authenticated_client: AsyncClient, db
 
 
 @pytest.mark.asyncio
-async def test_list_permissions(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_list_permissions(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
     """Test listing all permissions."""
     # Create a permission
     obj_type = ObjectType(name="list_obj_type")
@@ -86,7 +88,7 @@ async def test_list_permissions(authenticated_client: AsyncClient, db_session: A
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="list_object", id_object_type=obj_type.id)
+    obj = Object(name="list_object", id_object_type=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="list_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -94,7 +96,7 @@ async def test_list_permissions(authenticated_client: AsyncClient, db_session: A
     await db_session.refresh(obj)
     await db_session.refresh(perm_type)
     
-    perm = Permission(name="list_permission", id_object=obj.id, id_permission_type=perm_type.id)
+    perm = Permission(name="list_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant)
     db_session.add(perm)
     await db_session.commit()
 
@@ -105,7 +107,7 @@ async def test_list_permissions(authenticated_client: AsyncClient, db_session: A
 
 
 @pytest.mark.asyncio
-async def test_read_permission(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_read_permission(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
     """Test reading a single permission."""
     # Create a permission
     obj_type = ObjectType(name="read_obj_type")
@@ -113,7 +115,7 @@ async def test_read_permission(authenticated_client: AsyncClient, db_session: As
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="read_object", id_object_type=obj_type.id)
+    obj = Object(name="read_object", id_object_type=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="read_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -121,7 +123,7 @@ async def test_read_permission(authenticated_client: AsyncClient, db_session: As
     await db_session.refresh(obj)
     await db_session.refresh(perm_type)
     
-    perm = Permission(name="read_permission", id_object=obj.id, id_permission_type=perm_type.id)
+    perm = Permission(name="read_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant)
     db_session.add(perm)
     await db_session.commit()
     await db_session.refresh(perm)
@@ -142,7 +144,7 @@ async def test_read_permission_not_found(authenticated_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_update_permission(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_update_permission(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
     """Test updating a permission."""
     # Create a permission
     obj_type = ObjectType(name="update_obj_type")
@@ -150,7 +152,7 @@ async def test_update_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="update_object", id_object_type=obj_type.id)
+    obj = Object(name="update_object", id_object_type=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="update_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -158,7 +160,7 @@ async def test_update_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.refresh(obj)
     await db_session.refresh(perm_type)
     
-    perm = Permission(name="update_permission", id_object=obj.id, id_permission_type=perm_type.id)
+    perm = Permission(name="update_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant)
     db_session.add(perm)
     await db_session.commit()
     await db_session.refresh(perm)
@@ -184,7 +186,7 @@ async def test_update_permission_not_found(authenticated_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_delete_permission(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_delete_permission(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
     """Test deleting a permission."""
     # Create a permission
     obj_type = ObjectType(name="delete_obj_type")
@@ -192,7 +194,7 @@ async def test_delete_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="delete_object", id_object_type=obj_type.id)
+    obj = Object(name="delete_object", id_object_type=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="delete_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -200,7 +202,7 @@ async def test_delete_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.refresh(obj)
     await db_session.refresh(perm_type)
     
-    perm = Permission(name="delete_permission", id_object=obj.id, id_permission_type=perm_type.id)
+    perm = Permission(name="delete_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant)
     db_session.add(perm)
     await db_session.commit()
     await db_session.refresh(perm)

@@ -12,17 +12,35 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+from dataclasses import dataclass, asdict
+
+@dataclass(slots=True)
+class AuditDTO:
+    """Internal DTO for creating audit logs using slots for memory optimization."""
+    id_user: int
+    id_audit_type: int
+    tenant_id: int
+    data: str | None = None
+    input: str | None = None
+    ip_address: str | None = None
+    user_agent: str | None = None
+    status: str | None = None
+
+
 class AuditService:
     """Audit Service"""
 
     @staticmethod
     async def create_audit(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, data: AuditCreate | dict[str, Any]
+        s: AsyncSession = Depends(SQLALCH_AUTH), *, data: AuditCreate | AuditDTO | dict[str, Any]
     ) -> dict[str, Any]:
         """Creates a new audit log."""
         try:
             if isinstance(data, dict):
                 audit_data = data
+            elif isinstance(data, AuditDTO):
+                # Convert dataclass to dict for SQLAlchemy
+                audit_data = asdict(data)
             else:
                 audit_data = data.model_dump()
 
@@ -31,7 +49,15 @@ class AuditService:
             await s.commit() # Commit explicitly
             await s.refresh(new_audit)
             logging.info("Successfully created audit log.")
-            return to_dict(new_audit)
+            
+            # Manually construct response to avoid implicit lazy loading issues with to_dict
+            # within async context (greenlet error).
+            response = audit_data.copy()
+            response["id"] = new_audit.id
+            if new_audit.created_date:
+                response["created_date"] = new_audit.created_date.isoformat()
+            
+            return response
         except ControllerError:
             await s.rollback()
             raise

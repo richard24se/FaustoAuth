@@ -7,7 +7,9 @@ from .permission import router_permission
 from .permission_type import router_permission_type
 from .role import router_role
 from .role_permission import router_role_permission
+from .role_permission import router_role_permission
 from .user import router_user
+from .tenant import router_tenant
 
 __all__ = [
     "router_audit",
@@ -20,4 +22,5 @@ __all__ = [
     "router_role",
     "router_role_permission",
     "router_user",
+    "router_tenant",
 ]

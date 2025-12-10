@@ -16,6 +16,10 @@ from pydantic import BaseModel, Field, ConfigDict
 # --- Base Models (common fields) ---
 
 
+class TenantBase(BaseModel):
+    name: str = Field(..., max_length=50)
+
+
 class AuditTypeBase(BaseModel):
     name: str = Field(..., max_length=50)
 
@@ -70,6 +74,10 @@ class AuditBase(BaseModel):
 # --- Create Models (for POST requests) ---
 
 
+class TenantCreate(TenantBase):
+    pass
+
+
 class AuditTypeCreate(AuditTypeBase):
     pass
 
@@ -103,6 +111,10 @@ class AuditCreate(AuditBase):
 
 
 # --- Update Models (for PUT/PATCH requests) ---
+
+
+class TenantUpdate(BaseModel):
+    name: Optional[str] = Field(None, max_length=50)
 
 
 class AuditTypeUpdate(BaseModel):
@@ -155,6 +167,12 @@ class AuditUpdate(BaseModel):
 
 # --- Output Models (for GET responses) ---
 # These include 'id' and can represent nested relationships.
+
+
+class TenantOut(TenantBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AuditTypeOut(AuditTypeBase):

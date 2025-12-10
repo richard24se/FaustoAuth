@@ -20,6 +20,7 @@ from auth.router import (
     router_role,
     router_role_permission,
     router_user,
+    router_tenant,
 )
 from config.databases import SQLALCH_AUTH, async_redis_pool, async_token_store, async_engine, AsyncSessionFactory  # Import AsyncSessionFactory
 from config.settings import settings
@@ -136,6 +137,7 @@ app.include_router(router_object)
 app.include_router(router_object_type)
 app.include_router(router_audit)
 app.include_router(router_audit_type)
+app.include_router(router_tenant)
 
 
 # --- Root Endpoint ---

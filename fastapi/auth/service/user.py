@@ -134,6 +134,43 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
             await self.session.rollback()
             raise ControllerError(str(e))
 
+    async def get_multi(
+        self,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+        filters: dict[str, Any] | None = None,
+        order_by: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Retrieve multiple users with role eager loaded."""
+        try:
+            query = select(self.model).options(selectinload(User.role))
+
+            if filters:
+                query = query.filter(*get_filter_fields_multi_sqlalch(filters, self.model))
+
+            if order_by:
+                query = query.order_by(*get_order_fields_multi_sqlalch(order_by, self.model))
+
+            query = query.offset(skip).limit(limit)
+            result = await self.session.execute(query)
+            objects = result.scalars().all()
+
+            results = []
+            for obj in objects:
+                user_dict = self._process_data(obj)
+                # Manually handle the eagerly loaded 'role' relationship
+                if obj.role:
+                    user_dict["role"] = to_dict(obj.role)
+                else:
+                    user_dict["role"] = None
+                results.append(user_dict)
+
+            return results
+        except Exception as e:
+            logging.error(f"Error fetching multiple users: {e}")
+            raise ControllerError(str(e))
+
     async def remove(self, *, id: int) -> dict[str, Any]:
         """Deletes a user."""
         try:

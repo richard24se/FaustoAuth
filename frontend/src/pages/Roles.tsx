@@ -4,18 +4,10 @@ import {
   Button,
   Heading,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  FormControl,
-  FormLabel,
+  Dialog,
+  Field,
   Input,
-  Select,
-  ModalFooter,
-  useToast,
+  NativeSelect,
 } from '@chakra-ui/react';
 import { FiPlus } from 'react-icons/fi';
 import { DataTable } from '../components/common/DataTable';
@@ -23,13 +15,13 @@ import { useForm } from 'react-hook-form';
 import { roleService } from '../services/roleService';
 import { Role } from '../types';
 import { useTranslation } from 'react-i18next';
+import { toaster } from '../components/ui/toaster';
 
 export default function Roles() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const toast = useToast();
   const { t } = useTranslation();
   const { register, handleSubmit, reset, setValue } = useForm();
 
@@ -42,7 +34,7 @@ export default function Roles() {
       setRoles(r);
       setTenants(t);
     } catch (e) {
-      toast({ title: 'Failed to load roles', status: 'error' });
+      toaster.create({ title: 'Failed to load roles', type: 'error' });
     }
   };
 
@@ -70,15 +62,15 @@ export default function Roles() {
       data.tenant_id = Number.parseInt(data.tenant_id);
       if (editingRole) {
         await roleService.update(editingRole.id, data);
-        toast({ title: t('roleUpdated'), status: 'success' });
+        toaster.create({ title: t('roleUpdated'), type: 'success' });
       } else {
         await roleService.create(data);
-        toast({ title: t('roleCreated'), status: 'success' });
+        toaster.create({ title: t('roleCreated'), type: 'success' });
       }
       onClose();
       fetchRoles();
     } catch (e: any) {
-        toast({ title: t('operationFailed'), description: e.response?.data?.detail, status: 'error' });
+        toaster.create({ title: t('operationFailed'), description: e.response?.data?.detail, type: 'error' });
     }
   };
 
@@ -86,21 +78,19 @@ export default function Roles() {
     if (!window.confirm(t('deleteRoleConfirm'))) return;
     try {
       await roleService.delete(id);
-      toast({ title: t('roleDeleted'), status: 'success' });
+      toaster.create({ title: t('roleDeleted'), type: 'success' });
       fetchRoles();
     } catch (e) {
-      toast({ title: t('deleteFailed'), status: 'error' });
+      toaster.create({ title: t('deleteFailed'), type: 'error' });
     }
   };
-
-
 
   return (
     <Box p={8}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={6}>
         <Heading size="lg">{t('roles')}</Heading>
-        <Button leftIcon={<FiPlus />} colorScheme="brand" onClick={onAdd}>
-          {t('addRole')}
+        <Button colorPalette="brand" onClick={onAdd}>
+           <FiPlus /> {t('addRole')}
         </Button>
       </Box>
       <DataTable
@@ -116,33 +106,39 @@ export default function Roles() {
         onDelete={(r) => onDelete(r.id)}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{editingRole ? t('editRole') : t('createRole')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <form id="role-form" onSubmit={handleSubmit(onSubmit)}>
-              <FormControl isRequired mb={4}>
-                <FormLabel>{t('roleName')}</FormLabel>
-                <Input {...register('name')} />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>{t('tenant')}</FormLabel>
-                <Select {...register('tenant_id')} placeholder="Select tenant">
-                    {tenants.map(t => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                </Select>
-              </FormControl>
-            </form>
-          </ModalBody>
-          <ModalFooter>
-             <Button onClick={onClose} mr={3}>{t('cancel')}</Button>
-             <Button colorScheme="brand" form="role-form" type="submit">{t('save')}</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <Dialog.Root open={isOpen} onOpenChange={(e) => e.open ? onOpen() : onClose()}>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+            <Dialog.Content>
+            <Dialog.Header>
+                <Dialog.Title>{editingRole ? t('editRole') : t('createRole')}</Dialog.Title>
+                <Dialog.CloseTrigger />
+            </Dialog.Header>
+            <Dialog.Body pb={6}>
+                <form id="role-form" onSubmit={handleSubmit(onSubmit)}>
+                <Field.Root required mb={4}>
+                    <Field.Label>{t('roleName')}</Field.Label>
+                    <Input {...register('name')} />
+                </Field.Root>
+                <Field.Root required>
+                    <Field.Label>{t('tenant')}</Field.Label>
+                    <NativeSelect.Root>
+                        <NativeSelect.Field {...register('tenant_id')} placeholder="Select tenant">
+                            {tenants.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                        </NativeSelect.Field>
+                    </NativeSelect.Root>
+                </Field.Root>
+                </form>
+            </Dialog.Body>
+            <Dialog.Footer>
+                <Button onClick={onClose} mr={3} variant="ghost">{t('cancel')}</Button>
+                <Button colorPalette="brand" form="role-form" type="submit">{t('save')}</Button>
+            </Dialog.Footer>
+            </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
     </Box>
   );
 }

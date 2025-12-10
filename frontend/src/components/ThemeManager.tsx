@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useColorMode } from '@chakra-ui/react';
+import { useColorMode } from './ui/color-mode';
 import { generatePalette } from '../utils/colorUtils';
 import { ColorRoles, DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME } from '../constants/themeColors';
 

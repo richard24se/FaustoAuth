@@ -2,13 +2,10 @@ import { ReactNode, useEffect } from 'react';
 import {
     IconButton,
     Box,
-    CloseButton,
     Flex,
     Icon,
-    useColorModeValue,
     Link,
     Drawer,
-    DrawerContent,
     Text,
     useDisclosure,
     BoxProps,
@@ -16,11 +13,9 @@ import {
     HStack,
     VStack,
     Menu,
-    MenuButton,
-    MenuItem,
-    MenuList,
     Avatar,
-    Select
+    NativeSelect,
+    Portal
 } from '@chakra-ui/react';
 import {
     FiHome,
@@ -30,7 +25,8 @@ import {
     FiShield,
     FiDatabase,
     FiChevronDown,
-    FiCode
+    FiCode,
+    FiX
 } from 'react-icons/fi';
 import { IconType } from 'react-icons';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -40,6 +36,7 @@ import { useTranslation } from 'react-i18next';
 import { JwtVisualizerTop } from './JwtVisualizerTop';
 import { useTenantStore } from '../store/tenantStore';
 import { tenantService } from '../services/tenantService';
+import { useColorModeValue } from './ui/color-mode';
 
 interface LinkItemProps {
     name: string;
@@ -56,25 +53,26 @@ const LinkItems: Array<LinkItemProps> = [
 ];
 
 export default function Sidebar({ children }: { children: ReactNode }) {
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const { open, onOpen, onClose } = useDisclosure();
     return (
         <Box minH="100vh">
             <SidebarContent
-                onClose={() => onClose}
+                onClose={onClose}
                 display={{ base: 'none', md: 'block' }}
             />
-            <Drawer
-                autoFocus={false}
-                isOpen={isOpen}
-                placement="left"
-                onClose={onClose}
-                returnFocusOnClose={false}
-                onOverlayClick={onClose}
-                size="full">
-                <DrawerContent>
-                    <SidebarContent onClose={onClose} />
-                </DrawerContent>
-            </Drawer>
+            <Drawer.Root
+                open={open}
+                placement="start"
+                onOpenChange={(e) => e.open ? onOpen() : onClose()}
+                size="md"
+            >
+                <Drawer.Backdrop />
+                <Drawer.Positioner>
+                     <Drawer.Content>
+                        <SidebarContent onClose={onClose} />
+                     </Drawer.Content>
+                </Drawer.Positioner>
+            </Drawer.Root>
             {/* Mobile Nav */}
             <MobileNav onOpen={onOpen} />
             <Box ml={{ base: 0, md: 60 }} p="4">
@@ -90,12 +88,14 @@ interface SidebarProps extends BoxProps {
 
 const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
     const { t } = useTranslation();
+    const borderColor = useColorModeValue('gray.200', 'gray.700');
+    
     return (
         <Box
             transition="3s ease"
             bg="surface.500"
             borderRight="1px"
-            borderRightColor={useColorModeValue('gray.200', 'gray.700')}
+            borderRightColor={borderColor}
             w={{ base: 'full', md: 60 }}
             pos="fixed"
             h="full"
@@ -104,7 +104,9 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
                 <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
                     FaustoAuth
                 </Text>
-                <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
+                <IconButton display={{ base: 'flex', md: 'none' }} onClick={onClose} variant="ghost" aria-label="Close menu">
+                    <FiX />
+                </IconButton>
             </Flex>
             {LinkItems.map((link) => (
                 <NavItem key={link.name} icon={link.icon} path={link.path}>
@@ -122,31 +124,43 @@ interface NavItemProps extends FlexProps {
 }
 const NavItem = ({ icon, children, path, ...rest }: NavItemProps) => {
     return (
-        <Link as={RouterLink} to={path} style={{ textDecoration: 'none' }} _focus={{ boxShadow: 'none' }}>
-            <Flex
-                align="center"
-                p="4"
-                mx="4"
-                borderRadius="lg"
-                role="group"
-                cursor="pointer"
-                _hover={{
-                    bg: 'brand.500',
-                    color: 'white',
-                }}
-                {...rest}>
-                {icon && (
-                    <Icon
-                        mr="4"
-                        fontSize="16"
-                        _groupHover={{
-                            color: 'white',
-                        }}
-                        as={icon}
-                    />
-                )}
-                {children}
-            </Flex>
+        <Link asChild style={{ textDecoration: 'none' }} outline="none" _focus={{ boxShadow: 'none', outline: 'none' }}>
+            <RouterLink to={path}>
+                <Flex
+                    align="center"
+                    p="4"
+                    mx="4"
+                    borderRadius="lg"
+                    role="group"
+                    cursor="pointer"
+                    outline="none"
+                    _focus={{ boxShadow: 'none', outline: 'none' }}
+                    _hover={{
+                        bg: 'brand.50',
+                        color: 'brand.600',
+                        _dark: {
+                            bg: 'brand.900/20',
+                            color: 'brand.200',
+                        }
+                    }}
+                    _active={{
+                        bg: 'brand.100',
+                        _dark: { bg: 'brand.900/30' }
+                    }}
+                    {...rest}>
+                    {icon && (
+                        <Icon
+                            mr="4"
+                            fontSize="16"
+                            _groupHover={{
+                                color: 'inherit',
+                            }}
+                            as={icon}
+                        />
+                    )}
+                    {children}
+                </Flex>
+            </RouterLink>
         </Link>
     );
 };
@@ -159,6 +173,9 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
     const logout = useAuthStore((state) => state.logout);
     const navigate = useNavigate();
     const { t } = useTranslation();
+    
+    const borderColor = useColorModeValue('gray.200', 'gray.700');
+    const menuBg = useColorModeValue('white', 'gray.900');
 
     const handleLogout = () => {
         logout();
@@ -173,7 +190,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
             alignItems="center"
             bg="surface.500"
             borderBottomWidth="1px"
-            borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
+            borderBottomColor={borderColor}
             justifyContent={{ base: 'space-between', md: 'flex-end' }}
             {...rest}>
             <IconButton
@@ -181,8 +198,9 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                 onClick={onOpen}
                 variant="outline"
                 aria-label="open menu"
-                icon={<FiMenu />}
-            />
+            >
+                <FiMenu />
+            </IconButton>
 
             <Text
                 display={{ base: 'flex', md: 'none' }}
@@ -192,42 +210,48 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                 FaustoAuth
             </Text>
 
-            <HStack spacing={{ base: '0', md: '6' }}>
+            <HStack gap={{ base: '0', md: '6' }}>
                 <TenantSelector />
                 {/* <TenantSelector /> */}
                 <JwtVisualizerTop />
                 <ThemeSettings />
                 <Flex alignItems={'center'}>
-                    <Menu>
-                        <MenuButton py={2} transition="all 0.3s" _focus={{ boxShadow: 'none' }}>
-                            <HStack>
-                                <Avatar
-                                    size={'sm'}
-                                    name={user?.names || user?.username}
-                                />
-                                <VStack
-                                    display={{ base: 'none', md: 'flex' }}
-                                    alignItems="flex-start"
-                                    spacing="1px"
-                                    ml="2">
-                                    <Text fontSize="sm">{user?.names || user?.username}</Text>
-                                    <Text fontSize="xs" color="gray.600">
-                                        {user?.role?.name || 'Admin'}
-                                    </Text>
-                                </VStack>
-                                <Box display={{ base: 'none', md: 'flex' }}>
-                                    <FiChevronDown />
-                                </Box>
-                            </HStack>
-                        </MenuButton>
-                        <MenuList
-                            bg={useColorModeValue('white', 'gray.900')}
-                            borderColor={useColorModeValue('gray.200', 'gray.700')}>
-                            <MenuItem>{t('profile')}</MenuItem>
-                            <MenuItem>{t('settings')}</MenuItem>
-                            <MenuItem onClick={handleLogout}>{t('signOut')}</MenuItem>
-                        </MenuList>
-                    </Menu>
+                    <Menu.Root>
+                        <Menu.Trigger asChild>
+                             <IconButton variant="ghost" aria-label="Profile" py={2} transition="all 0.3s" _focus={{ boxShadow: 'none' }}>
+                                <HStack>
+                                    <Avatar.Root size={'sm'}>
+                                        <Avatar.Fallback name={user?.names || user?.username} />
+                                        <Avatar.Image />
+                                    </Avatar.Root>
+                                    <VStack
+                                        display={{ base: 'none', md: 'flex' }}
+                                        alignItems="flex-start"
+                                        gap="1px"
+                                        ml="2">
+                                        <Text fontSize="sm">{user?.names || user?.username}</Text>
+                                        <Text fontSize="xs" color="gray.600">
+                                            {user?.role?.name || 'Admin'}
+                                        </Text>
+                                    </VStack>
+                                    <Box display={{ base: 'none', md: 'flex' }}>
+                                        <FiChevronDown />
+                                    </Box>
+                                </HStack>
+                             </IconButton>
+                        </Menu.Trigger>
+                        <Portal>
+                          <Menu.Positioner>
+                            <Menu.Content
+                                bg={menuBg}
+                                borderColor={borderColor}>
+                                <Menu.Item value="profile">{t('profile')}</Menu.Item>
+                                <Menu.Item value="settings">{t('settings')}</Menu.Item>
+                                <Menu.Item value="logout" onClick={handleLogout}>{t('signOut')}</Menu.Item>
+                            </Menu.Content>
+                          </Menu.Positioner>
+                        </Portal>
+                    </Menu.Root>
                 </Flex>
             </HStack>
         </Flex>
@@ -242,7 +266,6 @@ const TenantSelector = () => {
         if (user?.username === 'admin') return true;
         const rName = user?.role?.name;
         if (!rName) return false;
-        // Handle array or string
         if (Array.isArray(rName)) {
             return rName.includes('Admin') || rName.includes('supergod');
         }
@@ -256,12 +279,8 @@ const TenantSelector = () => {
         if (isAdmin && tenants.length === 0) {
             tenantService.getAll().then(data => {
                 setTenants(data);
-                // Don't auto-select first one, allow "All" to be default (null) if preferred
-                // But if previously null, maybe we leave it null? 
-                // Let's default to null (All) for admins if they haven't selected one
             }).catch(console.error);
         } else if (!isAdmin && user?.tenant_id) {
-            // For non-admin, ensure selected tenant is their own
             if (selectedTenantId !== user.tenant_id) {
                 setTenant(user.tenant_id);
             }
@@ -270,7 +289,6 @@ const TenantSelector = () => {
 
     const isAdmin = checkAdmin();
 
-    // If not admin, show just the Tenant Name Badge
     if (!isAdmin) {
         return (
             <Box mr={4} display={{ base: 'none', md: 'block' }}>
@@ -281,17 +299,20 @@ const TenantSelector = () => {
     }
 
     return (
-        <Select
+        <NativeSelect.Root
             maxW="200px"
             size="sm"
             mr={4}
-            value={selectedTenantId || ''}
-            onChange={(e) => setTenant(e.target.value ? Number(e.target.value) : null)}
-            placeholder="All Tenants"
         >
-            {tenants.map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-        </Select>
+             <NativeSelect.Field 
+                value={selectedTenantId || ''} 
+                onChange={(e) => setTenant(e.target.value ? Number(e.target.value) : null)}
+                placeholder="All Tenants"
+             >
+                {tenants.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+             </NativeSelect.Field>
+        </NativeSelect.Root>
     );
 };

@@ -4,18 +4,10 @@ import {
   Button,
   Heading,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  FormControl,
-  FormLabel,
+  Dialog,
+  Field,
   Input,
-  ModalFooter,
-  useToast,
-  Select,
+  NativeSelect,
 } from '@chakra-ui/react';
 import { FiPlus } from 'react-icons/fi';
 import { DataTable } from '../components/common/DataTable';
@@ -23,13 +15,13 @@ import { useForm } from 'react-hook-form';
 import { objectService } from '../services/objectService';
 import { AuthObject } from '../types';
 import { useTranslation } from 'react-i18next';
+import { toaster } from '../components/ui/toaster';
 
 export default function Objects() {
   const [objects, setObjects] = useState<AuthObject[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [editingObj, setEditingObj] = useState<AuthObject | null>(null);
-  const toast = useToast();
   const { t } = useTranslation();
   const { register, handleSubmit, reset, setValue } = useForm();
 
@@ -42,7 +34,7 @@ export default function Objects() {
       setObjects(o);
       setTenants(t);
     } catch (e) {
-      toast({ title: 'Failed to load objects', status: 'error' });
+      toaster.create({ title: 'Failed to load objects', type: 'error' });
     }
   };
 
@@ -73,15 +65,15 @@ export default function Objects() {
       data.tenant_id = Number.parseInt(data.tenant_id);
       if (editingObj) {
         await objectService.update(editingObj.id, data);
-        toast({ title: t('objectUpdated'), status: 'success' });
+        toaster.create({ title: t('objectUpdated'), type: 'success' });
       } else {
         await objectService.create(data);
-        toast({ title: t('objectCreated'), status: 'success' });
+        toaster.create({ title: t('objectCreated'), type: 'success' });
       }
       onClose();
       fetchObjects();
     } catch (e: any) {
-        toast({ title: t('operationFailed'), description: e.response?.data?.detail, status: 'error' });
+        toaster.create({ title: t('operationFailed'), description: e.response?.data?.detail, type: 'error' });
     }
   };
 
@@ -89,20 +81,18 @@ export default function Objects() {
     if (!window.confirm(t('deleteObjectConfirm'))) return;
     try {
       await objectService.delete(id);
-      toast({ title: t('objectDeleted'), status: 'success' });
+      toaster.create({ title: t('objectDeleted'), type: 'success' });
       fetchObjects();
     } catch (e) {
-      toast({ title: t('deleteFailed'), status: 'error' });
+      toaster.create({ title: t('deleteFailed'), type: 'error' });
     }
   };
-
-
 
   return (
     <Box p={8}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={6}>
         <Heading size="lg">{t('objects')}</Heading>
-        <Button leftIcon={<FiPlus />} colorScheme="brand" onClick={onAdd}>{t('addObject')}</Button>
+        <Button colorPalette="brand" onClick={onAdd}><FiPlus /> {t('addObject')}</Button>
       </Box>
       <DataTable
         data={objects}
@@ -118,37 +108,43 @@ export default function Objects() {
         onDelete={(o) => onDelete(o.id)}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{editingObj ? t('editObject') : t('createObject')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <form id="obj-form" onSubmit={handleSubmit(onSubmit)}>
-              <FormControl isRequired mb={4}>
-                <FormLabel>{t('permissionName')}</FormLabel>
-                <Input {...register('name')} />
-              </FormControl>
-              <FormControl isRequired mb={4}>
-                <FormLabel>{t('objectType')}</FormLabel>
-                <Input type="number" {...register('id_object_type')} />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>{t('tenant')}</FormLabel>
-                <Select {...register('tenant_id')} placeholder="Select tenant">
-                    {tenants.map(t => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                </Select>
-              </FormControl>
-            </form>
-          </ModalBody>
-          <ModalFooter>
-             <Button onClick={onClose} mr={3}>{t('cancel')}</Button>
-             <Button colorScheme="brand" form="obj-form" type="submit">{t('save')}</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <Dialog.Root open={isOpen} onOpenChange={(e) => e.open ? onOpen() : onClose()}>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+            <Dialog.Content>
+            <Dialog.Header>
+                <Dialog.Title>{editingObj ? t('editObject') : t('createObject')}</Dialog.Title>
+                <Dialog.CloseTrigger />
+            </Dialog.Header>
+            <Dialog.Body pb={6}>
+                <form id="obj-form" onSubmit={handleSubmit(onSubmit)}>
+                <Field.Root required mb={4}>
+                    <Field.Label>{t('permissionName')}</Field.Label>
+                    <Input {...register('name')} />
+                </Field.Root>
+                <Field.Root required mb={4}>
+                    <Field.Label>{t('objectType')}</Field.Label>
+                    <Input type="number" {...register('id_object_type')} />
+                </Field.Root>
+                <Field.Root required>
+                    <Field.Label>{t('tenant')}</Field.Label>
+                    <NativeSelect.Root>
+                        <NativeSelect.Field {...register('tenant_id')} placeholder="Select tenant">
+                            {tenants.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                        </NativeSelect.Field>
+                    </NativeSelect.Root>
+                </Field.Root>
+                </form>
+            </Dialog.Body>
+            <Dialog.Footer>
+                <Button onClick={onClose} mr={3} variant="ghost">{t('cancel')}</Button>
+                <Button colorPalette="brand" form="obj-form" type="submit">{t('save')}</Button>
+            </Dialog.Footer>
+            </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
     </Box>
   );
 }

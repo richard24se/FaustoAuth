@@ -2,18 +2,13 @@ import { useState } from 'react';
 import {
   Box,
   Button,
-  FormControl,
-  FormLabel,
+  Field,
   Input,
   Stack,
   Heading,
   Text,
-  useToast,
   Container,
   Card,
-  CardBody,
-  CardHeader,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -21,77 +16,80 @@ import { authService } from '../services/authService';
 import { useAuthStore } from '../store/authStore';
 import { LoginCredentials } from '../types';
 import { useTranslation } from 'react-i18next';
+import { toaster } from '../components/ui/toaster';
+import { useColorMode } from '../components/ui/color-mode';
 
 export default function Login() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginCredentials>();
   const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
-  const toast = useToast();
   const [errorMsg, setErrorMsg] = useState('');
   const { t } = useTranslation();
+  const { colorMode } = useColorMode();
+
+  const bgPage = colorMode === 'dark' ? 'gray.900' : 'gray.50';
+  const bgCard = colorMode === 'dark' ? 'gray.800' : 'white';
 
   const onSubmit = async (data: LoginCredentials) => {
     setErrorMsg('');
     try {
       const response = await authService.login(data);
       login(response);
-      toast({
+      toaster.create({
         title: t('loginSuccess'),
-        status: 'success',
+        type: 'success',
         duration: 3000,
-        isClosable: true,
       });
       navigate('/dashboard');
     } catch (error: any) {
       const message = error.response?.data?.detail || 'Invalid username or password';
       setErrorMsg(message);
-      toast({
+      toaster.create({
         title: t('loginFailed'),
         description: message,
-        status: 'error',
+        type: 'error',
         duration: 5000,
-        isClosable: true,
       });
     }
   };
 
   return (
-    <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')} display="flex" alignItems="center" justifyContent="center">
+    <Box minH="100vh" bg={bgPage} display="flex" alignItems="center" justifyContent="center">
       <Container maxW="lg" py={{ base: '12', md: '24' }} px={{ base: '0', md: '8' }}>
-        <Stack spacing="8">
-          <Stack spacing="6" textAlign="center">
+        <Stack gap="8">
+          <Stack gap="6" textAlign="center">
             <Heading size={{ base: 'xs', md: 'sm' }}>{t('loginTitle')}</Heading>
             <Text color="gray.500">{t('loginSubtitle')}</Text>
           </Stack>
-          <Card bg={useColorModeValue('white', 'gray.800')}>
-            <CardHeader></CardHeader>
-            <CardBody>
+          <Card.Root bg={bgCard}>
+            <Card.Header></Card.Header>
+            <Card.Body>
               <form onSubmit={handleSubmit(onSubmit)}>
-                <Stack spacing="6">
-                  <FormControl isInvalid={!!errors.username}>
-                    <FormLabel>{t('username')} (Email)</FormLabel>
+                <Stack gap="6">
+                  <Field.Root invalid={!!errors.username}>
+                    <Field.Label>{t('username')} (Email)</Field.Label>
                     <Input
                       type="email"
                       {...register('username', { required: 'Username is required' })}
                     />
-                  </FormControl>
-                  <FormControl isInvalid={!!errors.password}>
-                    <FormLabel>{t('password')}</FormLabel>
+                  </Field.Root>
+                  <Field.Root invalid={!!errors.password}>
+                    <Field.Label>{t('password')}</Field.Label>
                     <Input
                       type="password"
                       {...register('password', { required: 'Password is required' })}
                     />
-                  </FormControl>
+                  </Field.Root>
 
                   {errorMsg && <Text color="red.500" fontSize="sm">{errorMsg}</Text>}
 
-                  <Button isLoading={isSubmitting} type="submit" colorScheme="brand" size="lg" fontSize="md">
+                  <Button loading={isSubmitting} type="submit" colorPalette="brand" size="lg" fontSize="md">
                     {t('signIn')}
                   </Button>
                 </Stack>
               </form>
-            </CardBody>
-          </Card>
+            </Card.Body>
+          </Card.Root>
         </Stack>
       </Container>
     </Box>

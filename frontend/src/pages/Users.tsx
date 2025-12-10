@@ -4,47 +4,36 @@ import {
   Button,
   Heading,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  FormControl,
-  FormLabel,
+  Dialog,
+  Field,
   Input,
-  Select,
-  ModalFooter,
-  useToast,
+  NativeSelect,
   Badge,
-  useColorModeValue,
 } from '@chakra-ui/react';
-import { FiPlus } from 'react-icons/fi';
 import { useForm } from 'react-hook-form';
 import { userService } from '../services/userService';
 import { roleService } from '../services/roleService';
 import { tenantService } from '../services/tenantService';
 import { User, Role } from '../types';
 import { useTranslation } from 'react-i18next';
-// useTenantStore is used inside DataTable, but we don't need it here unless we have specific logic. 
-// Actually we used it for role filter? No, we simply pass customFilter. DataTable handles filtering.
-
+import { toaster } from '../components/ui/toaster';
 import { DataTable, Column } from '../components/common/DataTable';
+import { useColorMode } from '../components/ui/color-mode';
 
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const toast = useToast();
   const { t } = useTranslation();
+  const { colorMode } = useColorMode();
 
   // Specific Filter State for Users Page
   const [roleFilter, setRoleFilter] = useState<number | ''>('');
 
   const { register, handleSubmit, reset, setValue } = useForm();
-  const bgInput = useColorModeValue('white', 'gray.700');
+  const bgInput = colorMode === 'dark' ? 'gray.700' : 'white';
 
   // Fetch Users and Roles on mount
   const fetchData = async () => {
@@ -58,7 +47,7 @@ export default function Users() {
       setRoles(r);
       setTenants(t);
     } catch (e) {
-      toast({ title: 'Failed to load data', status: 'error' });
+      toaster.create({ title: 'Failed to load data', type: 'error' });
     }
   };
 
@@ -95,8 +84,6 @@ export default function Users() {
     setEditingUser(user);
     setValue('username', user.username);
     setValue('names', user.names);
-    // user.role might be complex object or id based on backend response layout.
-    // Based on types.ts: role?: Role. We need role.id for the Select value.
     setValue('id_role', user.id_role || user.role?.id);
     setValue('tenant_id', user.tenant_id);
     onOpen();
@@ -106,7 +93,7 @@ export default function Users() {
   const onAdd = () => {
     setEditingUser(null);
     reset();
-    setValue('tenant_id', tenants[0]?.id || 1); // Default to first tenant logic or 1
+    setValue('tenant_id', tenants[0]?.id || 1); 
     onOpen();
   };
 
@@ -117,17 +104,16 @@ export default function Users() {
 
       if (editingUser) {
         await userService.update(editingUser.id, data);
-        toast({ title: t('userUpdated'), status: 'success' });
+        toaster.create({ title: t('userUpdated'), type: 'success' });
       } else {
-        // Default password if needed, mostly handled by backend default or separate flow
-        if (!data.password) data.password = "password123"; // TODO: Temporary default or handled by form?
+        if (!data.password) data.password = "password123";
         await userService.create(data);
-        toast({ title: t('userCreated'), status: 'success' });
+        toaster.create({ title: t('userCreated'), type: 'success' });
       }
       onClose();
       fetchData();
     } catch (e: any) {
-      toast({ title: t('operationFailed'), description: e.response?.data?.detail, status: 'error' });
+      toaster.create({ title: t('operationFailed'), description: e.response?.data?.detail, type: 'error' });
     }
   };
 
@@ -135,10 +121,10 @@ export default function Users() {
     if (!window.confirm(t('deleteUserConfirm'))) return;
     try {
       await userService.delete(user.id);
-      toast({ title: t('userDeleted'), status: 'success' });
+      toaster.create({ title: t('userDeleted'), type: 'success' });
       fetchData();
     } catch (e) {
-      toast({ title: t('deleteFailed'), status: 'error' });
+      toaster.create({ title: t('deleteFailed'), type: 'error' });
     }
   };
 
@@ -146,7 +132,7 @@ export default function Users() {
     <Box p={8}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={6}>
         <Heading size="lg">{t('users')}</Heading>
-        <Button colorScheme="brand" onClick={onAdd} variant={"solid"}>
+        <Button colorPalette="brand" onClick={onAdd} variant="solid">
           {t('addUser')}
         </Button>
       </Box>
@@ -160,68 +146,76 @@ export default function Users() {
         onDelete={onDelete}
         customFilter={(u) => roleFilter ? (u.id_role === roleFilter || u.role?.id === roleFilter) : true}
         extraControls={
-          <Select
-            placeholder={t('filterByRole') || 'Filter by Role'}
-            maxW="200px"
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value ? Number(e.target.value) : '')}
-            bg={bgInput}
-          >
-            {roles.map(role => (
-              <option key={role.id} value={role.id}>{role.name}</option>
-            ))}
-          </Select>
+          <NativeSelect.Root maxW="200px">
+             <NativeSelect.Field 
+                placeholder={t('filterByRole') || 'Filter by Role'}
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value ? Number(e.target.value) : '')}
+                bg={bgInput}
+             >
+                {roles.map(role => (
+                   <option key={role.id} value={role.id}>{role.name}</option>
+                ))}
+             </NativeSelect.Field>
+          </NativeSelect.Root>
         }
       />
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{editingUser ? t('editUser') : t('createUser')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <form id="user-form" onSubmit={handleSubmit(onSubmit)}>
-              <FormControl isRequired mb={4}>
-                <FormLabel>{t('username')}</FormLabel>
-                <Input {...register('username')} />
-              </FormControl>
-              <FormControl mb={4}>
-                <FormLabel>{t('names')}</FormLabel>
-                <Input {...register('names')} />
-              </FormControl>
-              {/* Password field only for new users? or modify separately? keeping it simple per existing code */}
-              {!editingUser && (
-                <FormControl mb={4}>
-                  <FormLabel>{t('password')}</FormLabel>
-                  <Input type="password" {...register('password')} placeholder="Default: password123" />
-                </FormControl>
-              )}
+      <Dialog.Root open={isOpen} onOpenChange={(e) => e.open ? onOpen() : onClose()}>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+            <Dialog.Content>
+            <Dialog.Header>
+                <Dialog.Title>{editingUser ? t('editUser') : t('createUser')}</Dialog.Title>
+                <Dialog.CloseTrigger />
+            </Dialog.Header>
+            <Dialog.Body pb={6}>
+                <form id="user-form" onSubmit={handleSubmit(onSubmit)}>
+                <Field.Root required mb={4}>
+                    <Field.Label>{t('username')}</Field.Label>
+                    <Input {...register('username')} />
+                </Field.Root>
+                <Field.Root mb={4}>
+                    <Field.Label>{t('names')}</Field.Label>
+                    <Input {...register('names')} />
+                </Field.Root>
+                {!editingUser && (
+                    <Field.Root mb={4}>
+                    <Field.Label>{t('password')}</Field.Label>
+                    <Input type="password" {...register('password')} placeholder="Default: password123" />
+                    </Field.Root>
+                )}
 
-              <FormControl isRequired mb={4}>
-                <FormLabel>{t('role')}</FormLabel>
-                <Select {...register('id_role')} placeholder="Select role">
-                  {roles.map(role => (
-                    <option key={role.id} value={role.id}>{role.name}</option>
-                  ))}
-                </Select>
-              </FormControl>
+                <Field.Root required mb={4}>
+                    <Field.Label>{t('role')}</Field.Label>
+                    <NativeSelect.Root>
+                        <NativeSelect.Field {...register('id_role')} placeholder="Select role">
+                            {roles.map(role => (
+                                <option key={role.id} value={role.id}>{role.name}</option>
+                            ))}
+                        </NativeSelect.Field>
+                    </NativeSelect.Root>
+                </Field.Root>
 
-              <FormControl isRequired>
-                <FormLabel>{t('tenant')}</FormLabel>
-                <Select {...register('tenant_id')} placeholder="Select tenant">
-                  {tenants.map(t => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </Select>
-              </FormControl>
-            </form>
-          </ModalBody>
-          <ModalFooter>
-            <Button onClick={onClose} mr={3}>{t('cancel')}</Button>
-            <Button colorScheme="brand" form="user-form" type="submit">{t('save')}</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+                <Field.Root required>
+                    <Field.Label>{t('tenant')}</Field.Label>
+                    <NativeSelect.Root>
+                        <NativeSelect.Field {...register('tenant_id')} placeholder="Select tenant">
+                            {tenants.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                        </NativeSelect.Field>
+                    </NativeSelect.Root>
+                </Field.Root>
+                </form>
+            </Dialog.Body>
+            <Dialog.Footer>
+                <Button onClick={onClose} mr={3} variant="ghost">{t('cancel')}</Button>
+                <Button colorPalette="brand" form="user-form" type="submit">{t('save')}</Button>
+            </Dialog.Footer>
+            </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
     </Box>
   );
 }

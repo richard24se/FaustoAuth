@@ -9,30 +9,22 @@ import {
     GridItem,
     Badge,
     Tabs,
-    TabList,
-    TabPanels,
-    Tab,
-    TabPanel,
     Table,
-    Thead,
-    Tbody,
-    Tr,
-    Th,
-    Td,
     Input,
     Button,
-    useToast,
     Flex,
     VStack,
     HStack,
-    useColorModeValue,
     Link,
-    Icon
+    Icon,
 } from '@chakra-ui/react';
 import { FiAlertCircle, FiCheckCircle, FiCopy, FiRefreshCcw, FiExternalLink } from 'react-icons/fi';
 import { useAuthStore } from '../store/authStore';
 import { jwtDecode } from 'jwt-decode';
 import * as jose from 'jose';
+import { toaster } from '../components/ui/toaster';
+import { useColorMode } from '../components/ui/color-mode';
+
 // Standard JWT Claims Descriptions
 const STANDARD_CLAIMS: Record<string, string> = {
     // Registered Claims
@@ -58,38 +50,39 @@ const STANDARD_CLAIMS: Record<string, string> = {
 };
 
 const ClaimsTable = ({ data }: { data: any }) => {
-    // Hooks must be at the top level
-    const borderColor = useColorModeValue('gray.200', 'gray.700');
-    const textColor = useColorModeValue('gray.600', 'gray.400');
-    const hoverBg = useColorModeValue('gray.50', 'gray.750');
-    const keyColor = useColorModeValue('gray.700', 'gray.200');
-    const valueColor = useColorModeValue('gray.800', 'gray.100');
-    const infoBg = useColorModeValue('blue.50', 'blue.900');
-    const infoColor = useColorModeValue('blue.700', 'blue.200');
+    const { colorMode } = useColorMode();
+    const isDark = colorMode === 'dark';
+    const borderColor = isDark ? 'gray.700' : 'gray.200';
+    const textColor = isDark ? 'gray.400' : 'gray.600';
+    const hoverBg = isDark ? 'gray.750' : 'gray.50';
+    const keyColor = isDark ? 'gray.200' : 'gray.700';
+    const valueColor = isDark ? 'gray.100' : 'gray.800';
+    const infoBg = isDark ? 'blue.900' : 'blue.50';
+    const infoColor = isDark ? 'blue.200' : 'blue.700';
 
     if (!data) return <Text fontSize="sm" color="gray.500" p={4}>No data available</Text>;
 
     return (
-        <Table variant="simple" size="sm">
-            <Thead>
-                <Tr>
-                    <Th borderColor={borderColor} color={textColor}>Claim</Th>
-                    <Th borderColor={borderColor} color={textColor}>Value</Th>
-                </Tr>
-            </Thead>
-            <Tbody>
+        <Table.Root variant="outline" size="sm">
+            <Table.Header>
+                <Table.Row>
+                    <Table.ColumnHeader borderColor={borderColor} color={textColor}>Claim</Table.ColumnHeader>
+                    <Table.ColumnHeader borderColor={borderColor} color={textColor}>Value</Table.ColumnHeader>
+                </Table.Row>
+            </Table.Header>
+            <Table.Body>
                 {Object.entries(data).map(([key, value]) => {
                     const description = STANDARD_CLAIMS[key];
                     const isDate = (key === 'exp' || key === 'iat' || key === 'nbf') && typeof value === 'number';
 
                     return (
                         <Fragment key={key}>
-                            <Tr _hover={{ bg: hoverBg }}>
-                                <Td fontWeight="bold" fontFamily="monospace" borderColor={borderColor} color={keyColor} verticalAlign="top">
+                            <Table.Row _hover={{ bg: hoverBg }}>
+                                <Table.Cell fontWeight="bold" fontFamily="monospace" borderColor={borderColor} color={keyColor} verticalAlign="top">
                                     {key}
-                                </Td>
-                                <Td fontFamily="monospace" wordBreak="break-word" borderColor={borderColor} color={valueColor}>
-                                    <VStack align="stretch" spacing={1}>
+                                </Table.Cell>
+                                <Table.Cell fontFamily="monospace" wordBreak="break-word" borderColor={borderColor} color={valueColor}>
+                                    <VStack align="stretch" gap={1}>
                                         <Text>
                                             {isDate ? value : (typeof value === 'object' ? JSON.stringify(value) : String(value))}
                                         </Text>
@@ -103,45 +96,45 @@ const ClaimsTable = ({ data }: { data: any }) => {
                                         {description && (
                                             <Box fontSize="xs" color="gray.500" mt={1}>
                                                 {description}{' '}
-                                                <Link href="https://www.iana.org/assignments/jwt/jwt.xhtml" isExternal color="blue.400" display="inline-flex" alignItems="center" gap={1}>
+                                                <Link href="https://www.iana.org/assignments/jwt/jwt.xhtml" target="_blank" color="blue.400" display="inline-flex" alignItems="center" gap={1}>
                                                     Learn more <Icon as={FiExternalLink} />
                                                 </Link>
                                             </Box>
                                         )}
                                     </VStack>
-                                </Td>
-                            </Tr>
+                                </Table.Cell>
+                            </Table.Row>
                             {isDate && (
-                                <Tr>
-                                    <Td colSpan={2} p={0} borderBottomWidth={1} borderColor={borderColor}>
+                                <Table.Row>
+                                    <Table.Cell colSpan={2} p={0} borderBottomWidth={1} borderColor={borderColor}>
                                         <Box bg={infoBg} p={2} fontSize="xs" color={infoColor}>
                                             This value must be a <Text as="span" fontFamily="monospace" fontWeight="bold">NumericDate</Text> type, representing seconds.
                                         </Box>
-                                    </Td>
-                                </Tr>
+                                    </Table.Cell>
+                                </Table.Row>
                             )}
                         </Fragment>
                     );
                 })}
-            </Tbody>
-        </Table>
+            </Table.Body>
+        </Table.Root>
     );
 };
 
 export default function JwtDebugger() {
     const { token: sessionToken } = useAuthStore();
-    const toast = useToast();
+    const { colorMode } = useColorMode();
+    const isDark = colorMode === 'dark';
 
     // Theme Colors
-    // Theme Colors
-    const bgCard = useColorModeValue('white', 'gray.800');
-    const borderColor = useColorModeValue('gray.200', 'gray.700');
-    const textColor = useColorModeValue('gray.700', 'gray.300'); // Darker text for light mode contrast
-    const codeBg = useColorModeValue('white', 'gray.900'); // Darker bg for light mode contrast
-    const codeColorHeader = useColorModeValue('red.600', 'red.200'); // Darker red for light mode
-    const codeColorPayload = useColorModeValue('purple.700', 'purple.200'); // Darker purple for light mode
-    const headerBg = useColorModeValue('gray.100', 'gray.800'); // Distinct header bg
-    const tabListBg = useColorModeValue('gray.200', 'gray.700');
+    const bgCard = isDark ? 'gray.800' : 'white';
+    const borderColor = isDark ? 'gray.700' : 'gray.200';
+    const textColor = isDark ? 'gray.300' : 'gray.700'; 
+    const codeBg = isDark ? 'gray.900' : 'white';
+    const codeColorHeader = isDark ? 'red.200' : 'red.600';
+    const codeColorPayload = isDark ? 'purple.200' : 'purple.700';
+    const headerBg = isDark ? 'gray.800' : 'gray.100';
+    const tabListBg = isDark ? 'gray.700' : 'gray.200';
 
     // State
     const [inputToken, setInputToken] = useState('');
@@ -225,39 +218,37 @@ export default function JwtDebugger() {
 
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text);
-        toast({ title: "Copied!", status: "success", duration: 1000 });
+        toaster.create({ title: "Copied!", type: "success", duration: 1000 });
     };
-
-
 
     return (
         <Container maxW="container.xl" py={8}>
             {/* Header Area */}
             <Flex justify="space-between" align="center" mb={6} borderBottom="1px" borderColor={borderColor} pb={4}>
-                <VStack align="start" spacing={0}>
+                <VStack align="start" gap={0}>
                     <Heading size="lg">JWT Debugger</Heading>
                     <Text fontSize="sm" color={textColor}>Inspect, Verify, and Debug JWTs</Text>
                 </VStack>
 
-                <HStack spacing={4}>
+                <HStack gap={4}>
                     {jwtError ? (
-                        <Badge colorScheme="red" variant="solid" px={3} py={1} borderRadius="full">
+                        <Badge colorPalette="red" variant="solid" px={3} py={1} borderRadius="full">
                             <Flex align="center" gap={2}><FiAlertCircle /> INVALID JWT</Flex>
                         </Badge>
                     ) : decodedHeader ? (
-                        <Badge colorScheme="green" variant="solid" px={3} py={1} borderRadius="full">
+                        <Badge colorPalette="green" variant="solid" px={3} py={1} borderRadius="full">
                             <Flex align="center" gap={2}><FiCheckCircle /> VALID JWT</Flex>
                         </Badge>
                     ) : null}
 
                     {/* Signature Status */}
                     {isSignatureValid === true && (
-                        <Badge colorScheme="cyan" variant="solid" px={3} py={1} borderRadius="full">
+                        <Badge colorPalette="cyan" variant="solid" px={3} py={1} borderRadius="full">
                             <Flex align="center" gap={2}><FiCheckCircle /> VERIFIED</Flex>
                         </Badge>
                     )}
                     {isSignatureValid === false && (
-                        <Badge colorScheme="orange" variant="solid" px={3} py={1} borderRadius="full">
+                        <Badge colorPalette="orange" variant="solid" px={3} py={1} borderRadius="full">
                             <Flex align="center" gap={2}><FiAlertCircle /> SIGNATURE INVALID</Flex>
                         </Badge>
                     )}
@@ -271,12 +262,12 @@ export default function JwtDebugger() {
                     <Box flex={1} display="flex" flexDirection="column" bg={bgCard} p={6} borderRadius="lg" shadow="sm" border="1px" borderColor={borderColor}>
                         <Flex justify="space-between" mb={2}>
                             <Text fontWeight="bold" fontSize="xs" color={textColor} letterSpacing="wider">ENCODED TOKEN</Text>
-                            <HStack spacing={2}>
-                                <Button size="xs" variant="outline" leftIcon={<FiCopy />} onClick={() => handleCopy(inputToken)}>
-                                    COPY
+                            <HStack gap={2}>
+                                <Button size="xs" variant="outline" onClick={() => handleCopy(inputToken)}>
+                                    <FiCopy /> COPY
                                 </Button>
-                                <Button size="xs" variant="outline" leftIcon={<FiRefreshCcw />} onClick={() => setInputToken('')}>
-                                    CLEAR
+                                <Button size="xs" variant="outline" onClick={() => setInputToken('')}>
+                                    <FiRefreshCcw /> CLEAR
                                 </Button>
                             </HStack>
                         </Flex>
@@ -287,7 +278,7 @@ export default function JwtDebugger() {
                             h="full"
                             bg="transparent"
                             border={0}
-                            color={useColorModeValue('pink.500', 'pink.300')}
+                            color={isDark ? 'pink.300' : 'pink.500'}
                             fontFamily="monospace"
                             fontSize="sm"
                             resize="none"
@@ -304,9 +295,9 @@ export default function JwtDebugger() {
                         <Text fontWeight="bold" fontSize="xs" color={textColor} letterSpacing="wider" mb={4}>
                             VERIFY SIGNATURE
                         </Text>
-                        <VStack align="stretch" spacing={3}>
+                        <VStack align="stretch" gap={3}>
                             <Flex align="center" gap={2}>
-                                <Badge colorScheme={isSignatureValid ? "green" : isSignatureValid === false ? "red" : "gray"}>
+                                <Badge colorPalette={isSignatureValid ? "green" : isSignatureValid === false ? "red" : "gray"}>
                                     {decodedHeader?.alg || 'HS256'}
                                 </Badge>
                                 <Text fontSize="xs" color="gray.500">
@@ -320,7 +311,7 @@ export default function JwtDebugger() {
                                 bg={codeBg}
                                 border="1px"
                                 borderColor={isSignatureValid === false ? "red.300" : borderColor}
-                                color={useColorModeValue('cyan.600', 'cyan.300')}
+                                color={isDark ? 'cyan.300' : 'cyan.600'}
                                 fontFamily="monospace"
                                 size="sm"
                             />
@@ -335,16 +326,16 @@ export default function JwtDebugger() {
                 <GridItem display="flex" flexDirection="column" gap={6}>
                     {/* HEADER SECTION */}
                     <Box flex="0 0 auto" p={0} bg={bgCard} borderRadius="lg" shadow="sm" border="1px" borderColor={borderColor} overflow="hidden">
-                        <Tabs variant="soft-rounded" colorScheme="gray" size="sm" defaultIndex={1}>
+                        <Tabs.Root variant="enclosed" size="sm" defaultValue="claims">
                             <Flex justify="space-between" align="center" px={6} py={3} borderBottom="1px" borderColor={borderColor} bg={headerBg}>
                                 <Text fontWeight="bold" fontSize="xs" color={textColor} letterSpacing="wider" mr={4}>HEADER</Text>
-                                <TabList bg={tabListBg} p={1} borderRadius="full">
-                                    <Tab _selected={{ color: useColorModeValue('black', 'white'), bg: useColorModeValue('white', 'gray.600'), shadow: 'sm' }} color="gray.500" fontSize="xs" px={3} py={1} borderRadius="full" fontWeight="bold">JSON</Tab>
-                                    <Tab _selected={{ color: useColorModeValue('black', 'white'), bg: useColorModeValue('white', 'gray.600'), shadow: 'sm' }} color="gray.500" fontSize="xs" px={3} py={1} borderRadius="full" fontWeight="bold">Claims Table</Tab>
-                                </TabList>
+                                <Tabs.List bg={tabListBg} p={1} borderRadius="full">
+                                    <Tabs.Trigger value="json" color="gray.500" fontSize="xs" px={3} py={1} borderRadius="full" fontWeight="bold">JSON</Tabs.Trigger>
+                                    <Tabs.Trigger value="claims" color="gray.500" fontSize="xs" px={3} py={1} borderRadius="full" fontWeight="bold">Claims Table</Tabs.Trigger>
+                                </Tabs.List>
                             </Flex>
-                            <TabPanels>
-                                <TabPanel p={0} position="relative" minHeight="139px">
+                            <Box>
+                                <Tabs.Content value="json" p={0} position="relative" minHeight="139px">
                                     <Box
                                         bg={codeBg}
                                         p={6}
@@ -356,26 +347,26 @@ export default function JwtDebugger() {
                                         {decodedHeader ? JSON.stringify(decodedHeader, null, 2) : '{}'}
                                     </Box>
                                     <Button size="xs" variant="ghost" pos="absolute" top={2} right={2} onClick={() => handleCopy(JSON.stringify(decodedHeader, null, 2))}>Copy</Button>
-                                </TabPanel>
-                                <TabPanel p={0}>
+                                </Tabs.Content>
+                                <Tabs.Content value="claims" p={0}>
                                     <ClaimsTable data={decodedHeader || {}} />
-                                </TabPanel>
-                            </TabPanels>
-                        </Tabs>
+                                </Tabs.Content>
+                            </Box>
+                        </Tabs.Root>
                     </Box>
 
                     {/* PAYLOAD SECTION */}
                     <Box flex={1} display="flex" flexDirection="column" bg={bgCard} borderRadius="lg" shadow="sm" border="1px" borderColor={borderColor} overflow="hidden" marginBottom={10}>
-                        <Tabs variant="soft-rounded" colorScheme="gray" size="sm" defaultIndex={1} display="flex" flexDirection="column" flex={1}>
+                         <Tabs.Root variant="enclosed" size="sm" defaultValue="claims" display="flex" flexDirection="column" flex={1}>
                             <Flex justify="space-between" align="center" px={6} py={3} borderBottom="1px" borderColor={borderColor} bg={headerBg} flexShrink={0}>
                                 <Text fontWeight="bold" fontSize="xs" color={textColor} letterSpacing="wider" mr={4}>PAYLOAD</Text>
-                                <TabList bg={tabListBg} p={1} borderRadius="full">
-                                    <Tab _selected={{ color: useColorModeValue('black', 'white'), bg: useColorModeValue('white', 'gray.600'), shadow: 'sm' }} color="gray.500" fontSize="xs" px={3} py={1} borderRadius="full" fontWeight="bold">JSON</Tab>
-                                    <Tab _selected={{ color: useColorModeValue('black', 'white'), bg: useColorModeValue('white', 'gray.600'), shadow: 'sm' }} color="gray.500" fontSize="xs" px={3} py={1} borderRadius="full" fontWeight="bold">Claims Table</Tab>
-                                </TabList>
+                                <Tabs.List bg={tabListBg} p={1} borderRadius="full">
+                                    <Tabs.Trigger value="json" color="gray.500" fontSize="xs" px={3} py={1} borderRadius="full" fontWeight="bold">JSON</Tabs.Trigger>
+                                    <Tabs.Trigger value="claims" color="gray.500" fontSize="xs" px={3} py={1} borderRadius="full" fontWeight="bold">Claims Table</Tabs.Trigger>
+                                </Tabs.List>
                             </Flex>
-                            <TabPanels flex={1} display="flex" flexDirection="column" overflow="hidden">
-                                <TabPanel p={0} position="relative" flex={1} overflowY="auto">
+                            <Box flex={1} display="flex" flexDirection="column" overflow="hidden">
+                                <Tabs.Content value="json" p={0} position="relative" flex={1} overflowY="auto">
                                     <Box
                                         bg={codeBg}
                                         p={6}
@@ -388,17 +379,15 @@ export default function JwtDebugger() {
                                         {decodedPayload ? JSON.stringify(decodedPayload, null, 2) : '{}'}
                                     </Box>
                                     <Button size="xs" variant="ghost" pos="absolute" top={2} right={2} onClick={() => handleCopy(JSON.stringify(decodedPayload, null, 2))}>Copy</Button>
-                                </TabPanel>
-                                <TabPanel p={0} flex={1} overflowY="auto">
+                                </Tabs.Content>
+                                <Tabs.Content value="claims" p={0} flex={1} overflowY="auto">
                                     <ClaimsTable data={decodedPayload || {}} />
-                                </TabPanel>
-                            </TabPanels>
-                        </Tabs>
+                                </Tabs.Content>
+                            </Box>
+                        </Tabs.Root>
                     </Box>
                 </GridItem>
             </Grid>
         </Container>
     );
 }
-
-

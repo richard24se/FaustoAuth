@@ -2,28 +2,19 @@ import React, { useEffect, useState } from 'react';
 import {
     Box,
     Table,
-    Thead,
-    Tbody,
-    Tr,
-    Th,
-    Td,
     Input,
-    InputGroup,
-    InputLeftElement,
     Button,
     HStack,
     Text,
     IconButton,
     Menu,
-    MenuButton,
-    MenuList,
-    MenuItem,
-    useColorModeValue,
     Flex,
+    Portal,
 } from '@chakra-ui/react';
 import { FiSearch, FiChevronLeft, FiChevronRight, FiMoreVertical, FiEdit, FiTrash } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '../../store/tenantStore';
+import { useColorModeValue } from '../ui/color-mode';
 
 export interface Column<T> {
     header: string;
@@ -69,7 +60,6 @@ export function DataTable<T extends { id: number | string }>({
 
         // 1. Tenant Filter
         if (selectedTenantId) {
-            // We cast to any to access the dynamic field safely, or we rely on the generic constraint if strictly typed
             result = result.filter(item => (item as any)[tenantField] === selectedTenantId);
         }
 
@@ -96,19 +86,18 @@ export function DataTable<T extends { id: number | string }>({
     const totalPages = Math.ceil(filteredData.length / pageSize);
     const paginatedData = React.useMemo(() => {
         const startIndex = (currentPage - 1) * pageSize;
-        // Ensure we don't go out of bounds if filters change
         return filteredData.slice(startIndex, startIndex + pageSize);
     }, [filteredData, currentPage, pageSize]);
 
     // Reset page when filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [selectedTenantId, searchQuery, customFilter]); // Dependency on filters
+    }, [selectedTenantId, searchQuery, customFilter]);
 
     // Styling
-    const bg = useColorModeValue('white', 'surface.500'); // Adapting to surface.500 if that's the theme
-    const theadBg = useColorModeValue('gray.50', 'gray.700');
+    const bg = useColorModeValue('white', 'surface.500'); 
     const borderColor = useColorModeValue('gray.200', 'gray.700');
+    const inputBg = useColorModeValue('white', 'gray.700');
 
     const prevPage = () => setCurrentPage(p => Math.max(1, p - 1));
     const nextPage = () => setCurrentPage(p => Math.min(totalPages, p + 1));
@@ -117,19 +106,20 @@ export function DataTable<T extends { id: number | string }>({
         <Box>
             {/* Controls Bar */}
             <Flex mb={4} justify="space-between" align="center" wrap="wrap" gap={4}>
-                <HStack spacing={4} flex={1}>
+                <HStack gap={4} flex={1}>
                     {searchKeys.length > 0 && (
-                        <InputGroup maxW="300px">
-                            <InputLeftElement pointerEvents="none">
-                                <FiSearch color="gray.300" />
-                            </InputLeftElement>
-                            <Input
+                        <Box position="relative" maxW="300px" width="full">
+                           <Box position="absolute" left="3" top="2.5" pointerEvents="none" zIndex={2}>
+                               <FiSearch color="gray" />
+                           </Box>
+                           <Input
+                                pl="10"
                                 placeholder={searchPlaceholder}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                bg={useColorModeValue('white', 'gray.700')}
+                                bg={inputBg}
                             />
-                        </InputGroup>
+                        </Box>
                     )}
                     {extraControls}
                 </HStack>
@@ -137,46 +127,62 @@ export function DataTable<T extends { id: number | string }>({
 
             {/* Table Area */}
             <Box bg={bg} shadow="md" borderRadius="lg" overflowX="auto" border="1px" borderColor={borderColor}>
-                <Table variant="simple">
-                    <Thead bg={theadBg}>
-                        <Tr>
+                <Table.Root variant="outline">
+                    <Table.Header>
+                        <Table.Row>
                             {columns.map((col, idx) => (
-                                <Th key={idx} w={col.width}>{col.header}</Th>
+                                <Table.ColumnHeader key={idx} width={col.width}>{col.header}</Table.ColumnHeader>
                             ))}
-                            {(onEdit || onDelete) && <Th w="50px"></Th>}
-                        </Tr>
-                    </Thead>
-                    <Tbody>
+                            {(onEdit || onDelete) && <Table.ColumnHeader width="50px"></Table.ColumnHeader>}
+                        </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
                         {paginatedData.length > 0 ? (
                             paginatedData.map((item) => (
-                                <Tr key={item.id}>
+                                <Table.Row key={item.id}>
                                     {columns.map((col, idx) => (
-                                        <Td key={idx}>
+                                        <Table.Cell key={idx}>
                                             {col.render ? col.render(item) : (col.accessorKey ? String((item as any)[col.accessorKey]) : '')}
-                                        </Td>
+                                        </Table.Cell>
                                     ))}
                                     {(onEdit || onDelete) && (
-                                        <Td>
-                                            <Menu>
-                                                <MenuButton as={IconButton} icon={<FiMoreVertical />} variant="ghost" size="sm" aria-label="Actions" />
-                                                <MenuList>
-                                                    {onEdit && <MenuItem icon={<FiEdit />} onClick={() => onEdit(item)}>{t('edit')}</MenuItem>}
-                                                    {onDelete && <MenuItem icon={<FiTrash />} color="red.500" onClick={() => onDelete(item)}>{t('delete')}</MenuItem>}
-                                                </MenuList>
-                                            </Menu>
-                                        </Td>
+                                        <Table.Cell>
+                                            <Menu.Root>
+                                                <Menu.Trigger asChild>
+                                                    <IconButton variant="ghost" size="sm" aria-label="Actions">
+                                                        <FiMoreVertical />
+                                                    </IconButton>
+                                                </Menu.Trigger>
+                                                <Portal>
+                                                    <Menu.Positioner>
+                                                        <Menu.Content>
+                                                            {onEdit && (
+                                                                <Menu.Item value="edit" onClick={() => onEdit(item)}>
+                                                                    <FiEdit /> {t('edit')}
+                                                                </Menu.Item>
+                                                            )}
+                                                            {onDelete && (
+                                                                <Menu.Item value="delete" color="red.500" onClick={() => onDelete(item)}>
+                                                                    <FiTrash /> {t('delete')}
+                                                                </Menu.Item>
+                                                            )}
+                                                        </Menu.Content>
+                                                    </Menu.Positioner>
+                                                </Portal>
+                                            </Menu.Root>
+                                        </Table.Cell>
                                     )}
-                                </Tr>
+                                </Table.Row>
                             ))
                         ) : (
-                            <Tr>
-                                <Td colSpan={columns.length + (onEdit || onDelete ? 1 : 0)} textAlign="center" py={8} color="gray.500">
+                            <Table.Row>
+                                <Table.Cell colSpan={columns.length + (onEdit || onDelete ? 1 : 0)} textAlign="center" py={8} color="gray.500">
                                     {t('noResults') || "No results found"}
-                                </Td>
-                            </Tr>
+                                </Table.Cell>
+                            </Table.Row>
                         )}
-                    </Tbody>
-                </Table>
+                    </Table.Body>
+                </Table.Root>
             </Box>
 
             {/* Pagination */}
@@ -186,12 +192,12 @@ export function DataTable<T extends { id: number | string }>({
                         {t('showing')} {((currentPage - 1) * pageSize) + 1} {t('to')} {Math.min(currentPage * pageSize, filteredData.length)} {t('of')} {filteredData.length} {t('entries')}
                     </Text>
                     <HStack>
-                        <Button size="sm" onClick={prevPage} isDisabled={currentPage === 1} leftIcon={<FiChevronLeft />}>
-                            {t('previous')}
+                        <Button size="sm" onClick={prevPage} disabled={currentPage === 1}>
+                            <FiChevronLeft /> {t('previous')}
                         </Button>
                         <Text fontSize="sm" fontWeight="bold">{currentPage}</Text>
-                        <Button size="sm" onClick={nextPage} isDisabled={currentPage === totalPages} rightIcon={<FiChevronRight />}>
-                            {t('next')}
+                        <Button size="sm" onClick={nextPage} disabled={currentPage === totalPages}>
+                             {t('next')} <FiChevronRight />
                         </Button>
                     </HStack>
                 </Flex>

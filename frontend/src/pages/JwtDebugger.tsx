@@ -222,9 +222,9 @@ export default function JwtDebugger() {
     };
 
     return (
-        <Container maxW="container.xl" py={8}>
+        <Container maxW="full" py={8} px={0} display="flex" flexDirection="column" flex={1}>
             {/* Header Area */}
-            <Flex justify="space-between" align="center" mb={6} borderBottom="1px" borderColor={borderColor} pb={4}>
+            <Flex justify="space-between" align="center" mb={6} borderBottom="1px" borderColor={borderColor} pb={4} px={8}>
                 <VStack align="start" gap={0}>
                     <Heading size="lg">JWT Debugger</Heading>
                     <Text fontSize="sm" color={textColor}>Inspect, Verify, and Debug JWTs</Text>
@@ -255,9 +255,9 @@ export default function JwtDebugger() {
                 </HStack>
             </Flex>
 
-            <Grid templateColumns={{ base: "1fr", lg: "repeat(2, minmax(0, 1fr))" }} gap={6} h={{ base: "auto", lg: "calc(100vh - 250px)" }}>
+            <Grid templateColumns={{ base: "1fr", lg: "repeat(2, minmax(0, 1fr))" }} gap={6} flex={1} px={8}>
                 {/* LEFT COLUMN: Encoded Token & Signature Input */}
-                <GridItem display="flex" flexDirection="column" gap={4}>
+                <GridItem display="flex" flexDirection="column" gap={4} overflowY="auto">
                     {/* Token Input Area */}
                     <Box flex={1} display="flex" flexDirection="column" bg={bgCard} p={6} borderRadius="lg" shadow="sm" border="1px" borderColor={borderColor}>
                         <Flex justify="space-between" mb={2}>
@@ -291,7 +291,7 @@ export default function JwtDebugger() {
                     </Box>
 
                     {/* Signature Section */}
-                    <Box p={6} bg={bgCard} borderRadius="lg" shadow="sm" border="1px" borderColor={borderColor} marginBottom={10}>
+                    <Box p={6} bg={bgCard} borderRadius="lg" shadow="sm" border="1px" borderColor={borderColor}>
                         <Text fontWeight="bold" fontSize="xs" color={textColor} letterSpacing="wider" mb={4}>
                             VERIFY SIGNATURE
                         </Text>
@@ -356,7 +356,7 @@ export default function JwtDebugger() {
                     </Box>
 
                     {/* PAYLOAD SECTION */}
-                    <Box flex={1} display="flex" flexDirection="column" bg={bgCard} borderRadius="lg" shadow="sm" border="1px" borderColor={borderColor} overflow="hidden" marginBottom={10}>
+                    <Box flex={1} display="flex" flexDirection="column" bg={bgCard} borderRadius="lg" shadow="sm" border="1px" borderColor={borderColor} overflow="hidden">
                          <Tabs.Root variant="enclosed" size="sm" defaultValue="claims" display="flex" flexDirection="column" flex={1}>
                             <Flex justify="space-between" align="center" px={6} py={3} borderBottom="1px" borderColor={borderColor} bg={headerBg} flexShrink={0}>
                                 <Text fontWeight="bold" fontSize="xs" color={textColor} letterSpacing="wider" mr={4}>PAYLOAD</Text>

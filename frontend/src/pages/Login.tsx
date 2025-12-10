@@ -9,6 +9,7 @@ import {
   Text,
   Container,
   Card,
+  Image,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -18,6 +19,7 @@ import { LoginCredentials } from '../types';
 import { useTranslation } from 'react-i18next';
 import { toaster } from '../components/ui/toaster';
 import { useColorMode } from '../components/ui/color-mode';
+import PhylaxLogo from '../assets/Phylax-logo-1.png';
 
 export default function Login() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginCredentials>();
@@ -57,8 +59,9 @@ export default function Login() {
     <Box minH="100vh" bg={bgPage} display="flex" alignItems="center" justifyContent="center">
       <Container maxW="lg" py={{ base: '12', md: '24' }} px={{ base: '0', md: '8' }}>
         <Stack gap="8">
-          <Stack gap="6" textAlign="center">
-            <Heading size={{ base: 'xs', md: 'sm' }}>{t('loginTitle')}</Heading>
+          <Stack gap="6" textAlign="center" alignItems="center">
+            <Image src={PhylaxLogo} boxSize="150px" alt="Phylax Logo" />
+            <Heading size={{ base: 'xl', md: '3xl' }}>{t('loginTitle')}</Heading>
             <Text color="gray.500">{t('loginSubtitle')}</Text>
           </Stack>
           <Card.Root bg={bgCard}>

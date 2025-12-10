@@ -15,7 +15,8 @@ import {
     Menu,
     Avatar,
     NativeSelect,
-    Portal
+    Portal,
+    Image
 } from '@chakra-ui/react';
 import {
     FiHome,
@@ -37,6 +38,7 @@ import { JwtVisualizerTop } from './JwtVisualizerTop';
 import { useTenantStore } from '../store/tenantStore';
 import { tenantService } from '../services/tenantService';
 import { useColorModeValue } from './ui/color-mode';
+import PhylaxLogo from '../assets/Phylax-logo-1.png';
 
 interface LinkItemProps {
     name: string;
@@ -68,16 +70,19 @@ export default function Sidebar({ children }: { children: ReactNode }) {
             >
                 <Drawer.Backdrop />
                 <Drawer.Positioner>
-                     <Drawer.Content>
+                    <Drawer.Content>
                         <SidebarContent onClose={onClose} />
-                     </Drawer.Content>
+                    </Drawer.Content>
                 </Drawer.Positioner>
             </Drawer.Root>
             {/* Mobile Nav */}
-            <MobileNav onOpen={onOpen} />
-            <Box ml={{ base: 0, md: 60 }} p="4">
-                {children}
-            </Box>
+            {/* Mobile Nav is now part of the main layout column */}
+            <Flex ml={{ base: 0, md: 60 }} flexDirection="column" minH="100vh">
+                <MobileNav onOpen={onOpen} ml={0} />
+                <Box flex="1" display="flex" flexDirection="column">
+                    {children}
+                </Box>
+            </Flex>
         </Box>
     );
 }
@@ -88,22 +93,27 @@ interface SidebarProps extends BoxProps {
 
 const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
     const { t } = useTranslation();
-    const borderColor = useColorModeValue('gray.200', 'gray.700');
-    
+    const borderColor = useColorModeValue('gray.300', 'gray.700');
+
     return (
         <Box
             transition="3s ease"
             bg="surface.500"
             borderRight="1px"
             borderRightColor={borderColor}
+            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
             w={{ base: 'full', md: 60 }}
             pos="fixed"
             h="full"
+            zIndex="sticky"
             {...rest}>
             <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-                <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
-                    FaustoAuth
-                </Text>
+                <HStack>
+                    <Image src={PhylaxLogo} boxSize="70px" alt="Phylax Logo" />
+                    <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
+                        Phylax
+                    </Text>
+                </HStack>
                 <IconButton display={{ base: 'flex', md: 'none' }} onClick={onClose} variant="ghost" aria-label="Close menu">
                     <FiX />
                 </IconButton>
@@ -184,7 +194,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
     const logout = useAuthStore((state) => state.logout);
     const navigate = useNavigate();
     const { t } = useTranslation();
-    
+
     const borderColor = useColorModeValue('gray.200', 'gray.700');
     const menuBg = useColorModeValue('white', 'gray.900');
 
@@ -217,13 +227,15 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                 <FiMenu />
             </IconButton>
 
-            <Text
-                display={{ base: 'flex', md: 'none' }}
-                fontSize="2xl"
-                fontFamily="monospace"
-                fontWeight="bold">
-                FaustoAuth
-            </Text>
+            <HStack display={{ base: 'flex', md: 'none' }}>
+                <Image src={PhylaxLogo} boxSize="24px" alt="Phylax Logo" />
+                <Text
+                    fontSize="2xl"
+                    fontFamily="monospace"
+                    fontWeight="bold">
+                    Phylax
+                </Text>
+            </HStack>
 
             <HStack gap={{ base: '0', md: '6' }}>
                 <TenantSelector />
@@ -233,11 +245,11 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                 <Flex alignItems={'center'}>
                     <Menu.Root>
                         <Menu.Trigger asChild>
-                             <IconButton variant="ghost" aria-label="Profile" py={2} transition="all 0.3s" _focus={{ boxShadow: 'none' }}>
+                            <IconButton variant="ghost" aria-label="Profile" py={2} transition="all 0.3s" _focus={{ boxShadow: 'none' }}>
                                 <HStack>
                                     <Avatar.Root size={'sm'}>
                                         <Avatar.Fallback>
-                                             {getInitials(user?.names || user?.username)}
+                                            {getInitials(user?.names || user?.username)}
                                         </Avatar.Fallback>
                                         <Avatar.Image />
                                     </Avatar.Root>
@@ -255,18 +267,18 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                                         <FiChevronDown />
                                     </Box>
                                 </HStack>
-                             </IconButton>
+                            </IconButton>
                         </Menu.Trigger>
                         <Portal>
-                          <Menu.Positioner>
-                            <Menu.Content
-                                bg={menuBg}
-                                borderColor={borderColor}>
-                                <Menu.Item value="profile">{t('profile')}</Menu.Item>
-                                <Menu.Item value="settings">{t('settings')}</Menu.Item>
-                                <Menu.Item value="logout" onClick={handleLogout}>{t('signOut')}</Menu.Item>
-                            </Menu.Content>
-                          </Menu.Positioner>
+                            <Menu.Positioner>
+                                <Menu.Content
+                                    bg={menuBg}
+                                    borderColor={borderColor}>
+                                    <Menu.Item value="profile">{t('profile')}</Menu.Item>
+                                    <Menu.Item value="settings">{t('settings')}</Menu.Item>
+                                    <Menu.Item value="logout" onClick={handleLogout}>{t('signOut')}</Menu.Item>
+                                </Menu.Content>
+                            </Menu.Positioner>
                         </Portal>
                     </Menu.Root>
                 </Flex>
@@ -321,15 +333,15 @@ const TenantSelector = () => {
             size="sm"
             mr={4}
         >
-             <NativeSelect.Field 
-                value={selectedTenantId || ''} 
+            <NativeSelect.Field
+                value={selectedTenantId || ''}
                 onChange={(e) => setTenant(e.target.value ? Number(e.target.value) : null)}
                 placeholder="All Tenants"
-             >
+            >
                 {tenants.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
-             </NativeSelect.Field>
+            </NativeSelect.Field>
         </NativeSelect.Root>
     );
 };

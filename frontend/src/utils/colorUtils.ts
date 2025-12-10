@@ -1,7 +1,7 @@
 export const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
   const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-  hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+  hex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
 
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
@@ -15,6 +15,19 @@ export const hexToRgb = (hex: string): { r: number; g: number; b: number } | nul
 
 export const rgbToHex = (r: number, g: number, b: number): string => {
   return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+};
+
+export const stringToColor = (string: string) => {
+  let hash = 0;
+  for (let i = 0; i < string.length; i++) {
+    hash = string.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  let color = '#';
+  for (let i = 0; i < 3; i++) {
+    const value = (hash >> (i * 8)) & 0xff;
+    color += ('00' + value.toString(16)).substr(-2);
+  }
+  return color;
 };
 
 export const mixColors = (color1: string, color2: string, weight: number): string => {

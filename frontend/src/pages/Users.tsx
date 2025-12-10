@@ -1,19 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
   Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -30,13 +19,17 @@ import {
   Badge,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiMoreVertical, FiPlus, FiEdit, FiTrash } from 'react-icons/fi';
+import { FiPlus } from 'react-icons/fi';
 import { useForm } from 'react-hook-form';
 import { userService } from '../services/userService';
 import { roleService } from '../services/roleService';
 import { tenantService } from '../services/tenantService';
 import { User, Role } from '../types';
 import { useTranslation } from 'react-i18next';
+// useTenantStore is used inside DataTable, but we don't need it here unless we have specific logic. 
+// Actually we used it for role filter? No, we simply pass customFilter. DataTable handles filtering.
+
+import { DataTable, Column } from '../components/common/DataTable';
 
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
@@ -47,7 +40,11 @@ export default function Users() {
   const toast = useToast();
   const { t } = useTranslation();
 
+  // Specific Filter State for Users Page
+  const [roleFilter, setRoleFilter] = useState<number | ''>('');
+
   const { register, handleSubmit, reset, setValue } = useForm();
+  const bgInput = useColorModeValue('white', 'gray.700');
 
   // Fetch Users and Roles on mount
   const fetchData = async () => {
@@ -76,11 +73,22 @@ export default function Users() {
 
   // Helper to get Role Name (fallback)
   const getRoleName = (user: User) => {
-    if (user.role?.name) return user.role.name;
+    if (user.role?.name) {
+      return Array.isArray(user.role.name) ? user.role.name.join(', ') : user.role.name;
+    }
     // Fallback to finding in roles list
     const r = roles.find(role => role.id === user.id_role);
     return r ? r.name : (user.id_role || '-');
   };
+
+  // Define Columns
+  const columns: Column<User>[] = [
+    { header: 'ID', accessorKey: 'id', width: '50px' },
+    { header: t('username'), accessorKey: 'username' },
+    { header: t('names'), render: (u) => u.names || '-' },
+    { header: t('role'), render: (u) => <Badge>{getRoleName(u)}</Badge> },
+    { header: t('tenant'), render: (u) => getTenantName(u.tenant_id) },
+  ];
 
   // Handle Edit Click
   const onEdit = (user: User) => {
@@ -98,15 +106,12 @@ export default function Users() {
   const onAdd = () => {
     setEditingUser(null);
     reset();
-    // Default tenant?
-    setValue('tenant_id', tenants[0]?.id || 1);
+    setValue('tenant_id', tenants[0]?.id || 1); // Default to first tenant logic or 1
     onOpen();
   };
 
-  // Handle Form Submit (Create/Update)
   const onSubmit = async (data: any) => {
     try {
-      // Ensure IDs are numbers
       data.id_role = Number.parseInt(data.id_role);
       data.tenant_id = Number.parseInt(data.tenant_id);
 
@@ -114,6 +119,8 @@ export default function Users() {
         await userService.update(editingUser.id, data);
         toast({ title: t('userUpdated'), status: 'success' });
       } else {
+        // Default password if needed, mostly handled by backend default or separate flow
+        if (!data.password) data.password = "password123"; // TODO: Temporary default or handled by form?
         await userService.create(data);
         toast({ title: t('userCreated'), status: 'success' });
       }
@@ -124,11 +131,10 @@ export default function Users() {
     }
   };
 
-  // Handle Delete
-  const onDelete = async (id: number) => {
-    if (!window.confirm(t('confirmDelete'))) return;
+  const onDelete = async (user: User) => {
+    if (!window.confirm(t('deleteUserConfirm'))) return;
     try {
-      await userService.delete(id);
+      await userService.delete(user.id);
       toast({ title: t('userDeleted'), status: 'success' });
       fetchData();
     } catch (e) {
@@ -136,69 +142,38 @@ export default function Users() {
     }
   };
 
-  const bg = 'surface.500';
-  const theadBg = useColorModeValue('gray.50', 'gray.700');
-
   return (
     <Box p={8}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={6}>
         <Heading size="lg">{t('users')}</Heading>
-        <Button leftIcon={<FiPlus />} colorScheme="brand" onClick={onAdd}>
+        <Button colorScheme="brand" onClick={onAdd} variant={"solid"}>
           {t('addUser')}
         </Button>
       </Box>
 
-      <Box bg={bg} shadow="md" borderRadius="lg" overflowX="auto" borderWidth="1px" borderColor="gray.200">
-        <Table variant="simple">
-          <Thead bg={theadBg}>
-            <Tr>
-              <Th width="5%">ID</Th>
-              <Th width="25%">{t('username')}</Th>
-              <Th width="30%">{t('names')}</Th>
-              <Th width="15%">{t('role')}</Th>
-              <Th width="20%">{t('tenant')}</Th>
-              <Th width="5%"></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {users.map((user) => (
-              <Tr key={user.id}>
-                <Td>{user.id}</Td>
-                <Td fontWeight="medium">{user.username}</Td>
-                <Td>{user.names || '-'}</Td>
-                <Td>
-                  <Badge colorScheme="secondary">{getRoleName(user)}</Badge>
-                </Td>
-                <Td>{getTenantName(user.tenant_id)}</Td>
-                <Td>
-                  <Menu>
-                    <MenuButton
-                      as={IconButton}
-                      icon={<FiMoreVertical />}
-                      variant="ghost"
-                      size="sm"
-                      aria-label="Actions"
-                    />
-                    <MenuList>
-                      <MenuItem icon={<FiEdit />} onClick={() => onEdit(user)}>
-                        {t('edit')}
-                      </MenuItem>
-                      <MenuItem icon={<FiTrash />} color="red.500" onClick={() => onDelete(user.id)}>
-                        {t('delete')}
-                      </MenuItem>
-                    </MenuList>
-                  </Menu>
-                </Td>
-              </Tr>
+      <DataTable
+        data={users}
+        columns={columns}
+        searchKeys={['username', 'names']}
+        searchPlaceholder={t('searchUsers') || 'Search users...'}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        customFilter={(u) => roleFilter ? (u.id_role === roleFilter || u.role?.id === roleFilter) : true}
+        extraControls={
+          <Select
+            placeholder={t('filterByRole') || 'Filter by Role'}
+            maxW="200px"
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value ? Number(e.target.value) : '')}
+            bg={bgInput}
+          >
+            {roles.map(role => (
+              <option key={role.id} value={role.id}>{role.name}</option>
             ))}
-            {users.length === 0 && (
-              <Tr><Td colSpan={6} textAlign="center">{t('noUsersFound')}</Td></Tr>
-            )}
-          </Tbody>
-        </Table>
-      </Box>
+          </Select>
+        }
+      />
 
-      {/* Modal for Create/Update */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -210,22 +185,15 @@ export default function Users() {
                 <FormLabel>{t('username')}</FormLabel>
                 <Input {...register('username')} />
               </FormControl>
-
               <FormControl mb={4}>
                 <FormLabel>{t('names')}</FormLabel>
                 <Input {...register('names')} />
               </FormControl>
-
+              {/* Password field only for new users? or modify separately? keeping it simple per existing code */}
               {!editingUser && (
-                <FormControl isRequired mb={4}>
-                  <FormLabel>{t('password')}</FormLabel>
-                  <Input type="password" {...register('password')} />
-                </FormControl>
-              )}
-              {editingUser && (
                 <FormControl mb={4}>
-                  <FormLabel>{t('password')} (Leave blank to keep current)</FormLabel>
-                  <Input type="password" {...register('password')} placeholder="******" />
+                  <FormLabel>{t('password')}</FormLabel>
+                  <Input type="password" {...register('password')} placeholder="Default: password123" />
                 </FormControl>
               )}
 
@@ -248,12 +216,9 @@ export default function Users() {
               </FormControl>
             </form>
           </ModalBody>
-
           <ModalFooter>
             <Button onClick={onClose} mr={3}>{t('cancel')}</Button>
-            <Button colorScheme="brand" form="user-form" type="submit">
-              {t('save')}
-            </Button>
+            <Button colorScheme="brand" form="user-form" type="submit">{t('save')}</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

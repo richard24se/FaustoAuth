@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   IconButton,
   useColorMode,
@@ -73,8 +73,7 @@ export default function ThemeSettings() {
   const cancelRef = useRef(null);
 
   // Stored state (persisted)
-  const [lightColors, setLightColors] = useState<ColorRoles>(DEFAULT_LIGHT_THEME);
-  const [darkColors, setDarkColors] = useState<ColorRoles>(DEFAULT_DARK_THEME);
+
 
   // Temporary state (for editing before applying)
   const [tempLightColors, setTempLightColors] = useState<ColorRoles>(DEFAULT_LIGHT_THEME);
@@ -88,13 +87,13 @@ export default function ThemeSettings() {
         const parsed = JSON.parse(savedLight);
         // Ensure new keys exist if loading from old config
         const merged = { ...DEFAULT_LIGHT_THEME, ...parsed };
-        setLightColors(merged);
+
         setTempLightColors(merged);
     }
     if (savedDark) {
         const parsed = JSON.parse(savedDark);
         const merged = { ...DEFAULT_DARK_THEME, ...parsed };
-        setDarkColors(merged);
+
         setTempDarkColors(merged);
     }
   }
@@ -117,8 +116,7 @@ export default function ThemeSettings() {
   };
 
   const applyChanges = () => {
-    setLightColors(tempLightColors);
-    setDarkColors(tempDarkColors);
+
     
     localStorage.setItem('theme-colors-light', JSON.stringify(tempLightColors));
     localStorage.setItem('theme-colors-dark', JSON.stringify(tempDarkColors));
@@ -136,8 +134,6 @@ export default function ThemeSettings() {
     localStorage.removeItem('theme-colors-dark');
     
     // 2. Reset state to defaults
-    setLightColors(DEFAULT_LIGHT_THEME);
-    setDarkColors(DEFAULT_DARK_THEME);
     setTempLightColors(DEFAULT_LIGHT_THEME);
     setTempDarkColors(DEFAULT_DARK_THEME);
     setIsDirty(false);

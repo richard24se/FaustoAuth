@@ -1,19 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
   Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -27,9 +16,9 @@ import {
   Select,
   ModalFooter,
   useToast,
-  useColorModeValue,
 } from '@chakra-ui/react';
-import { FiMoreVertical, FiPlus, FiEdit, FiTrash } from 'react-icons/fi';
+import { FiPlus } from 'react-icons/fi';
+import { DataTable } from '../components/common/DataTable';
 import { useForm } from 'react-hook-form';
 import { permissionService } from '../services/permissionService';
 import { objectService } from '../services/objectService';
@@ -109,8 +98,7 @@ export default function Permissions() {
     }
   };
 
-  const bg = useColorModeValue('white', 'gray.800');
-  const theadBg = useColorModeValue('gray.50', 'gray.700');
+
 
   return (
     <Box p={8}>
@@ -118,38 +106,19 @@ export default function Permissions() {
         <Heading size="lg">{t('permissions')}</Heading>
         <Button leftIcon={<FiPlus />} colorScheme="brand" onClick={onAdd}>{t('addPermission')}</Button>
       </Box>
-      <Box bg={bg} shadow="md" borderRadius="lg" overflowX="auto">
-        <Table variant="simple">
-          <Thead bg={theadBg}>
-            <Tr>
-              <Th>ID</Th>
-              <Th>{t('permissionName')}</Th>
-              <Th>{t('objectId')}</Th>
-              <Th>{t('tenant')}</Th>
-              <Th w="50px"></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {permissions.map((perm) => (
-              <Tr key={perm.id}>
-                <Td>{perm.id}</Td>
-                <Td fontWeight="medium">{perm.name}</Td>
-                <Td>{objects.find(o => o.id === perm.id_object)?.name || perm.id_object}</Td>
-                <Td>{tenants.find(t => t.id === perm.tenant_id)?.name || perm.tenant_id}</Td>
-                <Td>
-                  <Menu>
-                    <MenuButton as={IconButton} icon={<FiMoreVertical />} variant="ghost" size="sm" />
-                    <MenuList>
-                      <MenuItem icon={<FiEdit />} onClick={() => onEdit(perm)}>{t('edit')}</MenuItem>
-                      <MenuItem icon={<FiTrash />} color="red.500" onClick={() => onDelete(perm.id)}>{t('delete')}</MenuItem>
-                    </MenuList>
-                  </Menu>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </Box>
+      <DataTable
+        data={permissions}
+        columns={[
+            { header: 'ID', accessorKey: 'id', width: '50px' },
+            { header: t('permissionName'), accessorKey: 'name' },
+            { header: t('objectId'), render: (p) => objects.find(o => o.id === p.id_object)?.name || p.id_object },
+            { header: t('tenant'), render: (p) => tenants.find(t => t.id === p.tenant_id)?.name || p.tenant_id },
+        ]}
+        searchKeys={['name']}
+        searchPlaceholder={t('searchPermissions') || "Search permissions..."}
+        onEdit={onEdit}
+        onDelete={(p) => onDelete(p.id)}
+      />
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

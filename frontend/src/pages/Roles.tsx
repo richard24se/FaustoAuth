@@ -1,19 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
   Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -27,9 +16,9 @@ import {
   Select,
   ModalFooter,
   useToast,
-  useColorModeValue,
 } from '@chakra-ui/react';
-import { FiMoreVertical, FiPlus, FiEdit, FiTrash } from 'react-icons/fi';
+import { FiPlus } from 'react-icons/fi';
+import { DataTable } from '../components/common/DataTable';
 import { useForm } from 'react-hook-form';
 import { roleService } from '../services/roleService';
 import { Role } from '../types';
@@ -104,8 +93,7 @@ export default function Roles() {
     }
   };
 
-  const bg = 'surface.500';
-  const theadBg = useColorModeValue('gray.50', 'gray.700');
+
 
   return (
     <Box p={8}>
@@ -115,36 +103,18 @@ export default function Roles() {
           {t('addRole')}
         </Button>
       </Box>
-      <Box bg={bg} shadow="md" borderRadius="lg" overflowX="auto">
-        <Table variant="simple">
-          <Thead bg={theadBg}>
-            <Tr>
-              <Th>ID</Th>
-              <Th>{t('roleName')}</Th>
-              <Th>{t('tenant')}</Th>
-              <Th w="50px"></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {roles.map((role) => (
-              <Tr key={role.id}>
-                <Td>{role.id}</Td>
-                <Td fontWeight="medium">{role.name}</Td>
-                <Td>{tenants.find(t => t.id === role.tenant_id)?.name || role.tenant_id}</Td>
-                <Td>
-                  <Menu>
-                    <MenuButton as={IconButton} icon={<FiMoreVertical />} variant="ghost" size="sm" />
-                    <MenuList>
-                      <MenuItem icon={<FiEdit />} onClick={() => onEdit(role)}>{t('edit')}</MenuItem>
-                      <MenuItem icon={<FiTrash />} color="red.500" onClick={() => onDelete(role.id)}>{t('delete')}</MenuItem>
-                    </MenuList>
-                  </Menu>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </Box>
+      <DataTable
+        data={roles}
+        columns={[
+            { header: 'ID', accessorKey: 'id', width: '50px' },
+            { header: t('roleName'), accessorKey: 'name' },
+            { header: t('tenant'), render: (r) => tenants.find(t => t.id === r.tenant_id)?.name || r.tenant_id },
+        ]}
+        searchKeys={['name']}
+        searchPlaceholder={t('searchRoles') || "Search roles..."}
+        onEdit={onEdit}
+        onDelete={(r) => onDelete(r.id)}
+      />
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

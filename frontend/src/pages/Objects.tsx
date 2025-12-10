@@ -1,19 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
   Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -27,9 +16,9 @@ import {
   ModalFooter,
   useToast,
   Select,
-  useColorModeValue,
 } from '@chakra-ui/react';
-import { FiMoreVertical, FiPlus, FiEdit, FiTrash } from 'react-icons/fi';
+import { FiPlus } from 'react-icons/fi';
+import { DataTable } from '../components/common/DataTable';
 import { useForm } from 'react-hook-form';
 import { objectService } from '../services/objectService';
 import { AuthObject } from '../types';
@@ -107,8 +96,7 @@ export default function Objects() {
     }
   };
 
-  const bg = useColorModeValue('white', 'gray.800');
-  const theadBg = useColorModeValue('gray.50', 'gray.700');
+
 
   return (
     <Box p={8}>
@@ -116,38 +104,19 @@ export default function Objects() {
         <Heading size="lg">{t('objects')}</Heading>
         <Button leftIcon={<FiPlus />} colorScheme="brand" onClick={onAdd}>{t('addObject')}</Button>
       </Box>
-      <Box bg={bg} shadow="md" borderRadius="lg" overflowX="auto">
-        <Table variant="simple">
-          <Thead bg={theadBg}>
-            <Tr>
-              <Th>ID</Th>
-              <Th>{t('permissionName')}</Th>
-              <Th>{t('typeId')}</Th>
-              <Th>{t('tenant')}</Th>
-              <Th w="50px"></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {objects.map((obj) => (
-              <Tr key={obj.id}>
-                <Td>{obj.id}</Td>
-                <Td fontWeight="medium">{obj.name}</Td>
-                <Td>{obj.id_object_type}</Td>
-                <Td>{tenants.find(t => t.id === obj.tenant_id)?.name || obj.tenant_id}</Td>
-                <Td>
-                  <Menu>
-                    <MenuButton as={IconButton} icon={<FiMoreVertical />} variant="ghost" size="sm" />
-                    <MenuList>
-                      <MenuItem icon={<FiEdit />} onClick={() => onEdit(obj)}>{t('edit')}</MenuItem>
-                      <MenuItem icon={<FiTrash />} color="red.500" onClick={() => onDelete(obj.id)}>{t('delete')}</MenuItem>
-                    </MenuList>
-                  </Menu>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </Box>
+      <DataTable
+        data={objects}
+        columns={[
+            { header: 'ID', accessorKey: 'id', width: '50px' },
+            { header: t('permissionName'), accessorKey: 'name' },
+            { header: t('typeId'), accessorKey: 'id_object_type' }, // Maybe fetch type name?
+            { header: t('tenant'), render: (o) => tenants.find(t => t.id === o.tenant_id)?.name || o.tenant_id },
+        ]}
+        searchKeys={['name']}
+        searchPlaceholder={t('searchObjects') || "Search objects..."}
+        onEdit={onEdit}
+        onDelete={(o) => onDelete(o.id)}
+      />
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

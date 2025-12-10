@@ -8,4 +8,5 @@ __pycache__
 *node_modules/
 *node_modules
 *coverage*
-*debug*
+*debug_*
+*debug.txt

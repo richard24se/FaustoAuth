@@ -5,6 +5,7 @@ import Users from './pages/Users';
 import Roles from './pages/Roles';
 import Permissions from './pages/Permissions';
 import Objects from './pages/Objects';
+import JwtDebugger from './pages/JwtDebugger';
 import { PrivateRoute } from './components/PrivateRoute';
 import AdminLayout from './layout/AdminLayout';
 
@@ -24,7 +25,9 @@ function App() {
             <Route path="/users" element={<Users />} />
             <Route path="/roles" element={<Roles />} />
             <Route path="/permissions" element={<Permissions />} />
+            <Route path="/permissions" element={<Permissions />} />
             <Route path="/objects" element={<Objects />} />
+            <Route path="/jwt-debugger" element={<JwtDebugger />} />
           </Route>
         </Route>
 

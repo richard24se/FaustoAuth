@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -70,21 +70,21 @@ export default function Login() {
                 <Stack spacing="6">
                   <FormControl isInvalid={!!errors.username}>
                     <FormLabel>{t('username')} (Email)</FormLabel>
-                    <Input 
-                      type="email" 
-                      {...register('username', { required: 'Username is required' })} 
+                    <Input
+                      type="email"
+                      {...register('username', { required: 'Username is required' })}
                     />
                   </FormControl>
                   <FormControl isInvalid={!!errors.password}>
                     <FormLabel>{t('password')}</FormLabel>
-                    <Input 
-                      type="password" 
-                      {...register('password', { required: 'Password is required' })} 
+                    <Input
+                      type="password"
+                      {...register('password', { required: 'Password is required' })}
                     />
                   </FormControl>
-                  
+
                   {errorMsg && <Text color="red.500" fontSize="sm">{errorMsg}</Text>}
-                  
+
                   <Button isLoading={isSubmitting} type="submit" colorScheme="brand" size="lg" fontSize="md">
                     {t('signIn')}
                   </Button>

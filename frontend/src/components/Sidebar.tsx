@@ -29,7 +29,7 @@ import {
     FiX
 } from 'react-icons/fi';
 import { IconType } from 'react-icons';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import ThemeSettings from './ThemeSettings';
 import { useTranslation } from 'react-i18next';
@@ -122,18 +122,30 @@ interface NavItemProps extends FlexProps {
     children: ReactNode;
     path: string;
 }
+
 const NavItem = ({ icon, children, path, ...rest }: NavItemProps) => {
+    const location = useLocation();
+    const isActive = location.pathname === path;
+
     return (
-        <Link asChild style={{ textDecoration: 'none' }} outline="none" _focus={{ boxShadow: 'none', outline: 'none' }}>
+        <Link asChild display="block" w="full" style={{ textDecoration: 'none' }} outline="none" _focus={{ boxShadow: 'none', outline: 'none' }}>
             <RouterLink to={path}>
                 <Flex
                     align="center"
                     p="4"
                     mx="4"
-                    borderRadius="lg"
+                    borderRadius={isActive ? 'none' : 'lg'}
                     role="group"
                     cursor="pointer"
                     outline="none"
+                    borderRightWidth={isActive ? "4px" : "0px"}
+                    borderRightColor="brand.500"
+                    // bg={isActive ? 'brand.50' : 'transparent'}
+                    color={isActive ? 'brand.600' : 'inherit'}
+                    _dark={{
+                        bg: isActive ? 'brand.900/20' : 'transparent',
+                        color: isActive ? 'brand.200' : 'inherit',
+                    }}
                     _focus={{ boxShadow: 'none', outline: 'none' }}
                     _hover={{
                         bg: 'brand.50',
@@ -143,17 +155,16 @@ const NavItem = ({ icon, children, path, ...rest }: NavItemProps) => {
                             color: 'brand.200',
                         }
                     }}
-                    _active={{
-                        bg: 'brand.100',
-                        _dark: { bg: 'brand.900/30' }
-                    }}
                     {...rest}>
                     {icon && (
                         <Icon
                             mr="4"
                             fontSize="16"
+                            color={isActive ? 'brand.600' : 'inherit'}
+                            _dark={{ color: isActive ? 'brand.200' : 'inherit' }}
                             _groupHover={{
-                                color: 'inherit',
+                                color: 'brand.600',
+                                _dark: { color: 'brand.200' }
                             }}
                             as={icon}
                         />
@@ -180,6 +191,10 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
     const handleLogout = () => {
         logout();
         navigate('/login');
+    };
+
+    const getInitials = (name?: string) => {
+        return (name || 'U').substring(0, 2).toUpperCase();
     };
 
     return (
@@ -221,7 +236,9 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                              <IconButton variant="ghost" aria-label="Profile" py={2} transition="all 0.3s" _focus={{ boxShadow: 'none' }}>
                                 <HStack>
                                     <Avatar.Root size={'sm'}>
-                                        <Avatar.Fallback name={user?.names || user?.username} />
+                                        <Avatar.Fallback>
+                                             {getInitials(user?.names || user?.username)}
+                                        </Avatar.Fallback>
                                         <Avatar.Image />
                                     </Avatar.Root>
                                     <VStack

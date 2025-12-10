@@ -83,8 +83,8 @@ export default function Login() {
 
                   {errorMsg && <Text color="red.500" fontSize="sm">{errorMsg}</Text>}
 
-                  <Button loading={isSubmitting} type="submit" colorPalette="brand" size="lg" fontSize="md">
-                    {t('signIn')}
+                  <Button disabled={isSubmitting} type="submit" colorPalette="brand" size="lg" fontSize="md">
+                    {isSubmitting ? '...' : t('signIn')}
                   </Button>
                 </Stack>
               </form>

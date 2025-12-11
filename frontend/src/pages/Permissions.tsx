@@ -32,7 +32,7 @@ export default function Permissions() {
       const [p, o, t] = await Promise.all([
         permissionService.getAll(),
         objectService.getAll(),
-        import('../services/tenantService').then(m => m.tenantService.getAll())
+        import('../services/tenantService').then((m) => m.tenantService.getAll()),
       ]);
       setPermissions(p);
       setObjects(o);
@@ -75,7 +75,11 @@ export default function Permissions() {
       onClose();
       fetchData();
     } catch (e: any) {
-        toaster.create({ title: t('operationFailed'), description: e.response?.data?.detail, type: 'error' });
+      toaster.create({
+        title: t('operationFailed'),
+        description: e.response?.data?.detail,
+        type: 'error',
+      });
     }
   };
 
@@ -94,63 +98,81 @@ export default function Permissions() {
     <Box p={8}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={6}>
         <Heading size="lg">{t('permissions')}</Heading>
-        <Button colorPalette="brand" onClick={onAdd}><FiPlus /> {t('addPermission')}</Button>
+        <Button colorPalette="brand" onClick={onAdd}>
+          <FiPlus /> {t('addPermission')}
+        </Button>
       </Box>
       <DataTable
         data={permissions}
         columns={[
-            { header: 'ID', accessorKey: 'id', width: '50px' },
-            { header: t('permissionName'), accessorKey: 'name' },
-            { header: t('objectId'), render: (p) => objects.find(o => o.id === p.id_object)?.name || p.id_object },
-            { header: t('tenant'), render: (p) => tenants.find(t => t.id === p.tenant_id)?.name || p.tenant_id },
+          { header: 'ID', accessorKey: 'id', width: '50px' },
+          { header: t('permissionName'), accessorKey: 'name' },
+          {
+            header: t('objectId'),
+            render: (p) => objects.find((o) => o.id === p.id_object)?.name || p.id_object,
+          },
+          {
+            header: t('tenant'),
+            render: (p) => tenants.find((t) => t.id === p.tenant_id)?.name || p.tenant_id,
+          },
         ]}
         searchKeys={['name']}
-        searchPlaceholder={t('searchPermissions') || "Search permissions..."}
+        searchPlaceholder={t('searchPermissions') || 'Search permissions...'}
         onEdit={onEdit}
         onDelete={(p) => onDelete(p.id)}
       />
 
-      <Dialog.Root open={isOpen} onOpenChange={(e) => e.open ? onOpen() : onClose()}>
+      <Dialog.Root open={isOpen} onOpenChange={(e) => (e.open ? onOpen() : onClose())}>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-            <Dialog.Content>
+          <Dialog.Content>
             <Dialog.Header>
-                <Dialog.Title>{editingPerm ? t('editPermission') : t('createPermission')}</Dialog.Title>
-                <Dialog.CloseTrigger />
+              <Dialog.Title>
+                {editingPerm ? t('editPermission') : t('createPermission')}
+              </Dialog.Title>
+              <Dialog.CloseTrigger />
             </Dialog.Header>
             <Dialog.Body pb={6}>
-                <form id="perm-form" onSubmit={handleSubmit(onSubmit)}>
+              <form id="perm-form" onSubmit={handleSubmit(onSubmit)}>
                 <Field.Root required mb={4}>
-                    <Field.Label>{t('permissionName')}</Field.Label>
-                    <Input {...register('name')} placeholder="e.g. read:users" />
+                  <Field.Label>{t('permissionName')}</Field.Label>
+                  <Input {...register('name')} placeholder="e.g. read:users" />
                 </Field.Root>
                 <Field.Root required mb={4}>
-                    <Field.Label>{t('object')}</Field.Label>
-                    <NativeSelect.Root>
-                        <NativeSelect.Field {...register('id_object')} placeholder="Select Object">
-                            {objects.map(obj => (
-                                <option key={obj.id} value={obj.id}>{obj.name}</option>
-                            ))}
-                        </NativeSelect.Field>
-                    </NativeSelect.Root>
+                  <Field.Label>{t('object')}</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('id_object')} placeholder="Select Object">
+                      {objects.map((obj) => (
+                        <option key={obj.id} value={obj.id}>
+                          {obj.name}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
                 </Field.Root>
                 <Field.Root required>
-                    <Field.Label>{t('tenant')}</Field.Label>
-                    <NativeSelect.Root>
-                        <NativeSelect.Field {...register('tenant_id')} placeholder="Select tenant">
-                            {tenants.map(t => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                        </NativeSelect.Field>
-                    </NativeSelect.Root>
+                  <Field.Label>{t('tenant')}</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('tenant_id')} placeholder="Select tenant">
+                      {tenants.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
                 </Field.Root>
-                </form>
+              </form>
             </Dialog.Body>
             <Dialog.Footer>
-                <Button onClick={onClose} mr={3} variant="ghost">{t('cancel')}</Button>
-                <Button colorPalette="brand" form="perm-form" type="submit">{t('save')}</Button>
+              <Button onClick={onClose} mr={3} variant="ghost">
+                {t('cancel')}
+              </Button>
+              <Button colorPalette="brand" form="perm-form" type="submit">
+                {t('save')}
+              </Button>
             </Dialog.Footer>
-            </Dialog.Content>
+          </Dialog.Content>
         </Dialog.Positioner>
       </Dialog.Root>
     </Box>

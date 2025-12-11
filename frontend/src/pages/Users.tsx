@@ -41,7 +41,7 @@ export default function Users() {
       const [u, r, t] = await Promise.all([
         userService.getAll(),
         roleService.getAll(),
-        tenantService.getAll()
+        tenantService.getAll(),
       ]);
       setUsers(u);
       setRoles(r);
@@ -57,7 +57,7 @@ export default function Users() {
 
   // Helper to get Tenant Name
   const getTenantName = (id: number) => {
-    return tenants.find(t => t.id === id)?.name || id;
+    return tenants.find((t) => t.id === id)?.name || id;
   };
 
   // Helper to get Role Name (fallback)
@@ -66,8 +66,8 @@ export default function Users() {
       return Array.isArray(user.role.name) ? user.role.name.join(', ') : user.role.name;
     }
     // Fallback to finding in roles list
-    const r = roles.find(role => role.id === user.id_role);
-    return r ? r.name : (user.id_role || '-');
+    const r = roles.find((role) => role.id === user.id_role);
+    return r ? r.name : user.id_role || '-';
   };
 
   // Define Columns
@@ -93,7 +93,7 @@ export default function Users() {
   const onAdd = () => {
     setEditingUser(null);
     reset();
-    setValue('tenant_id', tenants[0]?.id || 1); 
+    setValue('tenant_id', tenants[0]?.id || 1);
     onOpen();
   };
 
@@ -106,14 +106,18 @@ export default function Users() {
         await userService.update(editingUser.id, data);
         toaster.create({ title: t('userUpdated'), type: 'success' });
       } else {
-        if (!data.password) data.password = "password123";
+        if (!data.password) data.password = 'password123';
         await userService.create(data);
         toaster.create({ title: t('userCreated'), type: 'success' });
       }
       onClose();
       fetchData();
     } catch (e: any) {
-      toaster.create({ title: t('operationFailed'), description: e.response?.data?.detail, type: 'error' });
+      toaster.create({
+        title: t('operationFailed'),
+        description: e.response?.data?.detail,
+        type: 'error',
+      });
     }
   };
 
@@ -144,76 +148,92 @@ export default function Users() {
         searchPlaceholder={t('searchUsers') || 'Search users...'}
         onEdit={onEdit}
         onDelete={onDelete}
-        customFilter={(u) => roleFilter ? (u.id_role === roleFilter || u.role?.id === roleFilter) : true}
+        customFilter={(u) =>
+          roleFilter ? u.id_role === roleFilter || u.role?.id === roleFilter : true
+        }
         extraControls={
           <NativeSelect.Root maxW="200px">
-             <NativeSelect.Field 
-                placeholder={t('filterByRole') || 'Filter by Role'}
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value ? Number(e.target.value) : '')}
-                bg={bgInput}
-             >
-                {roles.map(role => (
-                   <option key={role.id} value={role.id}>{role.name}</option>
-                ))}
-             </NativeSelect.Field>
+            <NativeSelect.Field
+              placeholder={t('filterByRole') || 'Filter by Role'}
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value ? Number(e.target.value) : '')}
+              bg={bgInput}
+            >
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.name}
+                </option>
+              ))}
+            </NativeSelect.Field>
           </NativeSelect.Root>
         }
       />
 
-      <Dialog.Root open={isOpen} onOpenChange={(e) => e.open ? onOpen() : onClose()}>
+      <Dialog.Root open={isOpen} onOpenChange={(e) => (e.open ? onOpen() : onClose())}>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-            <Dialog.Content>
+          <Dialog.Content>
             <Dialog.Header>
-                <Dialog.Title>{editingUser ? t('editUser') : t('createUser')}</Dialog.Title>
-                <Dialog.CloseTrigger />
+              <Dialog.Title>{editingUser ? t('editUser') : t('createUser')}</Dialog.Title>
+              <Dialog.CloseTrigger />
             </Dialog.Header>
             <Dialog.Body pb={6}>
-                <form id="user-form" onSubmit={handleSubmit(onSubmit)}>
+              <form id="user-form" onSubmit={handleSubmit(onSubmit)}>
                 <Field.Root required mb={4}>
-                    <Field.Label>{t('username')}</Field.Label>
-                    <Input {...register('username')} />
+                  <Field.Label>{t('username')}</Field.Label>
+                  <Input {...register('username')} />
                 </Field.Root>
                 <Field.Root mb={4}>
-                    <Field.Label>{t('names')}</Field.Label>
-                    <Input {...register('names')} />
+                  <Field.Label>{t('names')}</Field.Label>
+                  <Input {...register('names')} />
                 </Field.Root>
                 {!editingUser && (
-                    <Field.Root mb={4}>
+                  <Field.Root mb={4}>
                     <Field.Label>{t('password')}</Field.Label>
-                    <Input type="password" {...register('password')} placeholder="Default: password123" />
-                    </Field.Root>
+                    <Input
+                      type="password"
+                      {...register('password')}
+                      placeholder="Default: password123"
+                    />
+                  </Field.Root>
                 )}
 
                 <Field.Root required mb={4}>
-                    <Field.Label>{t('role')}</Field.Label>
-                    <NativeSelect.Root>
-                        <NativeSelect.Field {...register('id_role')} placeholder="Select role">
-                            {roles.map(role => (
-                                <option key={role.id} value={role.id}>{role.name}</option>
-                            ))}
-                        </NativeSelect.Field>
-                    </NativeSelect.Root>
+                  <Field.Label>{t('role')}</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('id_role')} placeholder="Select role">
+                      {roles.map((role) => (
+                        <option key={role.id} value={role.id}>
+                          {role.name}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
                 </Field.Root>
 
                 <Field.Root required>
-                    <Field.Label>{t('tenant')}</Field.Label>
-                    <NativeSelect.Root>
-                        <NativeSelect.Field {...register('tenant_id')} placeholder="Select tenant">
-                            {tenants.map(t => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                        </NativeSelect.Field>
-                    </NativeSelect.Root>
+                  <Field.Label>{t('tenant')}</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('tenant_id')} placeholder="Select tenant">
+                      {tenants.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
                 </Field.Root>
-                </form>
+              </form>
             </Dialog.Body>
             <Dialog.Footer>
-                <Button onClick={onClose} mr={3} variant="ghost">{t('cancel')}</Button>
-                <Button colorPalette="brand" form="user-form" type="submit">{t('save')}</Button>
+              <Button onClick={onClose} mr={3} variant="ghost">
+                {t('cancel')}
+              </Button>
+              <Button colorPalette="brand" form="user-form" type="submit">
+                {t('save')}
+              </Button>
             </Dialog.Footer>
-            </Dialog.Content>
+          </Dialog.Content>
         </Dialog.Positioner>
       </Dialog.Root>
     </Box>

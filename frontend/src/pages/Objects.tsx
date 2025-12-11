@@ -28,8 +28,8 @@ export default function Objects() {
   const fetchObjects = async () => {
     try {
       const [o, t] = await Promise.all([
-          objectService.getAll(),
-          import('../services/tenantService').then(m => m.tenantService.getAll())
+        objectService.getAll(),
+        import('../services/tenantService').then((m) => m.tenantService.getAll()),
       ]);
       setObjects(o);
       setTenants(t);
@@ -73,7 +73,11 @@ export default function Objects() {
       onClose();
       fetchObjects();
     } catch (e: any) {
-        toaster.create({ title: t('operationFailed'), description: e.response?.data?.detail, type: 'error' });
+      toaster.create({
+        title: t('operationFailed'),
+        description: e.response?.data?.detail,
+        type: 'error',
+      });
     }
   };
 
@@ -92,57 +96,68 @@ export default function Objects() {
     <Box p={8}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={6}>
         <Heading size="lg">{t('objects')}</Heading>
-        <Button colorPalette="brand" onClick={onAdd}><FiPlus /> {t('addObject')}</Button>
+        <Button colorPalette="brand" onClick={onAdd}>
+          <FiPlus /> {t('addObject')}
+        </Button>
       </Box>
       <DataTable
         data={objects}
         columns={[
-            { header: 'ID', accessorKey: 'id', width: '50px' },
-            { header: t('permissionName'), accessorKey: 'name' },
-            { header: t('typeId'), accessorKey: 'id_object_type' }, // Maybe fetch type name?
-            { header: t('tenant'), render: (o) => tenants.find(t => t.id === o.tenant_id)?.name || o.tenant_id },
+          { header: 'ID', accessorKey: 'id', width: '50px' },
+          { header: t('permissionName'), accessorKey: 'name' },
+          { header: t('typeId'), accessorKey: 'id_object_type' }, // Maybe fetch type name?
+          {
+            header: t('tenant'),
+            render: (o) => tenants.find((t) => t.id === o.tenant_id)?.name || o.tenant_id,
+          },
         ]}
         searchKeys={['name']}
-        searchPlaceholder={t('searchObjects') || "Search objects..."}
+        searchPlaceholder={t('searchObjects') || 'Search objects...'}
         onEdit={onEdit}
         onDelete={(o) => onDelete(o.id)}
       />
 
-      <Dialog.Root open={isOpen} onOpenChange={(e) => e.open ? onOpen() : onClose()}>
+      <Dialog.Root open={isOpen} onOpenChange={(e) => (e.open ? onOpen() : onClose())}>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-            <Dialog.Content>
+          <Dialog.Content>
             <Dialog.Header>
-                <Dialog.Title>{editingObj ? t('editObject') : t('createObject')}</Dialog.Title>
-                <Dialog.CloseTrigger />
+              <Dialog.Title>{editingObj ? t('editObject') : t('createObject')}</Dialog.Title>
+              <Dialog.CloseTrigger />
             </Dialog.Header>
             <Dialog.Body pb={6}>
-                <form id="obj-form" onSubmit={handleSubmit(onSubmit)}>
+              <form id="obj-form" onSubmit={handleSubmit(onSubmit)}>
                 <Field.Root required mb={4}>
-                    <Field.Label>{t('permissionName')}</Field.Label>
-                    <Input {...register('name')} />
+                  <Field.Label>{t('permissionName')}</Field.Label>
+                  <Input {...register('name')} />
                 </Field.Root>
                 <Field.Root required mb={4}>
-                    <Field.Label>{t('objectType')}</Field.Label>
-                    <Input type="number" {...register('id_object_type')} />
+                  <Field.Label>{t('objectType')}</Field.Label>
+                  <Input type="number" {...register('id_object_type')} />
                 </Field.Root>
                 <Field.Root required>
-                    <Field.Label>{t('tenant')}</Field.Label>
-                    <NativeSelect.Root>
-                        <NativeSelect.Field {...register('tenant_id')} placeholder="Select tenant">
-                            {tenants.map(t => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                        </NativeSelect.Field>
-                    </NativeSelect.Root>
+                  <Field.Label>{t('tenant')}</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('tenant_id')} placeholder="Select tenant">
+                      {tenants.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
                 </Field.Root>
-                </form>
+              </form>
             </Dialog.Body>
             <Dialog.Footer>
-                <Button onClick={onClose} mr={3} variant="ghost">{t('cancel')}</Button>
-                <Button colorPalette="brand" form="obj-form" type="submit">{t('save')}</Button>
+              <Button onClick={onClose} mr={3} variant="ghost">
+                {t('cancel')}
+              </Button>
+              <Button colorPalette="brand" form="obj-form" type="submit">
+                {t('save')}
+              </Button>
             </Dialog.Footer>
-            </Dialog.Content>
+          </Dialog.Content>
         </Dialog.Positioner>
       </Dialog.Root>
     </Box>

@@ -1,4 +1,10 @@
-import { createSystem, defaultConfig, defineConfig, defineRecipe, defineSlotRecipe } from "@chakra-ui/react"
+import {
+  createSystem,
+  defaultConfig,
+  defineConfig,
+  defineRecipe,
+  defineSlotRecipe,
+} from '@chakra-ui/react';
 
 const config = defineConfig({
   theme: {
@@ -46,74 +52,74 @@ const config = defineConfig({
         },
         surface: {
           500: { value: 'var(--chakra-colors-surface-500)' },
-        }
-      }
+        },
+      },
     },
     semanticTokens: {
       colors: {
         primary: {
-          solid: { value: "{colors.brand.500}" },
-          contrast: { value: "#ffffff" },
-          fg: { value: "{colors.brand.700}" },
-          muted: { value: "{colors.brand.100}" },
-          subtle: { value: "{colors.brand.200}" },
-          emphasized: { value: "{colors.brand.300}" },
-          focusRing: { value: "{colors.brand.500}" },
+          solid: { value: '{colors.brand.500}' },
+          contrast: { value: '#ffffff' },
+          fg: { value: '{colors.brand.700}' },
+          muted: { value: '{colors.brand.100}' },
+          subtle: { value: '{colors.brand.200}' },
+          emphasized: { value: '{colors.brand.300}' },
+          focusRing: { value: '{colors.brand.500}' },
         },
       },
     },
     slotRecipes: {
       menu: defineSlotRecipe({
-        slots: ["item", "content"],
+        slots: ['item', 'content'],
         base: {
           content: {
-            borderRadius: "md",
-            boxShadow: "lg",
+            borderRadius: 'md',
+            boxShadow: 'lg',
             p: 1,
-            bg: "white",
-            _dark: { bg: "gray.800" }
+            bg: 'white',
+            _dark: { bg: 'gray.800' },
           },
           item: {
-            borderRadius: "sm",
-            cursor: "pointer",
+            borderRadius: 'sm',
+            cursor: 'pointer',
             _hover: {
-              bg: "brand.50",
-              color: "brand.700",
+              bg: 'brand.50',
+              color: 'brand.700',
               _dark: {
-                 bg: "brand.900/20",
-                 color: "brand.200",
-              }
+                bg: 'brand.900/20',
+                color: 'brand.200',
+              },
             },
             _focus: {
-              bg: "brand.50",
-              color: "brand.700",
+              bg: 'brand.50',
+              color: 'brand.700',
               _dark: {
-                 bg: "brand.900/20",
-                 color: "brand.200",
-              }
+                bg: 'brand.900/20',
+                color: 'brand.200',
+              },
             },
           },
         },
       }),
       popover: defineSlotRecipe({
-        slots: ["content", "header", "body", "arrow", "closeTrigger"],
+        slots: ['content', 'header', 'body', 'arrow', 'closeTrigger'],
         base: {
           content: {
-            borderRadius: "md",
-            boxShadow: "xl",
-            bg: "white",
-            border: "1px solid",
-            borderColor: "gray.200",
-            _dark: { 
-              bg: "gray.800",
-              borderColor: "gray.700" 
-            }
+            borderRadius: 'md',
+            boxShadow: 'xl',
+            bg: 'white',
+            border: '1px solid',
+            borderColor: 'gray.200',
+            _dark: {
+              bg: 'gray.800',
+              borderColor: 'gray.700',
+            },
           },
           header: {
-            fontWeight: "bold",
-            borderBottomWidth: "1px",
-            borderColor: "gray.100",
-            _dark: { borderColor: "gray.700" },
+            fontWeight: 'bold',
+            borderBottomWidth: '1px',
+            borderColor: 'gray.100',
+            _dark: { borderColor: 'gray.700' },
             p: 4,
           },
           body: {
@@ -125,43 +131,43 @@ const config = defineConfig({
     recipes: {
       button: defineRecipe({
         base: {
-          fontWeight: "bold",
-          borderRadius: "md",
-          colorPalette: "brand",
+          fontWeight: 'bold',
+          borderRadius: 'md',
+          colorPalette: 'brand',
         },
         variants: {
           variant: {
-             solid: {
-                bg: "colorPalette.500",
-                color: "white",
-                _hover: {
-                  bg: "colorPalette.600",
-                },
-             },
-             outline: {
-                border: "2px solid",
-                borderColor: "colorPalette.500",
-                color: "colorPalette.500",
-                _hover: {
-                  bg: "colorPalette.50",
-                },
-             },
-             ghost: {
-                color: "colorPalette.500",
-                _hover: {
-                  bg: "colorPalette.50",
-                },
-             },
-             link: {
-                color: "colorPalette.500",
-                _hover: {
-                  textDecoration: "underline",
-                },
-             }
+            solid: {
+              bg: 'colorPalette.500',
+              color: 'white',
+              _hover: {
+                bg: 'colorPalette.600',
+              },
+            },
+            outline: {
+              border: '2px solid',
+              borderColor: 'colorPalette.500',
+              color: 'colorPalette.500',
+              _hover: {
+                bg: 'colorPalette.50',
+              },
+            },
+            ghost: {
+              color: 'colorPalette.500',
+              _hover: {
+                bg: 'colorPalette.50',
+              },
+            },
+            link: {
+              color: 'colorPalette.500',
+              _hover: {
+                textDecoration: 'underline',
+              },
+            },
           },
         },
         defaultVariants: {
-          variant: "solid",
+          variant: 'solid',
         },
       }),
     },
@@ -172,6 +178,6 @@ const config = defineConfig({
       color: { base: 'gray.800', _dark: 'whiteAlpha.900' },
     },
   },
-})
+});
 
-export default createSystem(defaultConfig, config)
+export default createSystem(defaultConfig, config);

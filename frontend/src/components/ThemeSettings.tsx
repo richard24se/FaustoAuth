@@ -13,7 +13,7 @@ import {
   Flex,
   Input,
   Popover,
-  Tabs
+  Tabs,
 } from '@chakra-ui/react';
 import { FiSettings, FiMoon, FiSun, FiGlobe, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
@@ -21,9 +21,19 @@ import { ColorRoles, DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME } from '../constant
 import { useColorMode, useColorModeValue } from '../components/ui/color-mode';
 import { toaster } from '../components/ui/toaster';
 
-const ColorInput = ({ label, value, onChange }: { label: string, value: string, onChange: (val: string) => void }) => (
+const ColorInput = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+}) => (
   <Flex alignItems="center" justifyContent="space-between" mb={1} gap={3}>
-    <Text fontSize="sm" fontWeight="medium" color="fg.muted">{label}</Text>
+    <Text fontSize="sm" fontWeight="medium" color="fg.muted">
+      {label}
+    </Text>
     <HStack gap={2}>
       <Input
         value={value}
@@ -78,7 +88,7 @@ export default function ThemeSettings() {
       const merged = { ...DEFAULT_DARK_THEME, ...parsed };
       setTempDarkColors(merged);
     }
-  }
+  };
 
   useEffect(() => {
     loadSettings();
@@ -91,9 +101,9 @@ export default function ThemeSettings() {
   const handleColorChange = (mode: 'light' | 'dark', role: keyof ColorRoles, hex: string) => {
     setIsDirty(true);
     if (mode === 'light') {
-      setTempLightColors(prev => ({ ...prev, [role]: hex }));
+      setTempLightColors((prev) => ({ ...prev, [role]: hex }));
     } else {
-      setTempDarkColors(prev => ({ ...prev, [role]: hex }));
+      setTempDarkColors((prev) => ({ ...prev, [role]: hex }));
     }
   };
 
@@ -103,7 +113,11 @@ export default function ThemeSettings() {
 
     window.dispatchEvent(new Event('theme-change'));
     setIsDirty(false);
-    toaster.create({ title: t('settingsApplied') || "Settings applied", type: 'success', duration: 2000 });
+    toaster.create({
+      title: t('settingsApplied') || 'Settings applied',
+      type: 'success',
+      duration: 2000,
+    });
   };
 
   const handleResetConfirm = () => {
@@ -121,24 +135,29 @@ export default function ThemeSettings() {
     // 3. Force immediate theme update
     window.dispatchEvent(new Event('theme-change'));
 
-    toaster.create({ title: t('resetDefaults') || "Defaults Restored", type: 'info' });
+    toaster.create({ title: t('resetDefaults') || 'Defaults Restored', type: 'info' });
   };
 
   return (
     <>
-      <Popover.Root positioning={{ placement: "bottom-end" }} initialFocusEl={() => initialFocusRef.current}>
+      <Popover.Root
+        positioning={{ placement: 'bottom-end' }}
+        initialFocusEl={() => initialFocusRef.current}
+      >
         <Popover.Trigger asChild>
-          <IconButton
-            aria-label="Theme Settings"
-            variant="ghost"
-            color="current"
-          >
+          <IconButton aria-label="Theme Settings" variant="ghost" color="current">
             <FiSettings />
           </IconButton>
         </Popover.Trigger>
         <Portal>
           <Popover.Positioner>
-            <Popover.Content minW="360px" maxH="85vh" overflowY="auto" bg={bgPopover} borderColor={borderColor}>
+            <Popover.Content
+              minW="360px"
+              maxH="85vh"
+              overflowY="auto"
+              bg={bgPopover}
+              borderColor={borderColor}
+            >
               <Popover.Arrow />
               <Popover.CloseTrigger />
               <Popover.Header fontWeight="bold" borderBottomWidth="1px">
@@ -196,26 +215,82 @@ export default function ThemeSettings() {
                   </Tabs.List>
                   <Tabs.Content value="light" px={0} py={2}>
                     <VStack align="stretch" gap={1}>
-                      <ColorInput label={t('primaryColor')} value={tempLightColors.primary} onChange={(v) => handleColorChange('light', 'primary', v)} />
-                      <ColorInput label={t('secondaryColor')} value={tempLightColors.secondary} onChange={(v) => handleColorChange('light', 'secondary', v)} />
-                      <ColorInput label={t('accentColor')} value={tempLightColors.accent} onChange={(v) => handleColorChange('light', 'accent', v)} />
-                      <ColorInput label={t('successColor') || "Success"} value={tempLightColors.success} onChange={(v) => handleColorChange('light', 'success', v)} />
-                      <ColorInput label={t('warningColor') || "Warning"} value={tempLightColors.warning} onChange={(v) => handleColorChange('light', 'warning', v)} />
+                      <ColorInput
+                        label={t('primaryColor')}
+                        value={tempLightColors.primary}
+                        onChange={(v) => handleColorChange('light', 'primary', v)}
+                      />
+                      <ColorInput
+                        label={t('secondaryColor')}
+                        value={tempLightColors.secondary}
+                        onChange={(v) => handleColorChange('light', 'secondary', v)}
+                      />
+                      <ColorInput
+                        label={t('accentColor')}
+                        value={tempLightColors.accent}
+                        onChange={(v) => handleColorChange('light', 'accent', v)}
+                      />
+                      <ColorInput
+                        label={t('successColor') || 'Success'}
+                        value={tempLightColors.success}
+                        onChange={(v) => handleColorChange('light', 'success', v)}
+                      />
+                      <ColorInput
+                        label={t('warningColor') || 'Warning'}
+                        value={tempLightColors.warning}
+                        onChange={(v) => handleColorChange('light', 'warning', v)}
+                      />
                       <Separator my={2} />
-                      <ColorInput label={t('bgColor') || "Page Background"} value={tempLightColors.bg} onChange={(v) => handleColorChange('light', 'bg', v)} />
-                      <ColorInput label={t('surfaceColor') || "Card/Surface"} value={tempLightColors.surface} onChange={(v) => handleColorChange('light', 'surface', v)} />
+                      <ColorInput
+                        label={t('bgColor') || 'Page Background'}
+                        value={tempLightColors.bg}
+                        onChange={(v) => handleColorChange('light', 'bg', v)}
+                      />
+                      <ColorInput
+                        label={t('surfaceColor') || 'Card/Surface'}
+                        value={tempLightColors.surface}
+                        onChange={(v) => handleColorChange('light', 'surface', v)}
+                      />
                     </VStack>
                   </Tabs.Content>
                   <Tabs.Content value="dark" px={0} py={2}>
                     <VStack align="stretch" gap={1}>
-                      <ColorInput label={t('primaryColor')} value={tempDarkColors.primary} onChange={(v) => handleColorChange('dark', 'primary', v)} />
-                      <ColorInput label={t('secondaryColor')} value={tempDarkColors.secondary} onChange={(v) => handleColorChange('dark', 'secondary', v)} />
-                      <ColorInput label={t('accentColor')} value={tempDarkColors.accent} onChange={(v) => handleColorChange('dark', 'accent', v)} />
-                      <ColorInput label={t('successColor') || "Success"} value={tempDarkColors.success} onChange={(v) => handleColorChange('dark', 'success', v)} />
-                      <ColorInput label={t('warningColor') || "Warning"} value={tempDarkColors.warning} onChange={(v) => handleColorChange('dark', 'warning', v)} />
+                      <ColorInput
+                        label={t('primaryColor')}
+                        value={tempDarkColors.primary}
+                        onChange={(v) => handleColorChange('dark', 'primary', v)}
+                      />
+                      <ColorInput
+                        label={t('secondaryColor')}
+                        value={tempDarkColors.secondary}
+                        onChange={(v) => handleColorChange('dark', 'secondary', v)}
+                      />
+                      <ColorInput
+                        label={t('accentColor')}
+                        value={tempDarkColors.accent}
+                        onChange={(v) => handleColorChange('dark', 'accent', v)}
+                      />
+                      <ColorInput
+                        label={t('successColor') || 'Success'}
+                        value={tempDarkColors.success}
+                        onChange={(v) => handleColorChange('dark', 'success', v)}
+                      />
+                      <ColorInput
+                        label={t('warningColor') || 'Warning'}
+                        value={tempDarkColors.warning}
+                        onChange={(v) => handleColorChange('dark', 'warning', v)}
+                      />
                       <Separator my={2} />
-                      <ColorInput label={t('bgColor') || "Page Background"} value={tempDarkColors.bg} onChange={(v) => handleColorChange('dark', 'bg', v)} />
-                      <ColorInput label={t('surfaceColor') || "Card/Surface"} value={tempDarkColors.surface} onChange={(v) => handleColorChange('dark', 'surface', v)} />
+                      <ColorInput
+                        label={t('bgColor') || 'Page Background'}
+                        value={tempDarkColors.bg}
+                        onChange={(v) => handleColorChange('dark', 'bg', v)}
+                      />
+                      <ColorInput
+                        label={t('surfaceColor') || 'Card/Surface'}
+                        value={tempDarkColors.surface}
+                        onChange={(v) => handleColorChange('dark', 'surface', v)}
+                      />
                     </VStack>
                   </Tabs.Content>
                 </Tabs.Root>
@@ -229,9 +304,8 @@ export default function ThemeSettings() {
                   disabled={!isDirty}
                   ref={initialFocusRef}
                 >
-                  <FiSave /> {t('applyChanges') || "Apply Changes"}
+                  <FiSave /> {t('applyChanges') || 'Apply Changes'}
                 </Button>
-
               </Popover.Body>
             </Popover.Content>
           </Popover.Positioner>
@@ -240,7 +314,7 @@ export default function ThemeSettings() {
 
       <Dialog.Root
         open={isResetOpen}
-        onOpenChange={(e) => e.open ? onResetOpen() : onResetClose()}
+        onOpenChange={(e) => (e.open ? onResetOpen() : onResetClose())}
       >
         <Dialog.Backdrop zIndex={2500} />
         <Dialog.Positioner zIndex={2500}>
@@ -250,7 +324,8 @@ export default function ThemeSettings() {
             </Dialog.Header>
 
             <Dialog.Body>
-              {t('resetDefaultsConfirm') || "Are you sure? This will reset all your color customizations to the factory default."}
+              {t('resetDefaultsConfirm') ||
+                'Are you sure? This will reset all your color customizations to the factory default.'}
             </Dialog.Body>
 
             <Dialog.Footer>

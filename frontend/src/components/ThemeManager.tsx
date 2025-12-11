@@ -12,11 +12,15 @@ export const ThemeManager = () => {
     const root = document.documentElement;
     const mode = colorMode === 'dark' ? 'dark' : 'light';
     const storageKey = `theme-colors-${mode}`;
-    
+
     // Load saved colors or use defaults
     const saved = localStorage.getItem(storageKey);
-    const colors: ColorRoles = saved ? JSON.parse(saved) : (mode === 'dark' ? DEFAULT_DARK_THEME : DEFAULT_LIGHT_THEME);
-    
+    const colors: ColorRoles = saved
+      ? JSON.parse(saved)
+      : mode === 'dark'
+        ? DEFAULT_DARK_THEME
+        : DEFAULT_LIGHT_THEME;
+
     console.log('[ThemeManager] Applying theme:', { mode, saved, colors });
 
     // Apply variables
@@ -35,7 +39,7 @@ export const ThemeManager = () => {
     // Listen for custom event 'theme-change' to re-apply without page reload
     const handleThemeChange = () => applyTheme();
     window.addEventListener('theme-change', handleThemeChange);
-    
+
     return () => window.removeEventListener('theme-change', handleThemeChange);
   }, [colorMode]);
 

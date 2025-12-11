@@ -44,21 +44,21 @@ export const mixColors = (color1: string, color2: string, weight: number): strin
 };
 
 export const generatePalette = (baseColor: string): Record<number, string> => {
-    // Basic logic:
-    // 500 is base
-    // 50-400 are mixed with white
-    // 600-900 are mixed with black/darker color
-    
-    return {
-        50: mixColors('#ffffff', baseColor, 0.95),
-        100: mixColors('#ffffff', baseColor, 0.8),
-        200: mixColors('#ffffff', baseColor, 0.6),
-        300: mixColors('#ffffff', baseColor, 0.4),
-        400: mixColors('#ffffff', baseColor, 0.2),
-        500: baseColor,
-        600: mixColors('#000000', baseColor, 0.1),
-        700: mixColors('#000000', baseColor, 0.3),
-        800: mixColors('#000000', baseColor, 0.5),
-        900: mixColors('#000000', baseColor, 0.7),
-    };
+  // Basic logic:
+  // 500 is base
+  // 50-400 are mixed with white
+  // 600-900 are mixed with black/darker color
+
+  return {
+    50: mixColors('#ffffff', baseColor, 0.95),
+    100: mixColors('#ffffff', baseColor, 0.8),
+    200: mixColors('#ffffff', baseColor, 0.6),
+    300: mixColors('#ffffff', baseColor, 0.4),
+    400: mixColors('#ffffff', baseColor, 0.2),
+    500: baseColor,
+    600: mixColors('#000000', baseColor, 0.1),
+    700: mixColors('#000000', baseColor, 0.3),
+    800: mixColors('#000000', baseColor, 0.5),
+    900: mixColors('#000000', baseColor, 0.7),
+  };
 };

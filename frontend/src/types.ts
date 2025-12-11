@@ -35,12 +35,11 @@ export interface AuthObject {
   tenant_id: number;
 }
 
-
 // Generic response wrapper used by backend
 export interface GenericResponse<T> {
-    data: T;
-    message?: string;
-    error?: boolean;
+  data: T;
+  message?: string;
+  error?: boolean;
 }
 
 export interface LoginCredentials {
@@ -48,7 +47,7 @@ export interface LoginCredentials {
   password: string;
 }
 
-// Backend wraps success in "data" usually? 
+// Backend wraps success in "data" usually?
 // Based on test scripts: login_response.json()["data"]
 export interface TokenResponseData {
   access_token: string;

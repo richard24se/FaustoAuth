@@ -22,7 +22,11 @@ import { useColorMode } from '../components/ui/color-mode';
 import PhylaxLogo from '../assets/Phylax-logo-1.png';
 
 export default function Login() {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginCredentials>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginCredentials>();
   const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState('');
@@ -84,9 +88,19 @@ export default function Login() {
                     />
                   </Field.Root>
 
-                  {errorMsg && <Text color="red.500" fontSize="sm">{errorMsg}</Text>}
+                  {errorMsg && (
+                    <Text color="red.500" fontSize="sm">
+                      {errorMsg}
+                    </Text>
+                  )}
 
-                  <Button disabled={isSubmitting} type="submit" colorPalette="brand" size="lg" fontSize="md">
+                  <Button
+                    disabled={isSubmitting}
+                    type="submit"
+                    colorPalette="brand"
+                    size="lg"
+                    fontSize="md"
+                  >
                     {isSubmitting ? '...' : t('signIn')}
                   </Button>
                 </Stack>

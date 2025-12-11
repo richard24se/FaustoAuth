@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create a configured axios instance
 const api = axios.create({
-  baseURL: 'http://localhost:9024',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:9024',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -19,7 +19,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor to handle 401 errors
@@ -31,11 +31,11 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       // Ideally dispatch a logout action, but simple redirect works for now
       if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+        window.dispatchEvent(new Event('auth:logout'));
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

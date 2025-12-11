@@ -122,7 +122,7 @@ graph LR
     Client([Client]) --> Request[POST /auth/logout]
     Request --> JWTBearer[Verify Token]
     JWTBearer --> Handler[Handler Logic]
-    Handler --> Redis[Set Token = 'true' (Revoked)]
+    Handler --> Redis["Set Token = 'true' (Revoked)"]
     Redis --> Response[200 OK]
 ```
 
@@ -141,8 +141,8 @@ flowchart TD
     Request([Incoming Request]) --> RouteHandler[Route Handler]
     RouteHandler --> ReturnValue{Return Value}
 
-    ReturnValue -- Tuple --> Unpack[Unpack (message, data, error)]
-    ReturnValue -- String --> WrapString[Wrap {message: str}]
+    ReturnValue -- Tuple --> Unpack["Unpack (message, data, error)"]
+    ReturnValue -- String --> WrapString["Wrap {message: str}"]
     ReturnValue -- Dict --> UseDict[Use as is]
 
     Unpack & WrapString & UseDict --> CheckError{Error is True?}

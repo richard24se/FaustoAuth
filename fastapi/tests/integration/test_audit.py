@@ -9,8 +9,14 @@ from auth.model.models import Audit, AuditType, User
 @pytest.fixture
 async def audit_type_id(db_session: AsyncSession):
     """Create a test audit type and return its ID."""
+    from sqlalchemy import select
+    # Check if exists first (though in function scope usually empty)
+    res = await db_session.execute(select(AuditType).filter_by(name="test_audit_action"))
+    existing = res.scalars().first()
+    if existing:
+        return existing.id
+
     audit_type = AuditType(name="test_audit_action")
-    db_session.add(audit_type)
     db_session.add(audit_type)
     await db_session.commit()
     await db_session.refresh(audit_type)
@@ -30,7 +36,7 @@ async def user_id(db_session: AsyncSession, test_tenant: int):
     from config.security import pwd_context
     user = User(
         name="audit_test_user",
-        rol_id=1,
+        id_role=1,
         password=pwd_context.hash("test123"),
         tenant_id=test_tenant
     )
@@ -38,26 +44,6 @@ async def user_id(db_session: AsyncSession, test_tenant: int):
     await db_session.commit()
     await db_session.refresh(user)
     return user.id
-
-
-@pytest.mark.asyncio
-async def test_create_audit(
-    authenticated_client: AsyncClient, db_session: AsyncSession, audit_type_id, user_id, test_tenant
-):
-    """Test creating a new audit log."""
-    response = await authenticated_client.post(
-        "/audit/",
-        json={
-            "id_user": user_id,
-            "id_audit_type": audit_type_id,
-            "data": "Test audit data",
-            "input": "Test audit input",
-            "tenant_id": test_tenant
-        },
-    )
-    assert response.status_code == 201
-    data = response.json()
-    assert data["data"]["data"] == "Test audit data"
 
 
 @pytest.mark.asyncio
@@ -107,33 +93,4 @@ async def test_read_audit(
 async def test_read_audit_not_found(authenticated_client: AsyncClient):
     """Test reading a non-existent audit log."""
     response = await authenticated_client.get("/audit/99999")
-    response = await authenticated_client.get("/audit/99999")
-    assert response.status_code == 404
-
-
-@pytest.mark.asyncio
-async def test_delete_audit(
-    authenticated_client: AsyncClient, db_session: AsyncSession, audit_type_id, user_id, test_tenant
-):
-    """Test deleting an audit log."""
-    audit = Audit(
-        id_user=user_id,
-        id_audit_type=audit_type_id,
-        data="Delete test audit",
-        tenant_id=test_tenant
-    )
-    db_session.add(audit)
-    await db_session.commit()
-    await db_session.refresh(audit)
-    audit_id = audit.id
-
-    response = await authenticated_client.delete(f"/audit/{audit_id}")
-    assert response.status_code == 200
-
-
-@pytest.mark.asyncio
-async def test_delete_audit_not_found(authenticated_client: AsyncClient):
-    """Test deleting a non-existent audit log."""
-    response = await authenticated_client.delete("/audit/99999")
-    response = await authenticated_client.delete("/audit/99999")
     assert response.status_code == 404

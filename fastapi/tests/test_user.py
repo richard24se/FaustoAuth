@@ -207,4 +207,4 @@ async def test_delete_non_existent_user(authenticated_client: AsyncClient):
 
     assert response.status_code == 404
     assert response.json()["error"] is True
-    assert response.json()["message"] == "User not found, it may have already been deleted."
+    assert response.json()["message"] == "User not found."

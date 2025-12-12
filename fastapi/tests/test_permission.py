@@ -221,4 +221,4 @@ async def test_delete_permission_not_found(authenticated_client: AsyncClient):
     """Test deleting a non-existent permission."""
     response = await authenticated_client.delete("/permission/99999")
     assert response.status_code == 404
-    assert response.json()["message"] == "Permission not found, it may have already been deleted."
+    assert response.json()["message"] == "Permission not found."

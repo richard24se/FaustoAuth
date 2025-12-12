@@ -173,7 +173,7 @@ const config = defineConfig({
     },
   },
   globalCss: {
-    body: {
+    'html, body': {
       bg: 'var(--chakra-colors-bg-500)',
       color: { base: 'gray.800', _dark: 'whiteAlpha.900' },
     },

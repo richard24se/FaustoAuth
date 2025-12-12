@@ -1,4 +1,5 @@
 from auth.handlers import JWTBearer
+from auth.dependencies import AuthContext, get_auth_context
 from auth.model.pydantic import UserCreate, UserUpdate
 from auth.service.user import UserService
 from config.databases import get_async_db
@@ -29,13 +30,21 @@ async def get_user_service(s: AsyncSession = Depends(get_async_db)) -> UserServi
 @router.get("/", response_model=Response, summary="List all users")
 async def list_users(
     service: UserService = Depends(get_user_service),
+    auth: AuthContext = Depends(get_auth_context),
 ):
     """Retrieve a list of all users.
 
     Returns:
         Response: A response object containing a list of users.
     """
-    users = await service.get_multi()
+    filters = {}
+    if "super-god" not in auth.scopes:
+        if auth.tenant_id:
+            filters["tenant_id"] = auth.tenant_id
+        else:
+             return Response(message="Found", data=[])
+
+    users = await service.get_multi(filters=filters)
     return Response(message="Found", data=users)
 
 
@@ -43,16 +52,19 @@ async def list_users(
 async def read_user(
     user_id: int,
     service: UserService = Depends(get_user_service),
+    auth: AuthContext = Depends(get_auth_context),
 ):
-    """Retrieve a single user by their ID.
+    """Retrieve a single user by their ID."""
+    from fausto import ControllerError
 
-    Args:
-        user_id (int): The ID of the user to retrieve.
-
-    Returns:
-        Response: A response object containing the user data.
-    """
     user = await service.get(id=user_id)
+    if not user:
+         raise ControllerError("User not found", status_code=404)
+
+    if "super-god" not in auth.scopes:
+        if not auth.tenant_id or user.get("tenant_id") != auth.tenant_id:
+             raise ControllerError("Not authorized to access this user", status_code=403)
+
     return Response(message="Found", data=user)
 
 
@@ -104,16 +116,20 @@ async def updating_user(
     user_id: int,
     user: UserUpdate,
     service: UserService = Depends(get_user_service),
+    auth: AuthContext = Depends(get_auth_context),
 ):
-    """Update an existing user's details.
+    """Update an existing user's details."""
+    from fausto import ControllerError
 
-    Args:
-        user_id (int): The ID of the user to update.
-        user (UserUpdate): The updated user data.
+    # Check existence and permission
+    existing_user = await service.get(id=user_id)
+    if not existing_user:
+        raise ControllerError("User not found", status_code=404)
 
-    Returns:
-        Response: A response object indicating success or failure.
-    """
+    if "super-god" not in auth.scopes:
+        if not auth.tenant_id or existing_user.get("tenant_id") != auth.tenant_id:
+                raise ControllerError("Not authorized to update this user", status_code=403)
+
     updated_user = await service.update(id=user_id, obj_in=user.model_dump(exclude_unset=True))
     return Response(message="Update successful!", data=updated_user)
 
@@ -126,15 +142,20 @@ async def updating_user(
 async def deleting_user(
     user_id: int,
     service: UserService = Depends(get_user_service),
+    auth: AuthContext = Depends(get_auth_context),
 ):
-    """Delete a user by their ID.
+    """Delete a user by their ID."""
+    from fausto import ControllerError
 
-    Args:
-        user_id (int): The ID of the user to delete.
+    # Check existence and permission
+    existing_user = await service.get(id=user_id)
+    if not existing_user:
+        raise ControllerError("User not found", status_code=404)
 
-    Returns:
-        Response: A response object indicating success or failure.
-    """
+    if "super-god" not in auth.scopes:
+        if not auth.tenant_id or existing_user.get("tenant_id") != auth.tenant_id:
+                raise ControllerError("Not authorized to delete this user", status_code=403)
+
     deleted_user = await service.remove(id=user_id)
     return Response(message="Deleted successful!", data=deleted_user)
 

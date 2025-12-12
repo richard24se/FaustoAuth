@@ -12,7 +12,11 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Users = lazy(() => import('./pages/Users'));
 const Roles = lazy(() => import('./pages/Roles'));
 const Permissions = lazy(() => import('./pages/Permissions'));
+const Tenants = lazy(() => import('./pages/Tenants'));
+const RolePermissions = lazy(() => import('./pages/RolePermissions'));
 const Objects = lazy(() => import('./pages/Objects'));
+const Audits = lazy(() => import('./pages/Audits'));
+const AuditTypes = lazy(() => import('./pages/AuditTypes'));
 const JwtDebugger = lazy(() => import('./pages/JwtDebugger'));
 
 function App() {
@@ -44,11 +48,15 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route element={<AdminLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/tenants" element={<Tenants />} />
               <Route path="/users" element={<Users />} />
               <Route path="/roles" element={<Roles />} />
               <Route path="/permissions" element={<Permissions />} />
+              <Route path="/roles/:roleId/permissions" element={<RolePermissions />} />
 
               <Route path="/objects" element={<Objects />} />
+              <Route path="/audits" element={<Audits />} />
+              <Route path="/audit-types" element={<AuditTypes />} />
               <Route path="/jwt-debugger" element={<JwtDebugger />} />
             </Route>
           </Route>

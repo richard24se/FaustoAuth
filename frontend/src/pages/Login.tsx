@@ -76,7 +76,7 @@ export default function Login() {
                   <Field.Root invalid={!!errors.username}>
                     <Field.Label>{t('username')} (Email)</Field.Label>
                     <Input
-                      type="email"
+                      type="text"
                       {...register('username', { required: 'Username is required' })}
                     />
                   </Field.Root>

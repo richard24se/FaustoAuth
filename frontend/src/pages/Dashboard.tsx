@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { userService } from '../services/userService';
 import { roleService } from '../services/roleService';
 import { tenantService } from '../services/tenantService';
+import { UserRoleGraph } from '../components/visualization/UserRoleGraph';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -148,6 +149,15 @@ export default function Dashboard() {
                 </Table.Row>
               </Table.Body>
             </Table.Root>
+          </Card.Body>
+        </Card.Root>
+
+        <Card.Root>
+          <Card.Header>
+            <Heading size="md">{t('accessVisualization') || 'Access Visualization'}</Heading>
+          </Card.Header>
+          <Card.Body>
+            <UserRoleGraph />
           </Card.Body>
         </Card.Root>
       </Stack>

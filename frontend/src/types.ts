@@ -11,6 +11,7 @@ export interface User {
   role?: Role;
   id_role?: number;
   tenant_id: number;
+  scopes?: string[];
 }
 
 export interface Role {
@@ -24,7 +25,9 @@ export interface Permission {
   id: number;
   name: string;
   id_object: number;
+  id_permission_type: number;
   tenant_id: number;
+  object?: AuthObject;
 }
 
 export interface AuthObject {
@@ -64,4 +67,23 @@ export interface LoginResponse {
   data: TokenResponseData;
   message?: string;
   error?: boolean;
+}
+
+export interface Audit {
+  id: number;
+  data?: string;
+  input?: string;
+  ip_address?: string;
+  user_agent?: string;
+  status?: string;
+  tenant_id: number;
+  id_user: number;
+  id_audit_type: number;
+  created_date: string;
+}
+
+export interface AuditType {
+  id: number;
+  name: string;
+  created_date?: string;
 }

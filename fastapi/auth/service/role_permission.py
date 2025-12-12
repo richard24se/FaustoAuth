@@ -44,7 +44,13 @@ class RolePermissionService:
                 if obj_id not in objects_with_permissions:
                     objects_with_permissions[obj_id].update(obj_dict)
 
-                objects_with_permissions[obj_id]["permissions"].append(to_dict(perm))
+                perm_dict = to_dict(perm)
+                # Remove SQLAlchemy objects that cause serialization errors
+                perm_dict.pop("object", None)
+                perm_dict.pop("permission_type", None)
+                perm_dict.pop("role_permissions", None)
+                
+                objects_with_permissions[obj_id]["permissions"].append(perm_dict)
 
             response_data = list(objects_with_permissions.values())
 

@@ -27,6 +27,7 @@ export const useAuthStore = create<AuthState>((set) => {
         names: decoded.name,
         role: { name: decoded.role, id: 0, tenant_id: decoded.tenant_id }, // Partial reconstruction
         tenant_id: decoded.tenant_id,
+        scopes: decoded.scopes || [],
       } as User;
     } catch (e) {
       console.error('Invalid token on load', e);
@@ -61,6 +62,7 @@ export const useAuthStore = create<AuthState>((set) => {
       try {
         const decoded: any = jwtDecode(access_token);
         newUser.role = { id: id_role, name: decoded.role || '', tenant_id };
+        newUser.scopes = decoded.scopes || [];
       } catch (e) {}
 
       set({

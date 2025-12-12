@@ -66,8 +66,13 @@ export function DataTable<T extends { id: number | string }>({
     let result = data;
 
     // 1. Tenant Filter
+    console.log(result)
+    console.log(selectedTenantId)
+    // if (selectedTenantId && !disableTenantFilter) {
     if (selectedTenantId) {
+
       result = result.filter((item) => (item as any)[tenantField] === selectedTenantId);
+      console.log(result)
     }
 
     // 2. Search Filter

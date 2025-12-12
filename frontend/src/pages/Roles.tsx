@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -9,37 +9,28 @@ import {
   Input,
   NativeSelect,
 } from '@chakra-ui/react';
-import { FiPlus } from 'react-icons/fi';
-import { DataTable } from '../components/common/DataTable';
+import { FiPlus, FiLock } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { DataTable } from '@/components/common/DataTable';
 import { useForm } from 'react-hook-form';
-import { roleService } from '../services/roleService';
-import { Role } from '../types';
+import { Role } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { toaster } from '../components/ui/toaster';
+import { toaster } from '@/components/ui/toaster';
+import { useRoles } from '@/hooks/useRoles';
+import { tenantService } from '@/services/tenantService';
 
 export default function Roles() {
-  const [roles, setRoles] = useState<Role[]>([]);
+  const navigate = useNavigate();
+  const { roles, isLoading, createRole, updateRole, deleteRole } = useRoles();
   const [tenants, setTenants] = useState<any[]>([]);
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const { t } = useTranslation();
   const { register, handleSubmit, reset, setValue } = useForm();
 
-  const fetchRoles = async () => {
-    try {
-      const [r, t] = await Promise.all([
-        roleService.getAll(),
-        import('../services/tenantService').then((m) => m.tenantService.getAll()),
-      ]);
-      setRoles(r);
-      setTenants(t);
-    } catch (e) {
-      toaster.create({ title: 'Failed to load roles', type: 'error' });
-    }
-  };
-
   useEffect(() => {
-    fetchRoles();
+    // Temporary: Still fetching tenants manually until we make a useTenants hook
+    tenantService.getAll().then(setTenants).catch(console.error);
   }, []);
 
   const onEdit = (role: Role) => {
@@ -57,36 +48,26 @@ export default function Roles() {
     onOpen();
   };
 
-  const onSubmit = async (data: any) => {
-    try {
+  const onSubmit = (data: any) => {
       data.tenant_id = Number.parseInt(data.tenant_id);
       if (editingRole) {
-        await roleService.update(editingRole.id, data);
-        toaster.create({ title: t('roleUpdated'), type: 'success' });
+        updateRole({ id: editingRole.id, data }, {
+          onSuccess: () => {
+            onClose();
+          }
+        });
       } else {
-        await roleService.create(data);
-        toaster.create({ title: t('roleCreated'), type: 'success' });
+        createRole(data, {
+          onSuccess: () => {
+            onClose();
+          }
+        });
       }
-      onClose();
-      fetchRoles();
-    } catch (e: any) {
-      toaster.create({
-        title: t('operationFailed'),
-        description: e.response?.data?.detail,
-        type: 'error',
-      });
-    }
   };
 
-  const onDelete = async (id: number) => {
+  const onDelete = (id: number) => {
     if (!window.confirm(t('deleteRoleConfirm'))) return;
-    try {
-      await roleService.delete(id);
-      toaster.create({ title: t('roleDeleted'), type: 'success' });
-      fetchRoles();
-    } catch (e) {
-      toaster.create({ title: t('deleteFailed'), type: 'error' });
-    }
+    deleteRole(id);
   };
 
   return (
@@ -99,6 +80,7 @@ export default function Roles() {
       </Box>
       <DataTable
         data={roles}
+        isLoading={isLoading}
         columns={[
           { header: 'ID', accessorKey: 'id', width: '50px' },
           { header: t('roleName'), accessorKey: 'name' },
@@ -106,6 +88,14 @@ export default function Roles() {
             header: t('tenant'),
             render: (r) => tenants.find((t) => t.id === r.tenant_id)?.name || r.tenant_id,
           },
+          {
+            header: t('actions'),
+            render: (r) => (
+              <Button size="xs" variant="ghost" onClick={() => navigate(`/roles/${r.id}/permissions`)}>
+                 <FiLock /> {t('permissions')}
+              </Button>
+            )
+          }
         ]}
         searchKeys={['name']}
         searchPlaceholder={t('searchRoles') || 'Search roles...'}

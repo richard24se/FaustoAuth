@@ -17,11 +17,13 @@ import { objectService } from '../services/objectService';
 import { Permission, AuthObject } from '../types';
 import { useTranslation } from 'react-i18next';
 import { toaster } from '../components/ui/toaster';
+import { permissionTypeService, PermissionType } from '../services/permissionTypeService';
 
 export default function Permissions() {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [objects, setObjects] = useState<AuthObject[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
+  const [permissionTypes, setPermissionTypes] = useState<PermissionType[]>([]);
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [editingPerm, setEditingPerm] = useState<Permission | null>(null);
   const { t } = useTranslation();
@@ -29,14 +31,16 @@ export default function Permissions() {
 
   const fetchData = async () => {
     try {
-      const [p, o, t] = await Promise.all([
+      const [p, o, t, pt] = await Promise.all([
         permissionService.getAll(),
         objectService.getAll(),
         import('../services/tenantService').then((m) => m.tenantService.getAll()),
+        permissionTypeService.getAll(),
       ]);
       setPermissions(p);
       setObjects(o);
       setTenants(t);
+      setPermissionTypes(pt);
     } catch (e) {
       toaster.create({ title: 'Failed to load data', type: 'error' });
     }
@@ -50,6 +54,7 @@ export default function Permissions() {
     setEditingPerm(perm);
     setValue('name', perm.name);
     setValue('id_object', perm.id_object);
+    setValue('id_permission_type', perm.id_permission_type);
     setValue('tenant_id', perm.tenant_id);
     onOpen();
   };
@@ -64,6 +69,7 @@ export default function Permissions() {
   const onSubmit = async (data: any) => {
     try {
       data.id_object = Number.parseInt(data.id_object);
+      data.id_permission_type = Number.parseInt(data.id_permission_type);
       data.tenant_id = Number.parseInt(data.tenant_id);
       if (editingPerm) {
         await permissionService.update(editingPerm.id, data);
@@ -112,6 +118,10 @@ export default function Permissions() {
             render: (p) => objects.find((o) => o.id === p.id_object)?.name || p.id_object,
           },
           {
+            header: t('permissionType'),
+            render: (p) => permissionTypes.find((pt) => pt.id === p.id_permission_type)?.name || p.id_permission_type,
+          },
+          {
             header: t('tenant'),
             render: (p) => tenants.find((t) => t.id === p.tenant_id)?.name || p.tenant_id,
           },
@@ -137,6 +147,18 @@ export default function Permissions() {
                 <Field.Root required mb={4}>
                   <Field.Label>{t('permissionName')}</Field.Label>
                   <Input {...register('name')} placeholder="e.g. read:users" />
+                </Field.Root>
+                <Field.Root required mb={4}>
+                  <Field.Label>{t('permissionType')}</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('id_permission_type')} placeholder="Select Type">
+                      {permissionTypes.map((pt) => (
+                        <option key={pt.id} value={pt.id}>
+                          {pt.name}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
                 </Field.Root>
                 <Field.Root required mb={4}>
                   <Field.Label>{t('object')}</Field.Label>

@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import {
   IconButton,
   Box,
@@ -17,6 +17,7 @@ import {
   NativeSelect,
   Portal,
   Image,
+  Collapsible,
 } from '@chakra-ui/react';
 import {
   FiHome,
@@ -28,6 +29,10 @@ import {
   FiChevronDown,
   FiCode,
   FiX,
+  FiLayout,
+  FiActivity,
+  FiList,
+  FiType,
 } from 'react-icons/fi';
 import { IconType } from 'react-icons';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
@@ -43,15 +48,25 @@ import PhylaxLogo from '../assets/Phylax-logo-1.png';
 interface LinkItemProps {
   name: string;
   icon: IconType;
-  path: string;
+  path?: string;
+  children?: Array<LinkItemProps>;
 }
 const LinkItems: Array<LinkItemProps> = [
   { name: 'dashboard', icon: FiHome, path: '/dashboard' },
+  { name: 'tenants', icon: FiLayout, path: '/tenants' },
   { name: 'users', icon: FiUsers, path: '/users' },
   { name: 'roles', icon: FiShield, path: '/roles' },
   { name: 'permissions', icon: FiLock, path: '/permissions' },
   { name: 'objects', icon: FiDatabase, path: '/objects' },
   { name: 'JWT Debugger', icon: FiCode, path: '/jwt-debugger' },
+  {
+    name: 'audit',
+    icon: FiActivity,
+    children: [
+      { name: 'auditLogs', icon: FiList, path: '/audits' },
+      { name: 'auditTypes', icon: FiType, path: '/audit-types' },
+    ],
+  },
 ];
 
 export default function Sidebar({ children }: { children: ReactNode }) {
@@ -122,7 +137,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         </IconButton>
       </Flex>
       {LinkItems.map((link) => (
-        <NavItem key={link.name} icon={link.icon} path={link.path}>
+        <NavItem key={link.name} icon={link.icon} path={link.path} childrenItems={link.children} name={link.name}>
           {t(link.name)}
         </NavItem>
       ))}
@@ -133,12 +148,102 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
 interface NavItemProps extends FlexProps {
   icon: IconType;
   children: ReactNode;
-  path: string;
+  path?: string;
+  childrenItems?: Array<LinkItemProps>;
+  name: string;
 }
 
-const NavItem = ({ icon, children, path, ...rest }: NavItemProps) => {
+const NavItem = ({ icon, children, path, childrenItems, name, ...rest }: NavItemProps) => {
   const location = useLocation();
-  const isActive = location.pathname === path;
+  const { t } = useTranslation();
+  // Check if any child is active or if the current path matches the item's path
+  const isChildActive = childrenItems?.some(child => child.path && location.pathname === child.path);
+  const isActive = path ? location.pathname === path : isChildActive;
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Auto-expand if a child is active
+  useEffect(() => {
+    if (isChildActive) {
+      setIsOpen(true);
+    }
+  }, [isChildActive]);
+
+  if (childrenItems) {
+    return (
+      <Box>
+        <Flex
+          align="center"
+          p="4"
+          mx="4"
+          borderRadius="lg"
+          role="group"
+          cursor="pointer"
+          onClick={() => setIsOpen(!isOpen)}
+          color={isActive ? 'brand.600' : 'inherit'}
+          _hover={{
+            bg: 'brand.50',
+            color: 'brand.600',
+            _dark: {
+              bg: 'brand.900/20',
+              color: 'brand.200',
+            },
+          }}
+          {...rest}
+        >
+          {icon && (
+            <Icon
+              mr="4"
+              fontSize="16"
+              as={icon}
+            />
+          )}
+          <Box flex="1">{children}</Box>
+          <Icon as={FiChevronDown} transform={isOpen ? 'rotate(180deg)' : ''} transition="transform 0.2s" />
+        </Flex>
+        <Collapsible.Root open={isOpen}>
+          <Collapsible.Content>
+            <VStack gap={0} ml={6} align="stretch">
+              {childrenItems.map((child) => (
+                <Link
+                  key={child.name}
+                  asChild
+                  display="block"
+                  w="full"
+                  style={{ textDecoration: 'none' }}
+                  outline="none"
+                  _focus={{ boxShadow: 'none', outline: 'none' }}
+                >
+                  <RouterLink to={child.path!}>
+                    <Flex
+                      align="center"
+                      p="3"
+                      mx="4"
+                      borderRadius="md"
+                      cursor="pointer"
+                      color={location.pathname === child.path ? 'brand.600' : 'gray.500'}
+                      bg={location.pathname === child.path ? 'brand.50' : 'transparent'}
+                      _hover={{
+                        color: 'brand.600',
+                        bg: 'brand.50',
+                        _dark: { color: 'brand.200', bg: 'brand.900/20' }
+                      }}
+                      _dark={{
+                        color: location.pathname === child.path ? 'brand.200' : 'gray.400',
+                        bg: location.pathname === child.path ? 'brand.900/20' : 'transparent',
+                      }}
+                    >
+                      <Text fontSize="sm">{t(child.name)}</Text>
+                    </Flex>
+                  </RouterLink>
+                </Link>
+              ))}
+            </VStack>
+          </Collapsible.Content>
+        </Collapsible.Root>
+      </Box>
+    );
+  }
 
   return (
     <Link
@@ -149,7 +254,7 @@ const NavItem = ({ icon, children, path, ...rest }: NavItemProps) => {
       outline="none"
       _focus={{ boxShadow: 'none', outline: 'none' }}
     >
-      <RouterLink to={path}>
+      <RouterLink to={path!}>
         <Flex
           align="center"
           p="4"
@@ -248,7 +353,6 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
 
       <HStack gap={{ base: '0', md: '6' }}>
         <TenantSelector />
-        {/* <TenantSelector /> */}
         <JwtVisualizerTop />
         <ThemeSettings />
         <Flex alignItems={'center'}>
@@ -307,12 +411,13 @@ const TenantSelector = () => {
 
   const checkAdmin = () => {
     if (user?.username === 'admin') return true;
+    if (user?.scopes?.includes('super-god')) return true;
     const rName = user?.role?.name;
     if (!rName) return false;
     if (Array.isArray(rName)) {
-      return rName.includes('Admin') || rName.includes('supergod');
+      return rName.includes('Super God') || rName.includes('supergod');
     }
-    return rName === 'Admin' || rName === 'supergod';
+    return rName === 'Super God' || rName === 'supergod';
   };
 
   useEffect(() => {

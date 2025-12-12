@@ -5,7 +5,12 @@ from auth.model.models import User
 from auth.model.pydantic import UserCreate, UserUpdate
 from config.security import pwd_context
 from fausto import ControllerError
-from fausto.sqlalch import remove_fields_sqlalch, to_dict
+from fausto.sqlalch import (
+    get_filter_fields_multi_sqlalch,
+    get_order_fields_multi_sqlalch,
+    remove_fields_sqlalch, 
+    to_dict
+)
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload

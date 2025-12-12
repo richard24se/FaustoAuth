@@ -26,6 +26,11 @@ class AuthService:
     """
 
     @staticmethod
+    def standardize_scope(scope: str) -> str:
+        """Standardizes a scope string by converting to lowercase and replacing spaces with hyphens."""
+        return scope.strip().lower().replace(" ", "-")
+
+    @staticmethod
     async def validate_user(
         s: AsyncSession,
         *,
@@ -139,14 +144,14 @@ class AuthService:
             user_surnames = user.surnames
             user_id_role = user.id_role
             user_tenant_id = user.tenant_id
-            user_role_name = user.role.name if user.role else None,
+            user_role_name = (user.role.name if user.role else None,)
 
             # Helper to extract scopes from permissions
             scopes = []
             if user.role and user.role.role_permissions:
                 for rp in user.role.role_permissions:
                     if rp.permission:
-                        scopes.append(rp.permission.name)
+                        scopes.append(AuthService.standardize_scope(rp.permission.name))
 
             # Audit SUCCESS
             auth_create = AuditDTO(

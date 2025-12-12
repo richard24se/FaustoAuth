@@ -7,6 +7,11 @@ export const roleService = {
     return response.data.data;
   },
 
+  getById: async (id: number) => {
+    const response = await api.get<GenericResponse<Role>>(`/role/${id}`);
+    return response.data.data;
+  },
+
   create: async (data: Partial<Role>) => await api.post('/role/', data),
   update: async (id: number, data: Partial<Role>) => await api.put(`/role/${id}`, data),
   delete: async (id: number) => await api.delete(`/role/${id}`),

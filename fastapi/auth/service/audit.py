@@ -67,14 +67,18 @@ class AuditService:
 
     @staticmethod
     async def update_audit(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int, data: AuditUpdate | dict[str, Any]
+        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int, data: AuditUpdate | dict[str, Any], tenant_id: int | None = None
     ) -> dict[str, Any]:
         """Updates an existing audit log."""
         try:
             if not audit_id:
                 raise ControllerError("Audit ID must be provided.")
 
-            result = await s.execute(select(Audit).filter_by(id=audit_id))
+            query = select(Audit).filter_by(id=audit_id)
+            if tenant_id is not None:
+                query = query.filter(Audit.tenant_id == tenant_id)
+
+            result = await s.execute(query)
             audit = result.scalars().one_or_none()
 
             if not audit:
@@ -103,11 +107,15 @@ class AuditService:
 
     @staticmethod
     async def delete_audit(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int
+        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int, tenant_id: int | None = None
     ) -> dict[str, Any]:
         """Deletes an audit log."""
         try:
-            result = await s.execute(select(Audit).filter_by(id=audit_id))
+            query = select(Audit).filter_by(id=audit_id)
+            if tenant_id is not None:
+                query = query.filter(Audit.tenant_id == tenant_id)
+
+            result = await s.execute(query)
             audit = result.scalars().first()
 
             if not audit:
@@ -131,11 +139,15 @@ class AuditService:
 
     @staticmethod
     async def get_audit(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int
+        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int, tenant_id: int | None = None
     ) -> dict[str, Any]:
         """Retrieves a single audit log by its ID."""
         try:
-            result = await s.execute(select(Audit).filter(Audit.id == audit_id))
+            query = select(Audit).filter(Audit.id == audit_id)
+            if tenant_id is not None:
+                query = query.filter(Audit.tenant_id == tenant_id)
+
+            result = await s.execute(query)
             audit = result.scalars().first()
 
             if not audit:
@@ -149,14 +161,18 @@ class AuditService:
             raise ControllerError(str(e))
 
     @staticmethod
-    async def get_audits(s: AsyncSession = Depends(SQLALCH_AUTH)) -> List[dict[str, Any]]:
+    async def get_audits(s: AsyncSession = Depends(SQLALCH_AUTH), tenant_id: int | None = None) -> List[dict[str, Any]]:
         """Retrieves all audit logs."""
         try:
-            result = await s.execute(select(Audit))
+            query = select(Audit)
+            if tenant_id is not None:
+                query = query.filter(Audit.tenant_id == tenant_id)
+
+            result = await s.execute(query)
             audits = result.scalars().all()
 
             if not audits:
-                raise ControllerError("No audits found.", [], status_code=404)
+                return []
 
             logging.debug("Retrieved %d audit logs.", len(audits))
             return to_dict(audits)

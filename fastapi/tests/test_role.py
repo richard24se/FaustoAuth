@@ -118,4 +118,4 @@ async def test_delete_role_not_found(authenticated_client: AsyncClient):
     """Test deleting a non-existent role."""
     response = await authenticated_client.delete("/role/99999")
     assert response.status_code == 404
-    assert response.json()["message"] == "Role not found, it may have already been deleted."
+    assert response.json()["message"] == "Role not found."

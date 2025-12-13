@@ -3,6 +3,7 @@ from typing import Any
 from auth.handlers import JWTBearer
 from auth.model.pydantic import AuditTypeCreate, AuditTypeUpdate
 from auth.service.audit_type import AuditTypeService
+from auth.dependencies import AuthContext, get_auth_context
 from config.databases import get_async_db
 from fausto.fapi import Response
 from fastapi import APIRouter, Body, Depends, status
@@ -50,7 +51,9 @@ async def read_audit_type(
     summary="Create a new audit type",
 )
 async def creating_audit_type(
-    audit_type: AuditTypeCreate, s: AsyncSession = Depends(get_async_db)
+    audit_type: AuditTypeCreate,
+    s: AsyncSession = Depends(get_async_db),
+    auth: AuthContext = Depends(get_auth_context),
 ):
     """Create a new audit type.
 
@@ -60,6 +63,9 @@ async def creating_audit_type(
     Returns:
         Response: A response object indicating success or failure.
     """
+    if "super-god" not in auth.scopes:
+         from fausto import ControllerError
+         raise ControllerError("Unauthorized: Only super admins can create audit types", status_code=403)
     return await AuditTypeService.create_audit_type(s=s, data=audit_type)
 
 
@@ -70,6 +76,7 @@ async def updating_audit_type(
     audit_type_id: int,
     audit_type: AuditTypeUpdate,
     s: AsyncSession = Depends(get_async_db),
+    auth: AuthContext = Depends(get_auth_context),
 ):
     """Update an existing audit type by its ID.
 
@@ -80,6 +87,9 @@ async def updating_audit_type(
     Returns:
         Response: A response object indicating success or failure.
     """
+    if "super-god" not in auth.scopes:
+         from fausto import ControllerError
+         raise ControllerError("Unauthorized: Only super admins can update audit types", status_code=403)
     return await AuditTypeService.update_audit_type(
         s=s, audit_type_id=audit_type_id, data=audit_type
     )
@@ -91,7 +101,9 @@ async def updating_audit_type(
     summary="Delete an audit type",
 )
 async def deleting_audit_type(
-    audit_type_id: int, s: AsyncSession = Depends(get_async_db)
+    audit_type_id: int,
+    s: AsyncSession = Depends(get_async_db),
+    auth: AuthContext = Depends(get_auth_context),
 ):
     """Delete an audit type by its ID.
 
@@ -101,6 +113,9 @@ async def deleting_audit_type(
     Returns:
         Response: A response object indicating success or failure.
     """
+    if "super-god" not in auth.scopes:
+         from fausto import ControllerError
+         raise ControllerError("Unauthorized: Only super admins can delete audit types", status_code=403)
     return await AuditTypeService.delete_audit_type(s=s, audit_type_id=audit_type_id)
 
 

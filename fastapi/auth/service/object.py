@@ -1,179 +1,111 @@
-import logging
-from datetime import datetime, timezone
 from typing import Any, List
 
 from auth.model.models import Object, Permission, RolePermission
 from auth.model.pydantic import ObjectCreate, ObjectUpdate
-from config.databases import SQLALCH_AUTH
+from auth.service.base import CRUDBase
 from fausto import ControllerError
-from fausto.fapi import fapi_wrapper
-from fausto.sqlalch import async_sqlalch_wrapper, to_dict
-from fastapi import Depends
-from sqlalchemy import desc, select
+from fausto.sqlalch import to_dict
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class ObjectService:
+class ObjectService(CRUDBase[Object, ObjectCreate, ObjectUpdate]):
     """Object Service"""
 
-    @staticmethod
-    async def create_object(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, data: ObjectCreate | dict[str, Any]
-    ) -> dict[str, Any]:
-        """Creates a new object."""
-        try:
-            if isinstance(data, dict):
-                obj_data = data
-                name = obj_data.get("name")
-            else:
-                obj_data = data.model_dump()
-                name = data.name
+    def __init__(self, session: AsyncSession):
+        super().__init__(model=Object, session=session)
 
-            result = await s.execute(select(Object).filter_by(name=name))
+    async def create(self, *, obj_in: ObjectCreate | dict[str, Any]) -> dict[str, Any]:
+        """Creates a new object with name uniqueness check."""
+        try:
+            if isinstance(obj_in, dict):
+                obj_in_data = obj_in
+                name = obj_in_data.get("name")
+            else:
+                obj_in_data = obj_in.model_dump()
+                name = obj_in.name
+
+            # Inject tenant_id if not present and context is set (handled in CRUDBase.create mostly,
+            # but we can double check)
+            # Actually CRUDBase.create does:
+            # tid = self.current_tenant
+            # if tid and hasattr(self.model, "tenant_id") and "tenant_id" not in obj_in_data:
+            #     obj_in_data["tenant_id"] = tid
+
+            # Check for existing object with same name in this tenant
+            query = select(Object).filter_by(name=name)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             existing_object = result.scalars().first()
             if existing_object:
                 raise ControllerError(f"The object name '{name}' already exists.")
 
-            new_obj = Object(**obj_data)
-            s.add(new_obj)
-            await s.commit()
-            await s.refresh(new_obj)
-            logging.info("Successfully created object '%s'.", name)
-            return to_dict(new_obj)
+            # Delegate to parent which handles insertion and tenant_id injection
+            return await super().create(obj_in=obj_in)
         except ControllerError:
-            await s.rollback()
             raise
         except Exception as e:
-            await s.rollback()
             raise ControllerError(str(e))
 
-    @staticmethod
-    async def update_object(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, object_id: int, data: ObjectUpdate | dict[str, Any]
-    ) -> dict[str, Any]:
-        """Updates an existing object."""
+    async def update(self, *, id: int, obj_in: ObjectUpdate | dict[str, Any]) -> dict[str, Any]:
+        """Updates an existing object with name uniqueness check."""
         try:
-            if not object_id:
-                raise ControllerError("Object ID must be provided.")
+            # Check existence first (handled in super().update but we need obj for name check?)
+            # Actually super().update fetches the object.
+            # But we need to check if the NEW name conflicts with ANOTHER object.
 
-            result = await s.execute(select(Object).filter_by(id=object_id))
-            obj = result.scalars().first()
-            if not obj:
-                raise ControllerError("Object not found.", status_code=404)
-
-            if isinstance(data, dict):
-                update_data = data
+            # Let's fetch the object first to compare names?
+            # Or just check if name is being updated.
+            if isinstance(obj_in, dict):
+                update_data = obj_in
                 name = update_data.get("name")
             else:
-                update_data = data.model_dump(exclude_unset=True)
-                name = data.name
+                update_data = obj_in.model_dump(exclude_unset=True)
+                name = getattr(obj_in, "name", None)
 
-            if name and name != obj.name:
-                result = await s.execute(
-                    select(Object).filter(Object.name == name, Object.id != object_id)
-                )
+            if name:
+                # Check if name conflicts with another object
+                query = select(Object).filter(Object.name == name, Object.id != id)
+                query = self._apply_tenant_filter(query)
+                result = await self.session.execute(query)
                 existing_name = result.scalars().first()
                 if existing_name:
                     raise ControllerError(f"The object name '{name}' already exists.")
 
-            if isinstance(data, dict):
-                 update_data["modificated_date"] = datetime.now(timezone.utc)
-            else:
-                 # Already handled by model_dump if passed, but here we enforce it
-                 update_data["modificated_date"] = datetime.now(timezone.utc)
-
-            for key, value in update_data.items():
-                setattr(obj, key, value)
-            
-            s.add(obj)
-            await s.commit()
-            await s.refresh(obj)
-            
-            logging.info("Successfully updated object with ID %d.", object_id)
-            return to_dict(obj)
-        except ControllerError:
-            await s.rollback()
-            raise
-        except Exception as e:
-            await s.rollback()
-            raise ControllerError(str(e))
-
-    @staticmethod
-    async def delete_object(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, object_id: int
-    ) -> dict[str, Any]:
-        """Deletes an object."""
-        try:
-            result = await s.execute(select(Object).filter_by(id=object_id))
-            obj = result.scalars().first()
-            if not obj:
-                raise ControllerError(
-                    "Object not found, it may have already been deleted.",
-                    status_code=404
-                )
-            obj_dict = to_dict(obj)
-            await s.delete(obj)
-            await s.commit()
-            logging.info("Successfully deleted object with ID %d.", object_id)
-            return obj_dict
-        except ControllerError:
-            await s.rollback()
-            raise
-        except Exception as e:
-            await s.rollback()
-            raise ControllerError(str(e))
-
-    @staticmethod
-    async def get_object(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, object_id: int
-    ) -> dict[str, Any]:
-        """Retrieves a single object by its ID."""
-        try:
-            result = await s.execute(select(Object).filter_by(id=object_id))
-            obj = result.scalars().first()
-            if not obj:
-                raise ControllerError("Object not found.", status_code=404)
-
-            return to_dict(obj)
+            return await super().update(id=id, obj_in=obj_in)
         except ControllerError:
             raise
         except Exception as e:
             raise ControllerError(str(e))
 
-    @staticmethod
-    async def get_object_role(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, role_id: int
-    ) -> List[dict[str, Any]]:
+    async def get_object_role(self, *, role_id: int) -> List[dict[str, Any]]:
         """Retrieves all objects associated with a specific role."""
         try:
-            result = await s.execute(
+            # This query joins permissions and needs to respect tenant?
+            # RolePermission links Role (tenant scoped) to Permission (tenant scoped) to Object (tenant scoped).
+            # Usually strict scoping on the Role itself (handled by role_id filtering if validated).
+            # But we should also apply tenant filter to the query generally?
+            # Or rely on the Role being in the tenant.
+
+            # If we just query based on role_id, and role_id is valid for the tenant, we get permitted objects.
+            # But let's add _apply_tenant_filter to be safe on the Object table part?
+            # The join query starts with Object.
+
+            query = (
                 select(Object)
                 .join(Permission, Permission.id_object == Object.id)
                 .join(RolePermission, RolePermission.id_permission == Permission.id)
                 .filter(RolePermission.id_role == role_id)
                 .distinct()
             )
+            query = self._apply_tenant_filter(query)
+
+            result = await self.session.execute(query)
             objects = result.scalars().all()
 
             if not objects:
+                # Matches original behavior
                 raise ControllerError("No objects found for this role.", [], status_code=404)
-
-            return to_dict(objects)
-        except ControllerError:
-            raise
-        except Exception as e:
-            raise ControllerError(str(e))
-
-    @staticmethod
-    async def get_objects(
-        s: AsyncSession = Depends(SQLALCH_AUTH),
-    ) -> List[dict[str, Any]]:
-        """Retrieves all objects, ordered by ID descending."""
-        try:
-            result = await s.execute(select(Object).order_by(desc(Object.id)))
-            objects = result.scalars().all()
-            if not objects:
-                raise ControllerError("No objects found.", [], status_code=404)
 
             return to_dict(objects)
         except ControllerError:

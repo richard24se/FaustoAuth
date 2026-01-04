@@ -1,22 +1,22 @@
 import logging
+from dataclasses import asdict, dataclass
 from typing import Any, List
 
 from auth.model.models import Audit
 from auth.model.pydantic import AuditCreate, AuditUpdate
 from config.databases import SQLALCH_AUTH
 from fausto import ControllerError
-from fausto.fapi import fapi_wrapper
-from fausto.sqlalch import async_sqlalch_wrapper, to_dict
-from fastapi import Depends
+from fausto.sqlalch import to_dict
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fastapi import Depends
 
-from dataclasses import dataclass, asdict
 
 @dataclass(slots=True)
 class AuditDTO:
     """Internal DTO for creating audit logs using slots for memory optimization."""
+
     id_user: int
     id_audit_type: int
     tenant_id: int
@@ -46,17 +46,17 @@ class AuditService:
 
             new_audit = Audit(**audit_data)
             s.add(new_audit)
-            await s.commit() # Commit explicitly
+            await s.commit()  # Commit explicitly
             await s.refresh(new_audit)
             logging.info("Successfully created audit log.")
-            
+
             # Manually construct response to avoid implicit lazy loading issues with to_dict
             # within async context (greenlet error).
             response = audit_data.copy()
             response["id"] = new_audit.id
             if new_audit.created_date:
                 response["created_date"] = new_audit.created_date.isoformat()
-            
+
             return response
         except ControllerError:
             await s.rollback()
@@ -102,19 +102,14 @@ class AuditService:
             raise ControllerError(str(e))
 
     @staticmethod
-    async def delete_audit(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int
-    ) -> dict[str, Any]:
+    async def delete_audit(s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int) -> dict[str, Any]:
         """Deletes an audit log."""
         try:
             result = await s.execute(select(Audit).filter_by(id=audit_id))
             audit = result.scalars().first()
 
             if not audit:
-                raise ControllerError(
-                    "Audit not found, it may have already been deleted.",
-                    status_code=404
-                )
+                raise ControllerError("Audit not found, it may have already been deleted.", status_code=404)
 
             audit_dict = to_dict(audit)
             await s.delete(audit)
@@ -130,9 +125,7 @@ class AuditService:
             raise ControllerError(str(e))
 
     @staticmethod
-    async def get_audit(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int
-    ) -> dict[str, Any]:
+    async def get_audit(s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int) -> dict[str, Any]:
         """Retrieves a single audit log by its ID."""
         try:
             result = await s.execute(select(Audit).filter(Audit.id == audit_id))
@@ -149,13 +142,23 @@ class AuditService:
             raise ControllerError(str(e))
 
     @staticmethod
-    async def get_audits(s: AsyncSession = Depends(SQLALCH_AUTH)) -> List[dict[str, Any]]:
+    async def get_audits(
+        s: AsyncSession = Depends(SQLALCH_AUTH), *, tenant_id: int | None = None
+    ) -> List[dict[str, Any]]:
         """Retrieves all audit logs."""
         try:
-            result = await s.execute(select(Audit))
+            query = select(Audit)
+            if tenant_id is not None:
+                query = query.filter(Audit.tenant_id == tenant_id)
+
+            result = await s.execute(query)
             audits = result.scalars().all()
 
             if not audits:
+                # If filtering by tenant and no audits, it's a 404 effectively for that view,
+                # but mostly just empty list is preferred for lists.
+                # But existing logic raises 404. Let's keep it consistent but maybe safer to return empty list?
+                # The existing code raises 404.
                 raise ControllerError("No audits found.", [], status_code=404)
 
             logging.debug("Retrieved %d audit logs.", len(audits))

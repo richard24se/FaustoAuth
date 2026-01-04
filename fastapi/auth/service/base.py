@@ -1,17 +1,19 @@
-from typing import Any, Generic, Type, TypeVar
 import logging
+from typing import Any, Generic, Type, TypeVar
 
 from fausto import ControllerError
+from fausto.context import tenant_context
 from fausto.sqlalch import (
     get_filter_fields_multi_sqlalch,
     get_order_fields_multi_sqlalch,
     remove_fields_sqlalch,
     to_dict,
 )
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from fastapi.encoders import jsonable_encoder
 
 ModelType = TypeVar("ModelType")
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -44,6 +46,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.session = session
         self.exclude_fields = exclude_fields or []
 
+    @property
+    def current_tenant(self) -> int | None:
+        """Returns the current tenant ID from the context variable, if set."""
+        return tenant_context.get()
+
+    def _apply_tenant_filter(self, query):
+        """Applies tenant filter if context is set and model has tenant_id."""
+        tid = self.current_tenant
+        if tid and hasattr(self.model, "tenant_id"):
+            return query.filter(self.model.tenant_id == tid)
+        return query
+
     def _process_data(self, obj: Any) -> dict[str, Any]:
         """
         Convert the object to a dictionary and remove excluded fields.
@@ -73,7 +87,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             ControllerError: If the object is not found (404) or on generic error (500).
         """
         try:
-            result = await self.session.execute(select(self.model).filter(self.model.id == id))
+            query = select(self.model).filter(self.model.id == id)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             obj = result.scalars().first()
             if not obj:
                 raise ControllerError(f"{self.model.__name__} not found.", status_code=404)
@@ -106,6 +122,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         try:
             query = select(self.model)
+            query = self._apply_tenant_filter(query)
 
             if filters:
                 query = query.filter(*get_filter_fields_multi_sqlalch(filters, self.model))
@@ -138,6 +155,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             else:
                 obj_in_data = jsonable_encoder(obj_in)
 
+            # Automatically assign tenant_id if available and not explicitly provided?
+            # Or just rely on validation?
+            # If tenant context is present, we should probably enforce it for creation too.
+            # Force tenant_id to user's tenant if strictly scoped
+            tid = self.current_tenant
+            if tid and hasattr(self.model, "tenant_id"):
+                obj_in_data["tenant_id"] = tid
+
             db_obj = self.model(**obj_in_data)
             self.session.add(db_obj)
             await self.session.commit()
@@ -168,8 +193,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             ControllerError: If the object is not found (404).
         """
         try:
-            result = await self.session.execute(select(self.model).filter(self.model.id == id))
+            # Enforce scoping on update
+            query = select(self.model).filter(self.model.id == id)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             db_obj = result.scalars().first()
+
             if not db_obj:
                 raise ControllerError(f"{self.model.__name__} not found.", status_code=404)
 
@@ -195,6 +224,35 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             await self.session.rollback()
             raise ControllerError(str(e))
 
+    async def get_multi_by_query(
+        self,
+        query: Any,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        """
+        Retrieve multiple objects using a custom composed query.
+        Applies tenant filtering automatically.
+
+        Args:
+            query (Any): The SQLAlchemy select statement.
+            skip (int): Number of records to skip. Defaults to 0.
+            limit (int): Maximum number of records to return. Defaults to 100.
+
+        Returns:
+            list[dict[str, Any]]: A list of objects as dictionaries.
+        """
+        try:
+            query = self._apply_tenant_filter(query)
+            query = query.offset(skip).limit(limit)
+            result = await self.session.execute(query)
+            objects = result.scalars().all()
+            return [self._process_data(obj) for obj in objects]
+        except Exception as e:
+            logging.error(f"Error fetching custom query for {self.model.__name__}: {e}")
+            raise ControllerError(str(e))
+
     async def remove(self, *, id: int) -> dict[str, Any]:
         """
         Delete an object by its ID.
@@ -209,7 +267,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             ControllerError: If the object is not found (404).
         """
         try:
-            result = await self.session.execute(select(self.model).filter(self.model.id == id))
+            # Enforce scoping on delete
+            query = select(self.model).filter(self.model.id == id)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             obj = result.scalars().first()
             if not obj:
                 raise ControllerError(

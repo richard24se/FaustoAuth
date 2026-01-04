@@ -8,8 +8,8 @@ from fausto import ControllerError
 from fausto.sqlalch import (
     get_filter_fields_multi_sqlalch,
     get_order_fields_multi_sqlalch,
-    remove_fields_sqlalch, 
-    to_dict
+    remove_fields_sqlalch,
+    to_dict,
 )
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -61,14 +61,21 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
                 user_data = obj_in.model_dump()
                 username = obj_in.username
 
-            result = await self.session.execute(select(User).filter(User.username == username))
+            # STRICT TENANT ISOLATION: Override tenant_id if context is present
+            tid = self.current_tenant
+            if tid and hasattr(self.model, "tenant_id"):
+                user_data["tenant_id"] = tid
+
+            query = select(User).filter(User.username == username)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             if result.scalars().first():
                 raise ControllerError(f"The username '{username}' already exists.", status_code=400)
 
             # Hash the password
             # Hash the password
             user_data["password"] = await self._hash_password(user_data["password"])
-            
+
             new_user = User(**user_data)
 
             self.session.add(new_user)
@@ -100,7 +107,9 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
             ControllerError: If user is not found, username exists, or super-user protection is triggered.
         """
         try:
-            result = await self.session.execute(select(User).filter_by(id=id))
+            query = select(User).filter_by(id=id)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             user = result.scalars().one_or_none()
             if not user:
                 raise ControllerError("User not found.", status_code=404)
@@ -115,9 +124,9 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
                 new_username = obj_in.username
 
             if new_username and new_username != user.username:
-                result = await self.session.execute(
-                    select(User).filter(User.username == new_username)
-                )
+                query = select(User).filter(User.username == new_username)
+                query = self._apply_tenant_filter(query)
+                result = await self.session.execute(query)
                 if result.scalars().first():
                     raise ControllerError(f"The username '{new_username}' already exists.", status_code=400)
 
@@ -149,7 +158,13 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
     ) -> list[dict[str, Any]]:
         """Retrieve multiple users with role eager loaded."""
         try:
+
+            # query = select(self.model)
+            # query = self._apply_tenant_filter(query)
+
             query = select(self.model).options(selectinload(User.role))
+            # Restrict to tenant
+            query = self._apply_tenant_filter(query)
 
             if filters:
                 query = query.filter(*get_filter_fields_multi_sqlalch(filters, self.model))
@@ -179,14 +194,16 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
     async def remove(self, *, id: int) -> dict[str, Any]:
         """Deletes a user."""
         try:
-            result = await self.session.execute(select(User).filter_by(id=id))
+            query = select(User).filter_by(id=id)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             user = result.scalars().first()
             if user and user.username == SUPER_USER_USERNAME:
                 raise ControllerError("Cannot delete the super-user.", status_code=400)
-            
+
             if not user:
                 raise ControllerError("User not found, it may have already been deleted.", status_code=404)
-            
+
             data = self._process_data(user)
             await self.session.delete(user)
             await self.session.commit()
@@ -202,21 +219,17 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
     async def get_user_name(self, *, username: str) -> dict[str, Any]:
         """Retrieves a user by username with role and permissions."""
         try:
-            result = await self.session.execute(
-                select(User)
-                .options(selectinload(User.role))  # Eager load role
-                .filter(User.username == username)
-            )
+            query = select(User).options(selectinload(User.role)).filter(User.username == username)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             user_with_role = result.scalars().first()
 
             if not user_with_role:
                 raise ControllerError("User not found.", status_code=404)
 
             user_dict = to_dict(user_with_role)
-            user_dict["role"] = (
-                to_dict(user_with_role.role) if user_with_role.role else None
-            )
-            
+            user_dict["role"] = to_dict(user_with_role.role) if user_with_role.role else None
+
             # Remove password from response
             user_dict = remove_fields_sqlalch(user_dict, ["password"])
 

@@ -1,28 +1,13 @@
-import { useState, useEffect } from 'react';
 import { Box, Heading } from '@chakra-ui/react';
 import { DataTable } from '@/components/common/DataTable';
-import { Audit } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { toaster } from '@/components/ui/toaster';
-import { auditService } from '@/services/auditService';
+import { useAudits } from '@/hooks/useAudits';
+import { useTenants } from '@/hooks/useTenants';
 
 export default function Audits() {
-  const [audits, setAudits] = useState<Audit[]>([]);
+  const { audits, isLoading } = useAudits();
+  const { tenants } = useTenants();
   const { t } = useTranslation();
-
-  const loadAudits = async () => {
-    try {
-      const data = await auditService.getAll();
-      setAudits(data);
-    } catch (error) {
-      console.error(error);
-      toaster.create({ title: t('errorLoadingData'), type: 'error' });
-    }
-  };
-
-  useEffect(() => {
-    loadAudits();
-  }, []);
 
   return (
     <Box p={8}>
@@ -31,9 +16,14 @@ export default function Audits() {
       </Box>
       <DataTable
         data={audits}
+        isLoading={isLoading}
         columns={[
           { header: 'ID', accessorKey: 'id', width: '50px' },
           { header: t('user'), accessorKey: 'id_user' }, // Ideally fetch user name
+          { 
+            header: t('tenant'), 
+            render: (r) => tenants.find((t) => t.id === r.tenant_id)?.name || r.tenant_id 
+          },
           { header: t('ipAddress'), accessorKey: 'ip_address' },
           { header: t('input'), accessorKey: 'input' },
           { header: t('date'), accessorKey: 'created_date' },

@@ -118,5 +118,12 @@
   "auditTypeDeleted": "Tipo de auditoría eliminado exitosamente",
   "errorDeletingAuditType": "Error al eliminar tipo de auditoría",
   "searchAuditTypes": "Buscar tipos de auditoría...",
-  "accessVisualization": "Visualización de Acceso"
+  "accessVisualization": "Visualización de Acceso",
+  "objectTypes": "Tipos de Objetos",
+  "addObjectType": "Agregar Tipo de Objeto",
+  "editObjectType": "Editar Tipo de Objeto",
+  "createObjectType": "Crear Tipo de Objeto",
+  "deleteObjectTypeConfirm": "¿Está seguro de que desea eliminar este tipo de objeto?",
+  "createdDate": "Fecha de Creación",
+  "searchObjectTypes": "Buscar tipos de objetos..."
 }

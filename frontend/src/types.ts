@@ -87,3 +87,9 @@ export interface AuditType {
   name: string;
   created_date?: string;
 }
+
+export interface ObjectType {
+  id: number;
+  name: string;
+  created_date?: string;
+}

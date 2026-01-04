@@ -28,7 +28,14 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
                 perm_data = obj_in.model_dump()
                 name = obj_in.name
 
-            result = await self.session.execute(select(Permission).filter(Permission.name == name))
+            # STRICT TENANT ISOLATION: Override tenant_id if context is present
+            tid = self.current_tenant
+            if tid and hasattr(self.model, "tenant_id"):
+                perm_data["tenant_id"] = tid
+
+            query = select(Permission).filter(Permission.name == name)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             existing = result.scalars().first()
             if existing:
                 raise ControllerError(f"The permission '{name}' already exists.", status_code=400)
@@ -54,7 +61,9 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
     ) -> dict[str, Any]:
         """Updates an existing permission."""
         try:
-            result = await self.session.execute(select(Permission).filter_by(id=id))
+            query = select(Permission).filter_by(id=id)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             permission = result.scalars().first()
             if not permission:
                 raise ControllerError("Permission not found.", status_code=404)
@@ -67,11 +76,9 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
                 name = obj_in.name
 
             if name and name != permission.name:
-                result = await self.session.execute(
-                    select(Permission).filter(
-                        Permission.name == name, Permission.id != id
-                    )
-                )
+                query = select(Permission).filter(Permission.name == name, Permission.id != id)
+                query = self._apply_tenant_filter(query)
+                result = await self.session.execute(query)
                 existing = result.scalars().first()
                 if existing:
                     raise ControllerError(f"The permission '{name}' already exists.", status_code=400)
@@ -80,17 +87,16 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
                 # Ensure modificated_date is set if not present or explicit override needed
                 update_data["modificated_date"] = datetime.now(timezone.utc)
             else:
-                 update_data = obj_in.model_dump(exclude_unset=True)
-                 update_data["modificated_date"] = datetime.now(timezone.utc)
-
+                update_data = obj_in.model_dump(exclude_unset=True)
+                update_data["modificated_date"] = datetime.now(timezone.utc)
 
             for key, value in update_data.items():
                 setattr(permission, key, value)
-                
+
             self.session.add(permission)
             await self.session.commit()
             await self.session.refresh(permission)
-            
+
             logging.info("Successfully updated permission with ID %d.", id)
             return self._process_data(permission)
         except ControllerError:
@@ -119,18 +125,17 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
                     .join(User, User.id_role == Role.id)
                     .filter(Object.name == obj_name, User.username == username)
                 )
+                query = self._apply_tenant_filter(query)
                 result = await self.session.execute(query)
                 permissions = result.scalars().all()
                 if not permissions:
                     raise ControllerError(
-                        "No permissions found for the given user and object.",
-                        {"enabled": False},
-                        status_code=404
+                        "No permissions found for the given user and object.", {"enabled": False}, status_code=404
                     )
 
-                result = await self.session.execute(
-                    select(User.id, User.username).filter_by(username=username)
-                )
+                u_query = select(User.id, User.username).filter_by(username=username)
+                u_query = self._apply_tenant_filter(u_query)
+                result = await self.session.execute(u_query)
                 user_info = result.first()
                 response_data = {
                     "id": user_info.id,
@@ -142,14 +147,14 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
 
             elif role_id:
                 query = (
-                    query.join(RolePermission)
-                    .filter(RolePermission.id_role == role_id)
-                    .order_by(Permission.id.desc())
+                    query.join(RolePermission).filter(RolePermission.id_role == role_id).order_by(Permission.id.desc())
                 )
+                query = self._apply_tenant_filter(query)
                 result = await self.session.execute(query)
                 permissions = result.scalars().all()
             else:
                 query = query.order_by(Permission.id)
+                query = self._apply_tenant_filter(query)
                 result = await self.session.execute(query)
                 permissions = result.scalars().all()
 

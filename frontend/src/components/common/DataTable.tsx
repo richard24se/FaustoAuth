@@ -10,6 +10,7 @@ import {
   Menu,
   Flex,
   Portal,
+  Spinner,
 } from '@chakra-ui/react';
 import {
   FiSearch,
@@ -40,6 +41,8 @@ interface DataTableProps<T> {
   customFilter?: (item: T) => boolean; // Additional filter logic (e.g. role filter)
   extraControls?: React.ReactNode; // Extra UI like Role Select dropdown
   tenantField?: keyof T; // Key for tenant_id (default 'tenant_id')
+  disableTenantFilter?: boolean;
+  isLoading?: boolean;
 }
 
 export function DataTable<T extends { id: number | string }>({
@@ -52,6 +55,8 @@ export function DataTable<T extends { id: number | string }>({
   customFilter,
   extraControls,
   tenantField = 'tenant_id' as keyof T,
+  disableTenantFilter = false,
+  isLoading = false,
 }: DataTableProps<T>) {
   const { t } = useTranslation();
   const { selectedTenantId } = useTenantStore();
@@ -68,8 +73,9 @@ export function DataTable<T extends { id: number | string }>({
     // 1. Tenant Filter
     console.log(result)
     console.log(selectedTenantId)
-    // if (selectedTenantId && !disableTenantFilter) {
-    if (selectedTenantId) {
+    if (selectedTenantId && !disableTenantFilter) {
+    // if (selectedTenantId) {
+
 
       result = result.filter((item) => (item as any)[tenantField] === selectedTenantId);
       console.log(result)
@@ -158,7 +164,18 @@ export function DataTable<T extends { id: number | string }>({
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {paginatedData.length > 0 ? (
+            {isLoading ? (
+               <Table.Row>
+                <Table.Cell
+                  colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}
+                  textAlign="center"
+                  py={8}
+                >
+                  <Spinner size="xl" color="brand.500" />
+                  <Text mt={2} color="gray.500">{t('loading') || 'Loading...'}</Text>
+                </Table.Cell>
+              </Table.Row>
+            ) : paginatedData.length > 0 ? (
               paginatedData.map((item) => (
                 <Table.Row key={item.id}>
                   {columns.map((col, idx) => (

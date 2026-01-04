@@ -1,11 +1,12 @@
-from auth.handlers import JWTBearer
 from auth.dependencies import AuthContext, get_auth_context
+from auth.handlers import JWTBearer
 from auth.model.pydantic import UserCreate, UserUpdate
 from auth.service.user import UserService
 from config.databases import get_async_db
 from fausto.fapi import Response
-from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from fastapi import APIRouter, Depends, status
 
 """
 User Management Router.
@@ -38,12 +39,6 @@ async def list_users(
         Response: A response object containing a list of users.
     """
     filters = {}
-    if "super-god" not in auth.scopes:
-        if auth.tenant_id:
-            filters["tenant_id"] = auth.tenant_id
-        else:
-             return Response(message="Found", data=[])
-
     users = await service.get_multi(filters=filters)
     return Response(message="Found", data=users)
 
@@ -59,11 +54,7 @@ async def read_user(
 
     user = await service.get(id=user_id)
     if not user:
-         raise ControllerError("User not found", status_code=404)
-
-    if "super-god" not in auth.scopes:
-        if not auth.tenant_id or user.get("tenant_id") != auth.tenant_id:
-             raise ControllerError("Not authorized to access this user", status_code=403)
+        raise ControllerError("User not found.", status_code=404)
 
     return Response(message="Found", data=user)
 
@@ -128,7 +119,7 @@ async def updating_user(
 
     if "super-god" not in auth.scopes:
         if not auth.tenant_id or existing_user.get("tenant_id") != auth.tenant_id:
-                raise ControllerError("Not authorized to update this user", status_code=403)
+            raise ControllerError("Not authorized to update this user", status_code=403)
 
     updated_user = await service.update(id=user_id, obj_in=user.model_dump(exclude_unset=True))
     return Response(message="Update successful!", data=updated_user)
@@ -150,11 +141,11 @@ async def deleting_user(
     # Check existence and permission
     existing_user = await service.get(id=user_id)
     if not existing_user:
-        raise ControllerError("User not found", status_code=404)
+        raise ControllerError("User not found, it may have already been deleted.", status_code=404)
 
     if "super-god" not in auth.scopes:
         if not auth.tenant_id or existing_user.get("tenant_id") != auth.tenant_id:
-                raise ControllerError("Not authorized to delete this user", status_code=403)
+            raise ControllerError("Not authorized to delete this user", status_code=403)
 
     deleted_user = await service.remove(id=user_id)
     return Response(message="Deleted successful!", data=deleted_user)

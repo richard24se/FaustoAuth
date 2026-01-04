@@ -32,6 +32,16 @@ COPY auth.tenant (id, name, slug, domain, is_active, created_date, modificated_d
 COPY auth.audit_type (id, name, created_date, modificated_date) FROM stdin;
 1	LOGIN	2020-01-01 00:00:00+00	\N
 2	LOGOUT	2020-01-01 00:00:00+00	\N
+3	CREATE	2020-01-01 00:00:00+00	\N
+4	UPDATE	2020-01-01 00:00:00+00	\N
+5	DELETE	2020-01-01 00:00:00+00	\N
+6	VIEW	2020-01-01 00:00:00+00	\N
+7	EXPORT	2020-01-01 00:00:00+00	\N
+8	IMPORT	2020-01-01 00:00:00+00	\N
+9	DOWNLOAD	2020-01-01 00:00:00+00	\N
+10	UPLOAD	2020-01-01 00:00:00+00	\N
+11	ARCHIVE	2020-01-01 00:00:00+00	\N
+12	RESTORE	2020-01-01 00:00:00+00	\N
 \.
 
 
@@ -68,6 +78,25 @@ COPY auth.audit (id, data, created_date, modificated_date, input, id_user, id_au
 
 COPY auth.object_type (id, name, created_date, modificated_date) FROM stdin;
 1	web	2020-06-25 01:45:36.695837+00	\N
+2	mobile	2020-06-25 01:45:36.695837+00	\N
+3	api	2020-06-25 01:45:36.695837+00	\N
+4	database	2020-06-25 01:45:36.695837+00	\N
+5	server	2020-06-25 01:45:36.695837+00	\N
+6	report	2020-06-25 01:45:36.695837+00	\N
+7	dashboard	2020-06-25 01:45:36.695837+00	\N
+8	document	2020-06-25 01:45:36.695837+00	\N
+9	file	2020-06-25 01:45:36.695837+00	\N
+10	endpoint	2020-06-25 01:45:36.695837+00	\N
+11	module	2020-06-25 01:45:36.695837+00	\N
+12	router	2020-06-25 01:45:36.695837+00	\N
+13	service	2020-06-25 01:45:36.695837+00	\N
+14	controller	2020-06-25 01:45:36.695837+00	\N
+15	component	2020-06-25 01:45:36.695837+00	\N
+16	page	2020-06-25 01:45:36.695837+00	\N
+17	widget	2020-06-25 01:45:36.695837+00	\N
+18	form	2020-06-25 01:45:36.695837+00	\N
+19	table	2020-06-25 01:45:36.695837+00	\N
+20	modal	2020-06-25 01:45:36.695837+00	\N
 \.
 
 
@@ -125,7 +154,7 @@ SELECT pg_catalog.setval('auth.audit_id_seq', 1, false);
 -- Name: audit_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.audit_type_id_seq', 1, false);
+SELECT pg_catalog.setval('auth.audit_type_id_seq', 12, true);
 
 
 --
@@ -139,7 +168,7 @@ SELECT pg_catalog.setval('auth.object_id_seq', 1, true);
 -- Name: object_type_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: postgres
 --
 
-SELECT pg_catalog.setval('auth.object_type_id_seq', 1, true);
+SELECT pg_catalog.setval('auth.object_type_id_seq', 20, true);
 
 
 --

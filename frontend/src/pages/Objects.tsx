@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -12,35 +12,21 @@ import {
 import { FiPlus } from 'react-icons/fi';
 import { DataTable } from '../components/common/DataTable';
 import { useForm } from 'react-hook-form';
-import { objectService } from '../services/objectService';
 import { AuthObject } from '../types';
 import { useTranslation } from 'react-i18next';
-import { toaster } from '../components/ui/toaster';
+import { useObjects } from '@/hooks/useObjects';
+import { useTenants } from '@/hooks/useTenants';
+import { useObjectTypes } from '@/hooks/useObjectTypes';
 
 export default function Objects() {
-  const [objects, setObjects] = useState<AuthObject[]>([]);
-  const [tenants, setTenants] = useState<any[]>([]);
+  const { objects, isLoading, createObject, updateObject, deleteObject } = useObjects();
+  const { tenants } = useTenants();
+  const { objectTypes } = useObjectTypes();
+
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [editingObj, setEditingObj] = useState<AuthObject | null>(null);
   const { t } = useTranslation();
   const { register, handleSubmit, reset, setValue } = useForm();
-
-  const fetchObjects = async () => {
-    try {
-      const [o, t] = await Promise.all([
-        objectService.getAll(),
-        import('../services/tenantService').then((m) => m.tenantService.getAll()),
-      ]);
-      setObjects(o);
-      setTenants(t);
-    } catch (e) {
-      toaster.create({ title: 'Failed to load objects', type: 'error' });
-    }
-  };
-
-  useEffect(() => {
-    fetchObjects();
-  }, []);
 
   const onEdit = (obj: AuthObject) => {
     setEditingObj(obj);
@@ -55,41 +41,27 @@ export default function Objects() {
     setEditingObj(null);
     reset();
     setValue('tenant_id', tenants[0]?.id || 1);
-    setValue('id_object_type', 1); // Default type
+    setValue('id_object_type', objectTypes[0]?.id || 1); // Default type
     onOpen();
   };
 
-  const onSubmit = async (data: any) => {
-    try {
-      data.id_object_type = Number.parseInt(data.id_object_type);
-      data.tenant_id = Number.parseInt(data.tenant_id);
-      if (editingObj) {
-        await objectService.update(editingObj.id, data);
-        toaster.create({ title: t('objectUpdated'), type: 'success' });
-      } else {
-        await objectService.create(data);
-        toaster.create({ title: t('objectCreated'), type: 'success' });
-      }
-      onClose();
-      fetchObjects();
-    } catch (e: any) {
-      toaster.create({
-        title: t('operationFailed'),
-        description: e.response?.data?.detail,
-        type: 'error',
+  const onSubmit = (data: any) => {
+    data.id_object_type = Number.parseInt(data.id_object_type);
+    data.tenant_id = Number.parseInt(data.tenant_id);
+    if (editingObj) {
+      updateObject({ id: editingObj.id, data }, {
+        onSuccess: () => onClose()
+      });
+    } else {
+      createObject(data, {
+        onSuccess: () => onClose()
       });
     }
   };
 
-  const onDelete = async (id: number) => {
+  const onDelete = (id: number) => {
     if (!window.confirm(t('deleteObjectConfirm'))) return;
-    try {
-      await objectService.delete(id);
-      toaster.create({ title: t('objectDeleted'), type: 'success' });
-      fetchObjects();
-    } catch (e) {
-      toaster.create({ title: t('deleteFailed'), type: 'error' });
-    }
+    deleteObject(id);
   };
 
   return (
@@ -102,10 +74,14 @@ export default function Objects() {
       </Box>
       <DataTable
         data={objects}
+        isLoading={isLoading}
         columns={[
           { header: 'ID', accessorKey: 'id', width: '50px' },
           { header: t('permissionName'), accessorKey: 'name' },
-          { header: t('typeId'), accessorKey: 'id_object_type' }, // Maybe fetch type name?
+          {
+            header: t('type') || 'Type',
+            render: (o) => objectTypes.find(ot => ot.id === o.id_object_type)?.name || o.id_object_type
+          },
           {
             header: t('tenant'),
             render: (o) => tenants.find((t) => t.id === o.tenant_id)?.name || o.tenant_id,
@@ -133,7 +109,15 @@ export default function Objects() {
                 </Field.Root>
                 <Field.Root required mb={4}>
                   <Field.Label>{t('objectType')}</Field.Label>
-                  <Input type="number" {...register('id_object_type')} />
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('id_object_type')} placeholder="Select type">
+                      {objectTypes.map((ot) => (
+                        <option key={ot.id} value={ot.id}>
+                          {ot.name}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
                 </Field.Root>
                 <Field.Root required>
                   <Field.Label>{t('tenant')}</Field.Label>

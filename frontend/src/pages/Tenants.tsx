@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -13,33 +13,14 @@ import { DataTable } from '@/components/common/DataTable';
 import { useForm } from 'react-hook-form';
 import { Tenant } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { toaster } from '@/components/ui/toaster';
-import { tenantService } from '@/services/tenantService';
+import { useTenants } from '@/hooks/useTenants';
 
 export default function Tenants() {
-  const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { tenants, isLoading, createTenant, updateTenant, deleteTenant } = useTenants();
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
   const { t } = useTranslation();
   const { register, handleSubmit, reset, setValue } = useForm();
-
-  const loadTenants = async () => {
-    setIsLoading(true);
-    try {
-      const data = await tenantService.getAll();
-      setTenants(data);
-    } catch (error) {
-      console.error(error);
-      toaster.create({ title: t('errorLoadingData'), type: 'error' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadTenants();
-  }, []);
 
   const onEdit = (tenant: Tenant) => {
     setEditingTenant(tenant);
@@ -53,33 +34,21 @@ export default function Tenants() {
     onOpen();
   };
 
-  const onSubmit = async (data: any) => {
-    try {
-      if (editingTenant) {
-        await tenantService.update(editingTenant.id, data);
-        toaster.create({ title: t('tenantUpdated'), type: 'success' });
-      } else {
-        await tenantService.create(data);
-        toaster.create({ title: t('tenantCreated'), type: 'success' });
-      }
-      onClose();
-      loadTenants();
-    } catch (error) {
-      console.error(error);
-      toaster.create({ title: t('errorSavingTenant'), type: 'error' });
+  const onSubmit = (data: any) => {
+    if (editingTenant) {
+      updateTenant({ id: editingTenant.id, data }, {
+        onSuccess: () => onClose()
+      });
+    } else {
+      createTenant(data, {
+        onSuccess: () => onClose()
+      });
     }
   };
 
-  const onDelete = async (id: number) => {
+  const onDelete = (id: number) => {
     if (!window.confirm(t('deleteTenantConfirm'))) return;
-    try {
-      await tenantService.delete(id);
-      toaster.create({ title: t('tenantDeleted'), type: 'success' });
-      loadTenants();
-    } catch (error) {
-      console.error(error);
-      toaster.create({ title: t('errorDeletingTenant'), type: 'error' });
-    }
+    deleteTenant(id);
   };
 
   return (
@@ -92,6 +61,7 @@ export default function Tenants() {
       </Box>
       <DataTable
         data={tenants}
+        isLoading={isLoading}
         columns={[
           { header: 'ID', accessorKey: 'id', width: '50px' },
           { header: t('name'), accessorKey: 'name' },

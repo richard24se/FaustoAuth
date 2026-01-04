@@ -7,7 +7,6 @@ includes all the API routers, and sets up logging and event handlers.
 import logging
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
-from typing import Any
 
 from auth.router import (
     router_audit,
@@ -19,19 +18,26 @@ from auth.router import (
     router_permission_type,
     router_role,
     router_role_permission,
-    router_user,
     router_tenant,
+    router_user,
 )
-from config.databases import SQLALCH_AUTH, async_redis_pool, async_token_store, async_engine, AsyncSessionFactory  # Import AsyncSessionFactory
+from config.databases import (  # Import AsyncSessionFactory
+    AsyncSessionFactory,
+    async_engine,
+    async_redis_pool,
+    async_token_store,
+)
 from config.settings import settings
+from fausto import ControllerError
+from fausto.exceptions import controller_error_handler
+from middleware.exception_handler import GlobalExceptionMiddleware
+from middleware.tenant import TenantMiddleware
+from sqlalchemy import text  # Added import
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from sqlalchemy import text  # Added import
-from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
-from fausto import ControllerError
-from fausto.exceptions import controller_error_handler
 
 # --- OpenAPI Metadata ---
 tags_metadata = [
@@ -93,10 +99,10 @@ app = FastAPI(
 
 app.add_exception_handler(ControllerError, controller_error_handler)
 
-from middleware.exception_handler import GlobalExceptionMiddleware
 
 # --- Middleware ---
 app.add_middleware(GlobalExceptionMiddleware)
+app.add_middleware(TenantMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # In production, restrict this to specific domains

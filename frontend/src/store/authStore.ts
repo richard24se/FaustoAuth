@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { jwtDecode } from 'jwt-decode';
 import { LoginResponse, User } from '../types';
+import { useTenantStore } from './tenantStore';
 
 interface AuthState {
   user: User | null;
@@ -70,6 +71,10 @@ export const useAuthStore = create<AuthState>((set) => {
         token: access_token,
         isAuthenticated: true,
       });
+      
+      // Reset tenant selection on new login to ensure fresh state
+      // This ensures admins start with "All Tenants" and regular users get their tenant auto-selected by components
+      useTenantStore.getState().setTenant(null);
     },
 
     logout: () => {

@@ -1,16 +1,15 @@
 # fastapi/tests/integration/test_audit_type.py
 """Integration tests for AuditType router endpoints."""
 import pytest
+from auth.model.models import AuditType
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from auth.model.models import AuditType
 
 
 @pytest.mark.asyncio
-async def test_create_audit_type(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_create_audit_type(super_god_client: AsyncClient, db_session: AsyncSession):
     """Test creating a new audit type."""
-    response = await authenticated_client.post(
+    response = await super_god_client.post(
         "/audit_type/",
         json={"name": "new_audit_type"},
     )
@@ -20,18 +19,17 @@ async def test_create_audit_type(authenticated_client: AsyncClient, db_session: 
 
 
 @pytest.mark.asyncio
-async def test_create_audit_type_duplicate(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_create_audit_type_duplicate(super_god_client: AsyncClient, db_session: AsyncSession):
     """Test creating a duplicate audit type."""
     audit_type = AuditType(name="dup_audit_type")
     db_session.add(audit_type)
     await db_session.commit()
     await db_session.refresh(audit_type)
 
-    response = await authenticated_client.post(
+    response = await super_god_client.post(
         "/audit_type/",
         json={"name": "dup_audit_type"},
     )
-    assert response.status_code == 400
     assert response.status_code == 400
     assert "already exists" in response.json()["message"]
 
@@ -45,8 +43,6 @@ async def test_list_audit_types(authenticated_client: AsyncClient, db_session: A
     await db_session.refresh(audit_type)
 
     response = await authenticated_client.get("/audit_type/")
-    assert response.status_code == 200
-    data = response.json()
     assert response.status_code == 200
     data = response.json()
     assert len(data["data"]) >= 1
@@ -76,7 +72,7 @@ async def test_read_audit_type_not_found(authenticated_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_update_audit_type(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_update_audit_type(super_god_client: AsyncClient, db_session: AsyncSession):
     """Test updating an audit type."""
     audit_type = AuditType(name="update_audit_type")
     db_session.add(audit_type)
@@ -84,7 +80,7 @@ async def test_update_audit_type(authenticated_client: AsyncClient, db_session: 
     await db_session.refresh(audit_type)
     audit_type_id = audit_type.id
 
-    response = await authenticated_client.put(
+    response = await super_god_client.put(
         f"/audit_type/{audit_type_id}",
         json={"name": "updated_audit_type"},
     )
@@ -94,9 +90,9 @@ async def test_update_audit_type(authenticated_client: AsyncClient, db_session: 
 
 
 @pytest.mark.asyncio
-async def test_update_audit_type_not_found(authenticated_client: AsyncClient):
+async def test_update_audit_type_not_found(super_god_client: AsyncClient):
     """Test updating a non-existent audit type."""
-    response = await authenticated_client.put(
+    response = await super_god_client.put(
         "/audit_type/99999",
         json={"name": "updated"},
     )
@@ -104,7 +100,7 @@ async def test_update_audit_type_not_found(authenticated_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_delete_audit_type(authenticated_client: AsyncClient, db_session: AsyncSession):
+async def test_delete_audit_type(super_god_client: AsyncClient, db_session: AsyncSession):
     """Test deleting an audit type."""
     audit_type = AuditType(name="delete_audit_type")
     db_session.add(audit_type)
@@ -112,12 +108,12 @@ async def test_delete_audit_type(authenticated_client: AsyncClient, db_session: 
     await db_session.refresh(audit_type)
     audit_type_id = audit_type.id
 
-    response = await authenticated_client.delete(f"/audit_type/{audit_type_id}")
+    response = await super_god_client.delete(f"/audit_type/{audit_type_id}")
     assert response.status_code == 200
 
 
 @pytest.mark.asyncio
-async def test_delete_audit_type_not_found(authenticated_client: AsyncClient):
+async def test_delete_audit_type_not_found(super_god_client: AsyncClient):
     """Test deleting a non-existent audit type."""
-    response = await authenticated_client.delete("/audit_type/99999")
+    response = await super_god_client.delete("/audit_type/99999")
     assert response.status_code == 404

@@ -118,5 +118,12 @@
   "auditTypeDeleted": "Audit type deleted successfully",
   "errorDeletingAuditType": "Error deleting audit type",
   "searchAuditTypes": "Search audit types...",
-  "accessVisualization": "Access Visualization"
+  "accessVisualization": "Access Visualization",
+  "objectTypes": "Object Types",
+  "addObjectType": "Add Object Type",
+  "editObjectType": "Edit Object Type",
+  "createObjectType": "Create Object Type",
+  "deleteObjectTypeConfirm": "Are you sure you want to delete this object type?",
+  "createdDate": "Created Date",
+  "searchObjectTypes": "Search object types..."
 }

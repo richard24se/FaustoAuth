@@ -1,20 +1,17 @@
 # fastapi/tests/test_user.py
-import pytest_asyncio
 import pytest
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
-from auth.model.models import Role, User
-from config.security import pwd_context
+from auth.model.models import User
 from config.databases import get_async_db as get_app_async_db
-
-
-
+from config.security import pwd_context
+from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_create_user_success(authenticated_client: AsyncClient, test_role: int, test_tenant: int, create_test_user_data):
+async def test_create_user_success(
+    authenticated_client: AsyncClient, test_role: int, test_tenant: int, create_test_user_data
+):
     """
     Test successful user creation.
     """
@@ -98,13 +95,11 @@ async def test_get_non_existent_user(authenticated_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_update_user_success(
-    authenticated_client: AsyncClient, db_session: AsyncSession, test_user: int
-):
+async def test_update_user_success(authenticated_client: AsyncClient, db_session: AsyncSession, test_user: int):
     """
     Test successful user update.
     """
-    update_data = {"names": "UpdatedName"} # Removed email as it's commented out in model
+    update_data = {"names": "UpdatedName"}  # Removed email as it's commented out in model
     response = await authenticated_client.put(f"/user/{test_user}", json=update_data)
 
     assert response.status_code == 200
@@ -143,21 +138,19 @@ async def test_update_user_duplicate_username(
     """
     # Create another user
     another_user = User(
-        id=None, # Pass id=None for auto-increment
+        id=None,  # Pass id=None for auto-increment
         username="anotheruser",
         password=pwd_context.hash("anotherpassword"),
         names="Another",
         surnames="User",
         id_role=test_role,
-        tenant_id=test_tenant # Added tenant_id
+        tenant_id=test_tenant,  # Added tenant_id
     )
     db_session.add(another_user)
     await db_session.commit()
     await db_session.refresh(another_user)
 
-    update_data = {
-        "username": another_user.username
-    }  # Try to change test_user's username to another_user's
+    update_data = {"username": another_user.username}  # Try to change test_user's username to another_user's
     response = await authenticated_client.put(f"/user/{test_user}", json=update_data)
 
     assert response.status_code == 400
@@ -174,13 +167,13 @@ async def test_delete_user_success(
     """
     # Create a user to delete
     user_to_delete = User(
-        id=None, # Pass id=None for auto-increment
+        id=None,  # Pass id=None for auto-increment
         username="todelete",
         password=pwd_context.hash("deletepass"),
         names="To",
         surnames="Delete",
         id_role=test_role,
-        tenant_id=test_tenant # Added tenant_id
+        tenant_id=test_tenant,  # Added tenant_id
     )
     db_session.add(user_to_delete)
     await db_session.commit()
@@ -207,4 +200,4 @@ async def test_delete_non_existent_user(authenticated_client: AsyncClient):
 
     assert response.status_code == 404
     assert response.json()["error"] is True
-    assert response.json()["message"] == "User not found, it may have already been deleted."
+    assert response.json()["message"] == "User not found."

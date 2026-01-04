@@ -58,6 +58,7 @@ const LinkItems: Array<LinkItemProps> = [
   { name: 'roles', icon: FiShield, path: '/roles' },
   { name: 'permissions', icon: FiLock, path: '/permissions' },
   { name: 'objects', icon: FiDatabase, path: '/objects' },
+  { name: 'objectTypes', icon: FiType, path: '/object-types' },
   { name: 'JWT Debugger', icon: FiCode, path: '/jwt-debugger' },
   {
     name: 'audit',
@@ -423,12 +424,14 @@ const TenantSelector = () => {
   useEffect(() => {
     const isAdmin = checkAdmin();
     console.log('User Role:', user?.role?.name, 'Is Admin:', isAdmin);
-
+    console.log('Tenants: BEFORE', tenants);
     if (isAdmin && tenants.length === 0) {
       tenantService
         .getAll()
         .then((data) => {
+          
           setTenants(data);
+          console.log('Tenants:222', data);
         })
         .catch(console.error);
     } else if (!isAdmin && user?.tenant_id) {
@@ -436,6 +439,7 @@ const TenantSelector = () => {
         setTenant(user.tenant_id);
       }
     }
+    console.log('Tenants: AFTER', tenants);
   }, [user, tenants.length, selectedTenantId, setTenants, setTenant]);
 
   const isAdmin = checkAdmin();

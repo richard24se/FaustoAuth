@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -10,45 +10,25 @@ import {
   NativeSelect,
 } from '@chakra-ui/react';
 import { FiPlus } from 'react-icons/fi';
-import { DataTable } from '../components/common/DataTable';
+import { DataTable } from '@/components/common/DataTable';
 import { useForm } from 'react-hook-form';
-import { permissionService } from '../services/permissionService';
-import { objectService } from '../services/objectService';
-import { Permission, AuthObject } from '../types';
+import { Permission } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { toaster } from '../components/ui/toaster';
-import { permissionTypeService, PermissionType } from '../services/permissionTypeService';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useObjects } from '@/hooks/useObjects';
+import { useTenants } from '@/hooks/useTenants';
+import { usePermissionTypes } from '@/hooks/usePermissionTypes';
 
 export default function Permissions() {
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [objects, setObjects] = useState<AuthObject[]>([]);
-  const [tenants, setTenants] = useState<any[]>([]);
-  const [permissionTypes, setPermissionTypes] = useState<PermissionType[]>([]);
+  const { permissions, isLoading, createPermission, updatePermission, deletePermission } = usePermissions();
+  const { objects } = useObjects();
+  const { tenants } = useTenants();
+  const { permissionTypes } = usePermissionTypes();
+
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [editingPerm, setEditingPerm] = useState<Permission | null>(null);
   const { t } = useTranslation();
   const { register, handleSubmit, reset, setValue } = useForm();
-
-  const fetchData = async () => {
-    try {
-      const [p, o, t, pt] = await Promise.all([
-        permissionService.getAll(),
-        objectService.getAll(),
-        import('../services/tenantService').then((m) => m.tenantService.getAll()),
-        permissionTypeService.getAll(),
-      ]);
-      setPermissions(p);
-      setObjects(o);
-      setTenants(t);
-      setPermissionTypes(pt);
-    } catch (e) {
-      toaster.create({ title: 'Failed to load data', type: 'error' });
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const onEdit = (perm: Permission) => {
     setEditingPerm(perm);
@@ -66,38 +46,24 @@ export default function Permissions() {
     onOpen();
   };
 
-  const onSubmit = async (data: any) => {
-    try {
-      data.id_object = Number.parseInt(data.id_object);
-      data.id_permission_type = Number.parseInt(data.id_permission_type);
-      data.tenant_id = Number.parseInt(data.tenant_id);
-      if (editingPerm) {
-        await permissionService.update(editingPerm.id, data);
-        toaster.create({ title: t('permissionUpdated'), type: 'success' });
-      } else {
-        await permissionService.create(data);
-        toaster.create({ title: t('permissionCreated'), type: 'success' });
-      }
-      onClose();
-      fetchData();
-    } catch (e: any) {
-      toaster.create({
-        title: t('operationFailed'),
-        description: e.response?.data?.detail,
-        type: 'error',
+  const onSubmit = (data: any) => {
+    data.id_object = Number.parseInt(data.id_object);
+    data.id_permission_type = Number.parseInt(data.id_permission_type);
+    data.tenant_id = Number.parseInt(data.tenant_id);
+    if (editingPerm) {
+      updatePermission({ id: editingPerm.id, data }, {
+        onSuccess: () => onClose()
+      });
+    } else {
+      createPermission(data, {
+        onSuccess: () => onClose()
       });
     }
   };
 
-  const onDelete = async (id: number) => {
+  const onDelete = (id: number) => {
     if (!window.confirm(t('deletePermissionConfirm'))) return;
-    try {
-      await permissionService.delete(id);
-      toaster.create({ title: t('permissionDeleted'), type: 'success' });
-      fetchData();
-    } catch (e) {
-      toaster.create({ title: t('deleteFailed'), type: 'error' });
-    }
+    deletePermission(id);
   };
 
   return (
@@ -110,6 +76,7 @@ export default function Permissions() {
       </Box>
       <DataTable
         data={permissions}
+        isLoading={isLoading}
         columns={[
           { header: 'ID', accessorKey: 'id', width: '50px' },
           { header: t('permissionName'), accessorKey: 'name' },

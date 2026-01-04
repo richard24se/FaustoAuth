@@ -11,65 +11,70 @@ import {
 import { FiPlus } from 'react-icons/fi';
 import { DataTable } from '@/components/common/DataTable';
 import { useForm } from 'react-hook-form';
-import { AuditType } from '@/types';
+import { ObjectType } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { useAuditTypes } from '@/hooks/useAuditTypes';
+import { useObjectTypes } from '@/hooks/useObjectTypes';
 
-export default function AuditTypes() {
-  const { auditTypes, isLoading, createAuditType, updateAuditType, deleteAuditType } = useAuditTypes();
+export default function ObjectTypes() {
+  const { objectTypes, isLoading, createObjectType, updateObjectType, deleteObjectType } = useObjectTypes();
   const { open: isOpen, onOpen, onClose } = useDisclosure();
-  const [editingAuditType, setEditingAuditType] = useState<AuditType | null>(null);
+  const [editingObjType, setEditingObjType] = useState<ObjectType | null>(null);
   const { t } = useTranslation();
   const { register, handleSubmit, reset, setValue } = useForm();
 
-  const onEdit = (auditType: AuditType) => {
-    setEditingAuditType(auditType);
-    setValue('name', auditType.name);
+  const onEdit = (objType: ObjectType) => {
+    setEditingObjType(objType);
+    setValue('name', objType.name);
     onOpen();
   };
 
   const onAdd = () => {
-    setEditingAuditType(null);
+    setEditingObjType(null);
     reset();
     onOpen();
   };
 
   const onSubmit = (data: any) => {
-      if (editingAuditType) {
-        updateAuditType({ id: editingAuditType.id, data }, {
-          onSuccess: () => onClose()
+      if (editingObjType) {
+        updateObjectType({ id: editingObjType.id, data }, {
+          onSuccess: () => {
+            onClose();
+          }
         });
       } else {
-        createAuditType(data, {
-          onSuccess: () => onClose()
+        createObjectType(data, {
+          onSuccess: () => {
+            onClose();
+          }
         });
       }
   };
 
   const onDelete = (id: number) => {
-    if (!window.confirm(t('deleteAuditTypeConfirm'))) return;
-    deleteAuditType(id);
+    if (!window.confirm(t('deleteObjectTypeConfirm') || 'Are you sure you want to delete this object type?')) return;
+    deleteObjectType(id);
   };
 
   return (
     <Box p={8}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={6}>
-        <Heading size="lg">{t('auditTypes')}</Heading>
+        <Heading size="lg">{t('objectTypes') || 'Object Types'}</Heading>
         <Button colorPalette="brand" onClick={onAdd}>
-          <FiPlus /> {t('addAuditType')}
+          <FiPlus /> {t('addObjectType') || 'Add Object Type'}
         </Button>
       </Box>
       <DataTable
-        data={auditTypes}
+        data={objectTypes}
         isLoading={isLoading}
         columns={[
           { header: 'ID', accessorKey: 'id', width: '50px' },
-          { header: t('name'), accessorKey: 'name' },
+          { header: t('name') || 'Name', accessorKey: 'name' },
+          { header: t('createdDate') || 'Created Date', accessorKey: 'created_date' },
         ]}
         searchKeys={['name']}
-        searchPlaceholder={t('searchAuditTypes')}
+        searchPlaceholder={t('searchObjectTypes') || 'Search object types...'}
         onEdit={onEdit}
-        onDelete={(row) => onDelete(row.id)}
+        onDelete={(o) => onDelete(o.id)}
         disableTenantFilter={true}
       />
 
@@ -78,14 +83,14 @@ export default function AuditTypes() {
         <Dialog.Positioner>
           <Dialog.Content>
             <Dialog.Header>
-              <Dialog.Title>{editingAuditType ? t('editAuditType') : t('addAuditType')}</Dialog.Title>
+              <Dialog.Title>{editingObjType ? (t('editObjectType') || 'Edit Object Type') : (t('createObjectType') || 'Create Object Type')}</Dialog.Title>
               <Dialog.CloseTrigger />
             </Dialog.Header>
             <Dialog.Body pb={6}>
-              <form id="audit-type-form" onSubmit={handleSubmit(onSubmit)}>
-                <Field.Root required>
-                  <Field.Label>{t('name')}</Field.Label>
-                  <Input {...register('name')} placeholder="e.g. Login" />
+              <form id="obj-type-form" onSubmit={handleSubmit(onSubmit)}>
+                <Field.Root required mb={4}>
+                  <Field.Label>{t('name') || 'Name'}</Field.Label>
+                  <Input {...register('name')} />
                 </Field.Root>
               </form>
             </Dialog.Body>
@@ -93,7 +98,7 @@ export default function AuditTypes() {
               <Button onClick={onClose} mr={3} variant="ghost">
                 {t('cancel')}
               </Button>
-              <Button colorPalette="brand" form="audit-type-form" type="submit">
+              <Button colorPalette="brand" form="obj-type-form" type="submit">
                 {t('save')}
               </Button>
             </Dialog.Footer>

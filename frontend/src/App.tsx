@@ -17,6 +17,7 @@ const RolePermissions = lazy(() => import('./pages/RolePermissions'));
 const Objects = lazy(() => import('./pages/Objects'));
 const Audits = lazy(() => import('./pages/Audits'));
 const AuditTypes = lazy(() => import('./pages/AuditTypes'));
+const ObjectTypes = lazy(() => import('./pages/ObjectTypes'));
 const JwtDebugger = lazy(() => import('./pages/JwtDebugger'));
 
 function App() {
@@ -57,6 +58,7 @@ function App() {
               <Route path="/objects" element={<Objects />} />
               <Route path="/audits" element={<Audits />} />
               <Route path="/audit-types" element={<AuditTypes />} />
+              <Route path="/object-types" element={<ObjectTypes />} />
               <Route path="/jwt-debugger" element={<JwtDebugger />} />
             </Route>
           </Route>

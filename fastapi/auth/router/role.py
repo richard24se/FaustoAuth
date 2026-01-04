@@ -1,11 +1,12 @@
-from auth.handlers import JWTBearer
 from auth.dependencies import AuthContext, get_auth_context
+from auth.handlers import JWTBearer
 from auth.model.pydantic import RoleCreate, RoleUpdate
 from auth.service.role import RoleService
 from config.databases import get_async_db
 from fausto.fapi import Response
-from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from fastapi import APIRouter, Depends, status
 
 router = APIRouter(
     prefix="/role",
@@ -128,7 +129,7 @@ async def deleting_role(
     # Check existence and permission
     existing_role = await service.get(id=role_id)
     if not existing_role:
-        raise ControllerError("Role not found", status_code=404)
+        raise ControllerError("Role not found, it may have already been deleted.", status_code=404)
 
     if "super-god" not in auth.scopes:
         if not auth.tenant_id or existing_role.get("tenant_id") != auth.tenant_id:

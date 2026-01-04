@@ -1,20 +1,16 @@
 import pytest
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from auth.model.models import Role
+from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 
 @pytest.mark.asyncio
 async def test_create_role(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
     """Test creating a new role."""
     response = await authenticated_client.post(
         "/role/",
-        json={
-            "name": "new_role", 
-            "display_name": "New Role", 
-            "permissions": [],
-            "tenant_id": test_tenant
-        },
+        json={"name": "new_role", "display_name": "New Role", "permissions": [], "tenant_id": test_tenant},
     )
     assert response.status_code == 201, f"Failed with {response.status_code}: {response.text}"
     data = response.json()
@@ -32,12 +28,7 @@ async def test_create_role_duplicate(authenticated_client: AsyncClient, test_rol
     """Test creating a duplicate role."""
     response = await authenticated_client.post(
         "/role/",
-        json={
-            "name": "test_role", 
-            "display_name": "Duplicate Role", 
-            "permissions": [],
-            "tenant_id": test_tenant
-        },
+        json={"name": "test_role", "display_name": "Duplicate Role", "permissions": [], "tenant_id": test_tenant},
     )
     assert response.status_code == 400
     assert response.json()["message"] == "The role 'test_role' already exists."
@@ -118,4 +109,4 @@ async def test_delete_role_not_found(authenticated_client: AsyncClient):
     """Test deleting a non-existent role."""
     response = await authenticated_client.delete("/role/99999")
     assert response.status_code == 404
-    assert response.json()["message"] == "Role not found, it may have already been deleted."
+    assert response.json()["message"] == "Role not found."

@@ -1,14 +1,14 @@
-from typing import Any, List
+from typing import Any
 
 from auth.handlers.jwt import JWTBearer
-from auth.model.pydantic import TenantCreate, TenantOut, TenantUpdate
+from auth.model.pydantic import TenantCreate, TenantUpdate
 from auth.service.tenant import TenantService
-from auth.dependencies import AuthContext, get_auth_context
 from config.databases import get_async_db
 from fausto import ControllerError
 from fausto.fapi import Response
-from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from fastapi import APIRouter, Depends
 
 router = APIRouter(
     prefix="/tenant",
@@ -53,7 +53,7 @@ async def list_tenants(
         raise e.exception()
 
 
-@router.post("/", response_model=Response, summary="Create a tenant")
+@router.post("/", response_model=Response, status_code=201, summary="Create a tenant")
 async def create_tenant(
     tenant_in: TenantCreate,
     session: AsyncSession = Depends(get_async_db),

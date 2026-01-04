@@ -1,8 +1,9 @@
 import pytest
+from auth.model.models import Object, ObjectType, Permission, PermissionType
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from auth.model.models import Permission, Object, PermissionType, ObjectType
+from sqlalchemy.ext.asyncio import AsyncSession
+
 
 @pytest.mark.asyncio
 async def test_create_permission(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
@@ -27,7 +28,7 @@ async def test_create_permission(authenticated_client: AsyncClient, db_session: 
             "name": "new_permission",
             "id_object": obj.id,
             "id_permission_type": perm_type.id,
-            "tenant_id": test_tenant
+            "tenant_id": test_tenant,
         },
     )
     assert response.status_code == 201
@@ -41,7 +42,9 @@ async def test_create_permission(authenticated_client: AsyncClient, db_session: 
 
 
 @pytest.mark.asyncio
-async def test_create_permission_duplicate(authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int):
+async def test_create_permission_duplicate(
+    authenticated_client: AsyncClient, db_session: AsyncSession, test_tenant: int
+):
     """Test creating a duplicate permission."""
     # Create dependencies
     obj_type = ObjectType(name="dup_obj_type")
@@ -72,7 +75,7 @@ async def test_create_permission_duplicate(authenticated_client: AsyncClient, db
             "name": "dup_permission",
             "id_object": obj_id,
             "id_permission_type": perm_type_id,
-            "tenant_id": test_tenant
+            "tenant_id": test_tenant,
         },
     )
     assert response.status_code == 400
@@ -95,7 +98,7 @@ async def test_list_permissions(authenticated_client: AsyncClient, db_session: A
     await db_session.commit()
     await db_session.refresh(obj)
     await db_session.refresh(perm_type)
-    
+
     perm = Permission(name="list_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant)
     db_session.add(perm)
     await db_session.commit()
@@ -122,7 +125,7 @@ async def test_read_permission(authenticated_client: AsyncClient, db_session: As
     await db_session.commit()
     await db_session.refresh(obj)
     await db_session.refresh(perm_type)
-    
+
     perm = Permission(name="read_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant)
     db_session.add(perm)
     await db_session.commit()
@@ -159,8 +162,10 @@ async def test_update_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.commit()
     await db_session.refresh(obj)
     await db_session.refresh(perm_type)
-    
-    perm = Permission(name="update_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant)
+
+    perm = Permission(
+        name="update_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant
+    )
     db_session.add(perm)
     await db_session.commit()
     await db_session.refresh(perm)
@@ -201,8 +206,10 @@ async def test_delete_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.commit()
     await db_session.refresh(obj)
     await db_session.refresh(perm_type)
-    
-    perm = Permission(name="delete_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant)
+
+    perm = Permission(
+        name="delete_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant
+    )
     db_session.add(perm)
     await db_session.commit()
     await db_session.refresh(perm)
@@ -221,4 +228,4 @@ async def test_delete_permission_not_found(authenticated_client: AsyncClient):
     """Test deleting a non-existent permission."""
     response = await authenticated_client.delete("/permission/99999")
     assert response.status_code == 404
-    assert response.json()["message"] == "Permission not found, it may have already been deleted."
+    assert response.json()["message"] == "Permission not found."

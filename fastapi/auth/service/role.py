@@ -5,9 +5,9 @@ from typing import Any
 from auth.model.models import Role, RolePermission
 from auth.model.pydantic import RoleCreate, RoleUpdate
 from fausto import ControllerError
-from fausto.sqlalch import to_dict
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from .base import CRUDBase
 
 
@@ -47,7 +47,14 @@ class RoleService(CRUDBase[Role, RoleCreate, RoleUpdate]):
                 permissions = obj_in.permissions
                 tenant_id = obj_in.tenant_id
 
-            result = await self.session.execute(select(Role).filter_by(name=name))
+            # STRICT TENANT ISOLATION: Override tenant_id if context is present
+            tid = self.current_tenant
+            if tid:
+                tenant_id = tid
+
+            query = select(Role).filter_by(name=name)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             existing_role = result.scalars().first()
             if existing_role:
                 raise ControllerError(f"The role '{name}' already exists.", status_code=400)
@@ -92,7 +99,9 @@ class RoleService(CRUDBase[Role, RoleCreate, RoleUpdate]):
             ControllerError: If the role is not found, name exists, or update fails.
         """
         try:
-            result = await self.session.execute(select(Role).filter_by(id=id))
+            query = select(Role).filter_by(id=id)
+            query = self._apply_tenant_filter(query)
+            result = await self.session.execute(query)
             role = result.scalars().first()
             if not role:
                 raise ControllerError("Role not found.", status_code=404)
@@ -108,7 +117,9 @@ class RoleService(CRUDBase[Role, RoleCreate, RoleUpdate]):
                 update_data = obj_in.model_dump(exclude_unset=True, exclude={"permissions"})
 
             if name and name != role.name:
-                result = await self.session.execute(select(Role).filter(Role.name == name))
+                query = select(Role).filter(Role.name == name)
+                query = self._apply_tenant_filter(query)
+                result = await self.session.execute(query)
                 existing_name = result.scalars().first()
                 if existing_name:
                     raise ControllerError(f"The role name '{name}' already exists.", status_code=400)
@@ -123,7 +134,7 @@ class RoleService(CRUDBase[Role, RoleCreate, RoleUpdate]):
                 await self.session.execute(delete(RolePermission).where(RolePermission.id_role == id))
                 for perm_id in permissions:
                     self.session.add(RolePermission(id_role=id, id_permission=perm_id))
-            
+
             await self.session.commit()
             await self.session.refresh(role)
 

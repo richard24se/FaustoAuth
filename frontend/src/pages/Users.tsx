@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -11,19 +11,19 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
-import { userService } from '../services/userService';
-import { roleService } from '../services/roleService';
-import { tenantService } from '../services/tenantService';
-import { User, Role } from '../types';
+import { User } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { toaster } from '../components/ui/toaster';
-import { DataTable, Column } from '../components/common/DataTable';
-import { useColorMode } from '../components/ui/color-mode';
+import { DataTable, Column } from '@/components/common/DataTable';
+import { useColorMode } from '@/components/ui/color-mode';
+import { useUsers } from '@/hooks/useUsers';
+import { useRoles } from '@/hooks/useRoles';
+import { useTenants } from '@/hooks/useTenants';
 
 export default function Users() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [tenants, setTenants] = useState<any[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const { users, isLoading: usersLoading, createUser, updateUser, deleteUser } = useUsers();
+  const { roles } = useRoles();
+  const { tenants } = useTenants();
+
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const { t } = useTranslation();
@@ -34,26 +34,6 @@ export default function Users() {
 
   const { register, handleSubmit, reset, setValue } = useForm();
   const bgInput = colorMode === 'dark' ? 'gray.700' : 'white';
-
-  // Fetch Users and Roles on mount
-  const fetchData = async () => {
-    try {
-      const [u, r, t] = await Promise.all([
-        userService.getAll(),
-        roleService.getAll(),
-        tenantService.getAll(),
-      ]);
-      setUsers(u);
-      setRoles(r);
-      setTenants(t);
-    } catch (e) {
-      toaster.create({ title: 'Failed to load data', type: 'error' });
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   // Helper to get Tenant Name
   const getTenantName = (id: number) => {
@@ -97,39 +77,25 @@ export default function Users() {
     onOpen();
   };
 
-  const onSubmit = async (data: any) => {
-    try {
-      data.id_role = Number.parseInt(data.id_role);
-      data.tenant_id = Number.parseInt(data.tenant_id);
+  const onSubmit = (data: any) => {
+    data.id_role = Number.parseInt(data.id_role);
+    data.tenant_id = Number.parseInt(data.tenant_id);
 
-      if (editingUser) {
-        await userService.update(editingUser.id, data);
-        toaster.create({ title: t('userUpdated'), type: 'success' });
-      } else {
-        if (!data.password) data.password = 'password123';
-        await userService.create(data);
-        toaster.create({ title: t('userCreated'), type: 'success' });
-      }
-      onClose();
-      fetchData();
-    } catch (e: any) {
-      toaster.create({
-        title: t('operationFailed'),
-        description: e.response?.data?.detail,
-        type: 'error',
+    if (editingUser) {
+      updateUser({ id: editingUser.id, data }, {
+        onSuccess: () => onClose()
+      });
+    } else {
+      if (!data.password) data.password = 'password123';
+      createUser(data, {
+        onSuccess: () => onClose()
       });
     }
   };
 
-  const onDelete = async (user: User) => {
+  const onDelete = (user: User) => {
     if (!window.confirm(t('deleteUserConfirm'))) return;
-    try {
-      await userService.delete(user.id);
-      toaster.create({ title: t('userDeleted'), type: 'success' });
-      fetchData();
-    } catch (e) {
-      toaster.create({ title: t('deleteFailed'), type: 'error' });
-    }
+    deleteUser(user.id);
   };
 
   return (
@@ -143,6 +109,7 @@ export default function Users() {
 
       <DataTable
         data={users}
+        isLoading={usersLoading}
         columns={columns}
         searchKeys={['username', 'names']}
         searchPlaceholder={t('searchUsers') || 'Search users...'}

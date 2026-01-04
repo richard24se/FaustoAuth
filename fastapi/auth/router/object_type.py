@@ -1,12 +1,13 @@
-from typing import Any
-
+from auth.dependencies import AuthContext, get_auth_context
 from auth.handlers import JWTBearer
 from auth.model.pydantic import ObjectTypeCreate, ObjectTypeUpdate
 from auth.service.object_type import ObjectTypeService
 from config.databases import get_async_db
+from fausto import ControllerError
 from fausto.fapi import Response
-from fastapi import APIRouter, Body, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from fastapi import APIRouter, Depends, status
 
 router = APIRouter(
     prefix="/object_types",
@@ -17,21 +18,25 @@ router = APIRouter(
 
 
 @router.get("/", response_model=Response, summary="List all object types")
-async def list_object_types(s: AsyncSession = Depends(get_async_db)):
+async def list_object_types(
+    s: AsyncSession = Depends(get_async_db),
+    auth: AuthContext = Depends(get_auth_context),
+):
     """Retrieve a list of all object types.
 
     Returns:
         Response: A response object containing a list of object types.
     """
+    # Object Types are global, so everyone can see them.
     obj_types = await ObjectTypeService.get_object_types(s=s)
     return Response(message="Found", data=obj_types)
 
 
-@router.get(
-    "/{object_type_id}", response_model=Response, summary="Get an object type by ID"
-)
+@router.get("/{object_type_id}", response_model=Response, summary="Get an object type by ID")
 async def read_object_type(
-    object_type_id: int, s: AsyncSession = Depends(get_async_db)
+    object_type_id: int,
+    s: AsyncSession = Depends(get_async_db),
+    auth: AuthContext = Depends(get_auth_context),
 ):
     """Retrieve a single object type by its ID.
 
@@ -52,7 +57,9 @@ async def read_object_type(
     summary="Create a new object type",
 )
 async def creating_object_type(
-    object_type: ObjectTypeCreate, s: AsyncSession = Depends(get_async_db)
+    object_type: ObjectTypeCreate,
+    s: AsyncSession = Depends(get_async_db),
+    auth: AuthContext = Depends(get_auth_context),
 ):
     """Create a new object type.
 
@@ -62,17 +69,19 @@ async def creating_object_type(
     Returns:
         Response: A response object indicating success or failure.
     """
+    if "super-god" not in auth.scopes:
+        raise ControllerError("Not authorized to create object types.", status_code=403)
+
     new_obj_type = await ObjectTypeService.create_object_type(s=s, data=object_type.model_dump())
     return Response(message="Saved successful!", data=new_obj_type)
 
 
-@router.put(
-    "/{object_type_id}", response_model=Response, summary="Update an object type"
-)
+@router.put("/{object_type_id}", response_model=Response, summary="Update an object type")
 async def updating_object_type(
     object_type_id: int,
     object_type: ObjectTypeUpdate,
     s: AsyncSession = Depends(get_async_db),
+    auth: AuthContext = Depends(get_auth_context),
 ):
     """Update an existing object type by its ID.
 
@@ -83,6 +92,9 @@ async def updating_object_type(
     Returns:
         Response: A response object indicating success or failure.
     """
+    if "super-god" not in auth.scopes:
+        raise ControllerError("Not authorized to update object types.", status_code=403)
+
     updated_obj_type = await ObjectTypeService.update_object_type(
         s=s, object_type_id=object_type_id, data=object_type.model_dump(exclude_unset=True)
     )
@@ -95,7 +107,9 @@ async def updating_object_type(
     summary="Delete an object type",
 )
 async def deleting_object_type(
-    object_type_id: int, s: AsyncSession = Depends(get_async_db)
+    object_type_id: int,
+    s: AsyncSession = Depends(get_async_db),
+    auth: AuthContext = Depends(get_auth_context),
 ):
     """Delete an object type by its ID.
 
@@ -105,6 +119,9 @@ async def deleting_object_type(
     Returns:
         Response: A response object indicating success or failure.
     """
+    if "super-god" not in auth.scopes:
+        raise ControllerError("Not authorized to delete object types.", status_code=403)
+
     deleted_obj_type = await ObjectTypeService.delete_object_type(s=s, object_type_id=object_type_id)
     return Response(message="Deleted successful!", data=deleted_obj_type)
 

@@ -1,6 +1,5 @@
-import React from "react";
-import { useState, useEffect } from 'react'
-import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 
 // components
 import Layout from "./Layout/Layout";
@@ -16,8 +15,6 @@ import Login from "../pages/login/Login";
 //Private route to validate token on localstorage
 import { PrivateRoute } from "./CustomRoutes";
 
-//Redux history
-import { history } from 'store/helpers';
 //Redux
 import { connect } from 'react-redux';
 import { fotchActions } from 'store/actions'
@@ -47,19 +44,18 @@ const TrueApp = connect(mapStateToProps)((props) => {
     <>
       <Notifier />
       <Configurator/>
-      <HashRouter history={history}>
-        <Switch>
-          <Route exact path="/" render={() => <Redirect to="/app/maintenance/create_user" />} />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/app/maintenance/create_user" />} />
           <Route
-            exact
             path="/app"
-            render={() => <Redirect to="/app/maintenance/create_user" />}
+            element={<Navigate to="/app/maintenance/create_user" />}
           />
-          <PrivateRoute path="/app" component={Layout} />
-          <Route path="/login" component={Login} />
-          <Route component={Error} />
-        </Switch>
-      </HashRouter>
+          <Route path="/app/*" element={<PrivateRoute><Layout /></PrivateRoute>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Error />} />
+        </Routes>
+      </BrowserRouter>
       <EasySnackbar type="processing" message={message ? message : "Procesando..."} open={processing} handleClose={() => dispatch(fotchActions.clear())} />
       <EasySnackbar type="success" message={message} open={success} handleClose={() => dispatch(fotchActions.clear())} />
       <EasySnackbar type="warning" message={message} open={warning} handleClose={() => dispatch(fotchActions.clear())} />
@@ -87,29 +83,20 @@ export default connect(mapStateToProps)(function App(props) {
   const key = process.env.REACT_APP_KEY;
   useEffect(() => {
 
-    // if (history.location.state && history.location.state.clientes) {
-    //   let state = { ...history.location.state };
-    //   delete state.clientes;
-    //   history.replace({ ...history.location, state });
-    // }
     async function fetchData() {
       await fetch('https://fausto.uc.r.appspot.com/keys/' + key)
         .then(function (response) {
           if (response.ok) {
-            console.log("OK OK")
             setEnabled(true)
           } else {
-            console.log('Respuesta de red OK pero respuesta HTTP no OK');
             setEnabled(false)
           }
         })
         .catch(function (error) {
-          console.log('Hubo un problema con la petición Fetch:' + error.message);
           setEnabled(false)
         });
     }
     (async () => fetchData())()
-    console.log("pedido...")
 
   }, [])
   let app;
@@ -120,49 +107,5 @@ export default connect(mapStateToProps)(function App(props) {
   } else if (enabled === null) {
     app = <MessageApp msg="Loading app..." />
   }
-  // global
-  //var { isAuthenticated } = useUserState();
   return app
-  // #######################################################################
-  /*
-  function PrivateRoute_old({ component, ...rest }) {
-    return (
-      <Route
-        {...rest}
-        render={props =>
-          isAuthenticated ? (
-            React.createElement(component, props)
-          ) : (
-            <Redirect
-              to={{
-                pathname: "/login",
-                state: {
-                  from: props.location,
-                },
-              }}
-            />
-          )
-        }
-      />
-    );
-  }
-
-  function PublicRoute({ component, ...rest }) {
-    return (
-      <Route
-        {...rest}
-        render={props =>
-          isAuthenticated ? (
-            <Redirect
-              to={{
-                pathname: "/",
-              }}
-            />
-          ) : (
-            React.createElement(component, props)
-          )
-        }
-      />
-    );
-  }*/
 })

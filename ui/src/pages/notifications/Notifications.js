@@ -26,7 +26,7 @@ const positions = [
 ];
 
 export default function NotificationsPage(props) {
-  var classes = useStyles();
+  const { classes } = useStyles();
 
   // local
   var [notificationsPosition, setNotificationPosition] = useState(2);

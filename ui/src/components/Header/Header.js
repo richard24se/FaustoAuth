@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { withRouter } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -101,7 +101,7 @@ const notifications = [
 ];
 
 function Header(props) {
-  // var classes = useStyles(); // Removed
+  const navigate = useNavigate();
 
   // global
   var layoutState = useLayoutState();
@@ -127,20 +127,13 @@ function Header(props) {
   //const after_dispatch = useContext(dispatch(userActions.getAll()))
 
   // const { user } = props;
-  const { history } = props;
 
   var handleLogout = (e) => {
     /*
     const { dispatch } = props;
     dispatch(userActions.logout() );*/
     //const user = null
-    // history.push("/login")
-    history.push({
-      pathname: "/login",
-      state: {
-        from: props.location
-      }
-    })
+    navigate("/login")
   };
 
   return (
@@ -348,4 +341,4 @@ function mapStateToProps(state) {
   };
 }
 const connectedHeader = connect(mapStateToProps)(Header);
-export default withRouter(connectedHeader);
+export default connectedHeader;

@@ -1,6 +1,6 @@
-import { makeStyles } from "@mui/styles";
+import { tss } from "tss-react/mui";
 
-export default makeStyles(theme => ({
+const useStyles = tss.create(({ theme }) => ({
   container: {
     height: "100vh",
     width: "100vw",
@@ -59,3 +59,5 @@ export default makeStyles(theme => ({
     fontSize: 22,
   },
 }));
+
+export default useStyles;

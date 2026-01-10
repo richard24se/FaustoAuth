@@ -10,7 +10,7 @@ import {
   Grow,
 } from "@mui/material";
 //import { Typography } from '../../components/Wrappers'
-import { withRouter } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import classnames from "classnames";
 
 
@@ -36,6 +36,8 @@ import findIP from './findIP';
 
 function Login(props) {
   var colors = hooksStyles();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // global
   //var userDispatch = useUserDispatch();
@@ -53,7 +55,6 @@ function Login(props) {
 
   //Handle init state
   const { dispatch } = props;
-  const { history } = props;
 
   useEffect(() => {
     //Get Logout
@@ -69,8 +70,8 @@ function Login(props) {
 
   //Handle login
   var handleLogin = (e) => {
-    const previousLocation = props.location.state && props.location.state.from ? props.location.state.from.pathname : null
-    dispatch(userActions.login(loginValue, passwordValue, previousLocation, history));
+    const previousLocation = location.state && location.state.from ? location.state.from.pathname : null
+    dispatch(userActions.login(loginValue, passwordValue, previousLocation, navigate));
 
 
   };
@@ -205,9 +206,4 @@ function mapStateToProps(state) {
 
 const connectedLoginPage = connect(mapStateToProps)(Login);
 
-export default withRouter(connectedLoginPage);
-
-
-
-
-//export default connectedLoginPage;
+export default connectedLoginPage;

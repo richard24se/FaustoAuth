@@ -1,7 +1,7 @@
-import { makeStyles } from "@mui/styles";
+import { tss } from "tss-react/mui";
 import tinycolor from "tinycolor2";
 
-export default makeStyles(theme => ({
+const useStyles = tss.create(({ theme }) => ({
   layoutContainer: {
     height: 200,
     display: "flex",
@@ -80,3 +80,5 @@ export default makeStyles(theme => ({
     paddingRight: theme.spacing(4),
   },
 }));
+
+export default useStyles;

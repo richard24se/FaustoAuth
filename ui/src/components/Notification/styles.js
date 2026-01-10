@@ -1,6 +1,6 @@
-import { makeStyles } from "@mui/styles";
+import { tss } from "tss-react/mui";
 
-export default makeStyles(theme => ({
+const useStyles = tss.create(({ theme }) => ({
   notificationContainer: {
     display: "flex",
     alignItems: "center",
@@ -45,3 +45,5 @@ export default makeStyles(theme => ({
     },
   },
 }));
+
+export default useStyles;

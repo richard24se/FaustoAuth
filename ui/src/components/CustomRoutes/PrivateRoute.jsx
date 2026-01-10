@@ -1,30 +1,27 @@
 import React from 'react';
 import { useEffect } from 'react'
-import { Route, Redirect } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { userActions } from '../../store/actions'
 import { connect } from 'react-redux';
 import { useDispatch } from 'react-redux'
 
-const PrivateRoute_ = ({ component: Component, ...rest }) => {
+const PrivateRoute_ = ({ children, loggedIn }) => {
     const dispatch = useDispatch()
+    const location = useLocation()
+
     useEffect(() => {
-        const query = new URLSearchParams(rest.location.search);
+        const query = new URLSearchParams(location.search);
         const token = query.get('token')
         if (token !== null) {
-            dispatch(userActions.login_with_jwt_token(token, rest.location.pathname))
-            console.log("se validará token...")
-            console.log(rest.location)
+            dispatch(userActions.login_with_jwt_token(token, location.pathname))
         } else {
             dispatch(userActions.login_with_token())
-            console.log("se validará token...")
         }
-    }, [rest.location]) //Run every change location
-    return <Route {...rest} render={props => (
-        rest.loggedIn && localStorage.getItem('user_tokens')
-            ? <Component {...props} />
-            : <Redirect to={{ pathname: '/login', state: { from: props.location } }} />
-    )} />
+    }, [location]) //Run every change location
 
+    return loggedIn && localStorage.getItem('user_tokens')
+        ? children
+        : <Navigate to={{ pathname: '/login', state: { from: location } }} />
 }
 
 function mapStateToProps(state) {

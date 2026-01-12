@@ -38,4 +38,22 @@ api.interceptors.response.use(
   },
 );
 
+export const backupApi = {
+  downloadBackup: async () => {
+    const response = await api.get('/backup/download', {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+  restoreBackup: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/backup/restore', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+};
+
 export default api;

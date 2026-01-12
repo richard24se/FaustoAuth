@@ -8,10 +8,10 @@ the SQLAlchemy ORM models.
 """
 
 from __future__ import annotations  # For forward references
+
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, ConfigDict
-
+from pydantic import BaseModel, ConfigDict, Field
 
 # --- Base Models (common fields) ---
 
@@ -250,3 +250,4 @@ class TokenResponse(BaseModel):
     surnames: Optional[str] = None
     id_role: int
     tenant_id: int
+    scopes: list[str]

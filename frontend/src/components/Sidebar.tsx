@@ -167,6 +167,7 @@ const NavItem = ({ icon, children, path, childrenItems, name, ...rest }: NavItem
   useEffect(() => {
     if (isChildActive) {
       setIsOpen(true);
+
     }
   }, [isChildActive]);
 
@@ -391,8 +392,13 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
             <Portal>
               <Menu.Positioner>
                 <Menu.Content bg={menuBg} borderColor={borderColor}>
-                  <Menu.Item value="profile">{t('profile')}</Menu.Item>
-                  <Menu.Item value="settings">{t('settings')}</Menu.Item>
+                  <Menu.Item value="profile" onClick={() => navigate('/profile')}>{t('profile')}</Menu.Item>
+                  <Menu.Item value="settings" onClick={() => navigate('/settings')}>{t('settings')}</Menu.Item>
+                  {user?.scopes?.includes('super-god') && (
+                    <Menu.Item value="backup" onClick={() => navigate('/backup')}>
+                      Backup
+                    </Menu.Item>
+                  )}
                   <Menu.Item value="logout" onClick={handleLogout}>
                     {t('signOut')}
                   </Menu.Item>
@@ -411,6 +417,7 @@ const TenantSelector = () => {
   const { tenants, setTenants, selectedTenantId, setTenant } = useTenantStore();
 
   const checkAdmin = () => {
+    console.log('User Scopes:', user);
     if (user?.username === 'admin') return true;
     if (user?.scopes?.includes('super-god')) return true;
     const rName = user?.role?.name;
@@ -429,7 +436,7 @@ const TenantSelector = () => {
       tenantService
         .getAll()
         .then((data) => {
-          
+
           setTenants(data);
           console.log('Tenants:222', data);
         })

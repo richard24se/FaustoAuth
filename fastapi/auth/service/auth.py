@@ -1,20 +1,17 @@
 import logging
 from typing import Any
 
-from auth.model.models import User, Role, RolePermission, Permission
-from auth.model.pydantic import TokenResponse, AuditCreate
-from config.databases import SQLALCH_AUTH, async_token_store  # Use async_token_store
+from auth.model.models import Role, RolePermission, User
+from auth.model.pydantic import TokenResponse
+from auth.service.audit import AuditDTO, AuditService
+from config.databases import async_token_store  # Use async_token_store
 from config.security import pwd_context  # Import from central security config
 from config.settings import settings
 from fausto import ControllerError
-from fausto.fapi import fapi_wrapper
 from fausto.jwt import decode_auth_token, encode_auth_token, encode_refresh_auth_token
 from fausto.redis import redis_create_key  # Import async redis_create_key
-from fausto.sqlalch import async_sqlalch_wrapper, to_dict  # Use async_sqlalch_wrapper
-from fastapi import Depends  # Import Depends
 from sqlalchemy import select  # Import select
 from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
-from auth.service.audit import AuditService, AuditDTO
 
 
 class AuthService:
@@ -67,7 +64,6 @@ class AuthService:
             ControllerError: If authentication fails (invalid credentials) or other errors occur.
         """
         # Import here to avoid circular dependencies if any (though AuditService is likely safe)
-        from auth.service.audit import AuditService
 
         try:
             # Step 1: User Lookup with Eager Loading of Permissions
@@ -138,7 +134,8 @@ class AuthService:
                 raise ControllerError("Invalid username or password.", status_code=401)
 
             # Extract user data BEFORE calling AuditService (which acts on the session and may commit/expire objects)
-            # This prevents specific MissingGreenlet errors caused by accessing expired attributes on the user object after a commit.
+            # This prevents specific MissingGreenlet errors caused by accessing
+            # expired attributes on the user object after a commit.
             user_id = user.id
             user_username = user.username
             user_names = user.names
@@ -189,6 +186,7 @@ class AuthService:
                 "surnames": user_surnames,
                 "id_role": user_id_role,
                 "tenant_id": user_tenant_id,
+                "scopes": scopes,
             }
 
             if refresh_token:

@@ -19,6 +19,7 @@ const Audits = lazy(() => import('./pages/Audits'));
 const AuditTypes = lazy(() => import('./pages/AuditTypes'));
 const ObjectTypes = lazy(() => import('./pages/ObjectTypes'));
 const JwtDebugger = lazy(() => import('./pages/JwtDebugger'));
+const Backup = lazy(() => import('./pages/Backup'));
 
 function App() {
   const navigate = useNavigate();
@@ -60,6 +61,7 @@ function App() {
               <Route path="/audit-types" element={<AuditTypes />} />
               <Route path="/object-types" element={<ObjectTypes />} />
               <Route path="/jwt-debugger" element={<JwtDebugger />} />
+              <Route path="/backup" element={<Backup />} />
             </Route>
           </Route>
 

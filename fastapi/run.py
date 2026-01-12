@@ -12,6 +12,7 @@ from auth.router import (
     router_audit,
     router_audit_type,
     router_auth,
+    router_backup,
     router_object,
     router_object_type,
     router_permission,
@@ -26,6 +27,7 @@ from config.databases import (  # Import AsyncSessionFactory
     async_engine,
     async_redis_pool,
     async_token_store,
+    log_db_configuration,
 )
 from config.settings import settings
 from fausto import ControllerError
@@ -76,6 +78,14 @@ async def lifespan(app: FastAPI):
         # Test Redis connection
         await async_token_store.ping()
         logging.info("Redis connection successful.")
+        log_db_configuration()
+
+        # Initialize SQLite if configured
+        if settings.LITTLE_DATABASE:
+            from config.sqlite_setup import init_sqlite_db
+
+            await init_sqlite_db()
+
     except Exception as e:
         logging.critical("Failed to connect to database or Redis on startup: %s", e)
 
@@ -143,6 +153,7 @@ app.include_router(router_object)
 app.include_router(router_object_type)
 app.include_router(router_audit)
 app.include_router(router_audit_type)
+app.include_router(router_backup)
 app.include_router(router_tenant)
 
 

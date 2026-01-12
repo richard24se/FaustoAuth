@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,6 +21,10 @@ class Settings(BaseSettings):
     DB_HOST: str = "localhost"
     # DB_PORT: int = 5432
     DB_PORT: int = 5464
+
+    # --- Database (SQLite - Dev) ---
+    LITTLE_DATABASE: bool = False
+    SQLITE_DB_NAME: str = "fausto.db"
 
     # --- Cache (Redis) ---
     REDIS_HOST: str = "localhost"
@@ -42,11 +47,7 @@ class Settings(BaseSettings):
         """
         return timedelta(seconds=self.JWT_TOKEN_EXPIRES)
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False)
 
 
 # Make a single, importable instance of the settings

@@ -54,10 +54,12 @@ repos:
     hooks:
       - id: poetry-check
         stages: [pre-commit]
+        args: ["-C", "./fastapi"]
       - id: poetry-lock
         stages: [pre-commit]
+        args: ["-C", "./fastapi"]
       - id: poetry-export
-        args: ["-f", "requirements.txt", "-o", "requirements.txt"]
+        args: ["-C", "./fastapi", "-f", "requirements.txt", "-o", "requirements.txt"]
         stages: [pre-commit]
   - repo: local
     hooks:

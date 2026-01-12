@@ -22,13 +22,14 @@ export const useAuthStore = create<AuthState>((set) => {
       // For now, let's trust the token presence
       const decoded: any = jwtDecode(token);
       // Map decoded token back to user structure if needed, or just partial
+      console.log("DECODED", decoded);
       user = {
         id: decoded.sub ? parseInt(decoded.sub) : 0,
         username: decoded.identity,
         names: decoded.name,
         role: { name: decoded.role, id: 0, tenant_id: decoded.tenant_id }, // Partial reconstruction
         tenant_id: decoded.tenant_id,
-        scopes: decoded.scopes || [],
+        scopes: decoded.scope ? decoded.scope.split(' ') : [],
       } as User;
     } catch (e) {
       console.error('Invalid token on load', e);
@@ -63,15 +64,15 @@ export const useAuthStore = create<AuthState>((set) => {
       try {
         const decoded: any = jwtDecode(access_token);
         newUser.role = { id: id_role, name: decoded.role || '', tenant_id };
-        newUser.scopes = decoded.scopes || [];
-      } catch (e) {}
+        newUser.scopes = decoded.scope ? decoded.scope.split(' ') : [];
+      } catch (e) { }
 
       set({
         user: newUser,
         token: access_token,
         isAuthenticated: true,
       });
-      
+
       // Reset tenant selection on new login to ensure fresh state
       // This ensures admins start with "All Tenants" and regular users get their tenant auto-selected by components
       useTenantStore.getState().setTenant(null);

@@ -133,7 +133,8 @@ class AuthService:
                     user_agent=user_agent,
                 )
 
-                await AuditService.create_audit(s=s, data=auth_create_fail)
+                audit_service = AuditService(s)
+                await audit_service.create(obj_in=auth_create_fail)
                 raise ControllerError("Invalid username or password.", status_code=401)
 
             # Extract user data BEFORE calling AuditService (which acts on the session and may commit/expire objects)
@@ -164,7 +165,8 @@ class AuthService:
                 user_agent=user_agent,
             )
 
-            await AuditService.create_audit(s=s, data=auth_create)
+            audit_service = AuditService(s)
+            await audit_service.create(obj_in=auth_create)
 
             # Step 4 & 5: Token Generation and Storage
             # Pass extracted scopes and performance claims to the token generator

@@ -13,12 +13,21 @@ router = APIRouter(
 )
 
 
+async def get_role_permission_service(
+    s: AsyncSession = Depends(get_async_db),
+) -> RolePermissionService:
+    return RolePermissionService(s)
+
+
 @router.get(
     "/",
     response_model=Response,
     summary="Get all permissions for a role, grouped by object",
 )
-async def read_role_permission(role_id: int, s: AsyncSession = Depends(get_async_db)):
+async def read_role_permission(
+    role_id: int,
+    service: RolePermissionService = Depends(get_role_permission_service),
+):
     """Retrieve all permissions associated with a specific role.
 
     The response groups the permissions by the system object they apply to.
@@ -29,7 +38,9 @@ async def read_role_permission(role_id: int, s: AsyncSession = Depends(get_async
     Returns:
         Response: A response object containing the permissions grouped by object.
     """
-    permissions = await RolePermissionService.get_role_permission(s=s, role_id=role_id)
+    permissions = await service.get_role_permission(role_id=role_id)
+    if not permissions:
+        return Response(message="Not found", data=[])
     return Response(message="Found", data=permissions)
 
 

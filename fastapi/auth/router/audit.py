@@ -1,3 +1,5 @@
+from typing import Optional
+
 from auth.dependencies import AuthContext, get_auth_context
 from auth.handlers import JWTBearer
 from auth.model.pydantic import AuditCreate, AuditUpdate
@@ -17,9 +19,13 @@ router = APIRouter(
 )
 
 
+async def get_audit_service(s: AsyncSession = Depends(get_async_db)) -> AuditService:
+    return AuditService(s)
+
+
 @router.get("/", response_model=Response, summary="List all audit logs")
 async def list_audits(
-    s: AsyncSession = Depends(get_async_db),
+    service: AuditService = Depends(get_audit_service),
     auth: AuthContext = Depends(get_auth_context),
 ):
     """Retrieve a list of all audit trail records.
@@ -27,21 +33,20 @@ async def list_audits(
     Returns:
         Response: A response object containing a list of audit records.
     """
-    tenant_id = None
-    if "super-god" not in auth.scopes:
-        tenant_id = auth.tenant_id
-
-    # Implicitly: if super-god, tenant_id is None -> returns all.
-    # If regular user, tenant_id is set -> returns filtered.
-
-    audits = await AuditService.get_audits(s=s, tenant_id=tenant_id)
+    filters = {}
+    # Scoping is handled automatically by CRUDBase using tenant_context.
+    # Super-god users have no tenant_context, so they see all naturally.
+    # If a super-god WANTS to filter -> they need query params (not implemented yet for strict tenant_id filter here).
+    # IF specific scoping is needed for super-god acting as tenant, they should set context or pass filter.
+    
+    audits = await service.get_multi(filters=filters)
     return Response(message="Found", data=audits)
 
 
 @router.get("/{audit_id}", response_model=Response, summary="Get an audit log by ID")
 async def read_audit(
     audit_id: int,
-    s: AsyncSession = Depends(get_async_db),
+    service: AuditService = Depends(get_audit_service),
     auth: AuthContext = Depends(get_auth_context),
 ):
     """Retrieve a single audit trail record by its ID.
@@ -52,11 +57,12 @@ async def read_audit(
     Returns:
         Response: A response object containing the audit record data.
     """
-    audit = await AuditService.get_audit(s=s, audit_id=audit_id)
+    audit = await service.get(id=audit_id)
+    if not audit:
+        raise ControllerError("Audit not found.", status_code=404)
 
-    if "super-god" not in auth.scopes:
-        if not auth.tenant_id or audit.get("tenant_id") != auth.tenant_id:
-            raise ControllerError("Not authorized to access this audit log", status_code=403)
+    # Scoping handled by service.get -> applies filter automatically. 
+    # If returned, it belongs to tenant (or user is super-god).
 
     return Response(message="Found", data=audit)
 
@@ -69,8 +75,7 @@ async def read_audit(
 )
 async def creating_audit(
     audit: AuditCreate,
-    s: AsyncSession = Depends(get_async_db),
-    auth: AuthContext = Depends(get_auth_context),
+    service: AuditService = Depends(get_audit_service),
 ):
     """Create a new audit trail record.
 
@@ -80,17 +85,8 @@ async def creating_audit(
     Returns:
         Response: A response object indicating success or failure.
     """
-    # Force tenant_id for non-super-god users
-    audit_data = audit.model_dump()
-    if "super-god" not in auth.scopes:
-        if auth.tenant_id:
-            audit_data["tenant_id"] = auth.tenant_id
-        else:
-            # Should not happen for authenticated user without super-god
-            # (unless system user? but system usually has high prevs)
-            pass
-
-    new_audit = await AuditService.create_audit(s=s, data=audit_data)
+    # Tenant ID injection handled in Service/CRUDBase via context or explicit passing
+    new_audit = await service.create(obj_in=audit)
     return Response(message="Saved successful!", data=new_audit)
 
 
@@ -98,8 +94,7 @@ async def creating_audit(
 async def updating_audit(
     audit_id: int,
     audit: AuditUpdate,
-    s: AsyncSession = Depends(get_async_db),
-    auth: AuthContext = Depends(get_auth_context),
+    service: AuditService = Depends(get_audit_service),
 ):
     """Update an existing audit trail record by its ID.
 
@@ -110,14 +105,7 @@ async def updating_audit(
     Returns:
         Response: A response object indicating success or failure.
     """
-    # Check existence and permission
-    existing = await AuditService.get_audit(s=s, audit_id=audit_id)
-
-    if "super-god" not in auth.scopes:
-        if not auth.tenant_id or existing.get("tenant_id") != auth.tenant_id:
-            raise ControllerError("Not authorized to update this audit log", status_code=403)
-
-    updated_audit = await AuditService.update_audit(s=s, audit_id=audit_id, data=audit.model_dump(exclude_unset=True))
+    updated_audit = await service.update(id=audit_id, obj_in=audit)
     return Response(message="Update successful!", data=updated_audit)
 
 
@@ -128,8 +116,7 @@ async def updating_audit(
 )
 async def deleting_audit(
     audit_id: int,
-    s: AsyncSession = Depends(get_async_db),
-    auth: AuthContext = Depends(get_auth_context),
+    service: AuditService = Depends(get_audit_service),
 ):
     """Delete an audit trail record by its ID.
 
@@ -139,15 +126,9 @@ async def deleting_audit(
     Returns:
         Response: A response object indicating success or failure.
     """
-    # Check existence and permission
-    existing = await AuditService.get_audit(s=s, audit_id=audit_id)
-
-    if "super-god" not in auth.scopes:
-        if not auth.tenant_id or existing.get("tenant_id") != auth.tenant_id:
-            raise ControllerError("Not authorized to delete this audit log", status_code=403)
-
-    deleted_audit = await AuditService.delete_audit(s=s, audit_id=audit_id)
+    deleted_audit = await service.remove(id=audit_id)
     return Response(message="Deleted successful!", data=deleted_audit)
 
 
 router_audit = router
+

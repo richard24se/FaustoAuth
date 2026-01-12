@@ -17,9 +17,15 @@ router = APIRouter(
 )
 
 
+async def get_object_type_service(
+    s: AsyncSession = Depends(get_async_db),
+) -> ObjectTypeService:
+    return ObjectTypeService(s)
+
+
 @router.get("/", response_model=Response, summary="List all object types")
 async def list_object_types(
-    s: AsyncSession = Depends(get_async_db),
+    service: ObjectTypeService = Depends(get_object_type_service),
     auth: AuthContext = Depends(get_auth_context),
 ):
     """Retrieve a list of all object types.
@@ -28,14 +34,14 @@ async def list_object_types(
         Response: A response object containing a list of object types.
     """
     # Object Types are global, so everyone can see them.
-    obj_types = await ObjectTypeService.get_object_types(s=s)
+    obj_types = await service.get_multi()
     return Response(message="Found", data=obj_types)
 
 
 @router.get("/{object_type_id}", response_model=Response, summary="Get an object type by ID")
 async def read_object_type(
     object_type_id: int,
-    s: AsyncSession = Depends(get_async_db),
+    service: ObjectTypeService = Depends(get_object_type_service),
     auth: AuthContext = Depends(get_auth_context),
 ):
     """Retrieve a single object type by its ID.
@@ -46,7 +52,11 @@ async def read_object_type(
     Returns:
         Response: A response object containing the object type data.
     """
-    obj_type = await ObjectTypeService.get_object_type(s=s, object_type_id=object_type_id)
+    obj_type = await service.get(id=object_type_id)
+    if not obj_type:
+        from fausto import ControllerError
+        raise ControllerError("Object type not found.", status_code=404)
+        
     return Response(message="Found", data=obj_type)
 
 
@@ -58,7 +68,7 @@ async def read_object_type(
 )
 async def creating_object_type(
     object_type: ObjectTypeCreate,
-    s: AsyncSession = Depends(get_async_db),
+    service: ObjectTypeService = Depends(get_object_type_service),
     auth: AuthContext = Depends(get_auth_context),
 ):
     """Create a new object type.
@@ -72,7 +82,7 @@ async def creating_object_type(
     if "super-god" not in auth.scopes:
         raise ControllerError("Not authorized to create object types.", status_code=403)
 
-    new_obj_type = await ObjectTypeService.create_object_type(s=s, data=object_type.model_dump())
+    new_obj_type = await service.create(obj_in=object_type)
     return Response(message="Saved successful!", data=new_obj_type)
 
 
@@ -80,7 +90,7 @@ async def creating_object_type(
 async def updating_object_type(
     object_type_id: int,
     object_type: ObjectTypeUpdate,
-    s: AsyncSession = Depends(get_async_db),
+    service: ObjectTypeService = Depends(get_object_type_service),
     auth: AuthContext = Depends(get_auth_context),
 ):
     """Update an existing object type by its ID.
@@ -95,8 +105,8 @@ async def updating_object_type(
     if "super-god" not in auth.scopes:
         raise ControllerError("Not authorized to update object types.", status_code=403)
 
-    updated_obj_type = await ObjectTypeService.update_object_type(
-        s=s, object_type_id=object_type_id, data=object_type.model_dump(exclude_unset=True)
+    updated_obj_type = await service.update(
+        id=object_type_id, obj_in=object_type
     )
     return Response(message="Update successful!", data=updated_obj_type)
 
@@ -108,7 +118,7 @@ async def updating_object_type(
 )
 async def deleting_object_type(
     object_type_id: int,
-    s: AsyncSession = Depends(get_async_db),
+    service: ObjectTypeService = Depends(get_object_type_service),
     auth: AuthContext = Depends(get_auth_context),
 ):
     """Delete an object type by its ID.
@@ -122,8 +132,9 @@ async def deleting_object_type(
     if "super-god" not in auth.scopes:
         raise ControllerError("Not authorized to delete object types.", status_code=403)
 
-    deleted_obj_type = await ObjectTypeService.delete_object_type(s=s, object_type_id=object_type_id)
+    deleted_obj_type = await service.remove(id=object_type_id)
     return Response(message="Deleted successful!", data=deleted_obj_type)
 
 
 router_object_type = router
+

@@ -12,6 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import Depends
 
+from .base import CRUDBase
+
 
 @dataclass(slots=True)
 class AuditDTO:
@@ -27,143 +29,32 @@ class AuditDTO:
     status: str | None = None
 
 
-class AuditService:
+class AuditService(CRUDBase[Audit, AuditCreate, AuditUpdate]):
     """Audit Service"""
 
-    @staticmethod
-    async def create_audit(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, data: AuditCreate | AuditDTO | dict[str, Any]
-    ) -> dict[str, Any]:
+    def __init__(self, session: AsyncSession):
+        super().__init__(Audit, session)
+
+    async def create(self, *, obj_in: AuditCreate | AuditDTO | dict[str, Any]) -> dict[str, Any]:
         """Creates a new audit log."""
         try:
-            if isinstance(data, dict):
-                audit_data = data
-            elif isinstance(data, AuditDTO):
+            if isinstance(obj_in, dict):
+                audit_data = obj_in
+            elif isinstance(obj_in, AuditDTO):
                 # Convert dataclass to dict for SQLAlchemy
-                audit_data = asdict(data)
+                audit_data = asdict(obj_in)
             else:
-                audit_data = data.model_dump()
+                audit_data = obj_in.model_dump()
 
-            new_audit = Audit(**audit_data)
-            s.add(new_audit)
-            await s.commit()  # Commit explicitly
-            await s.refresh(new_audit)
-            logging.info("Successfully created audit log.")
-
-            # Manually construct response to avoid implicit lazy loading issues with to_dict
-            # within async context (greenlet error).
-            response = audit_data.copy()
-            response["id"] = new_audit.id
-            if new_audit.created_date:
-                response["created_date"] = new_audit.created_date.isoformat()
-
-            return response
-        except ControllerError:
-            await s.rollback()
-            raise
-        except Exception as e:
-            await s.rollback()
-            raise ControllerError(str(e))
-
-    @staticmethod
-    async def update_audit(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int, data: AuditUpdate | dict[str, Any]
-    ) -> dict[str, Any]:
-        """Updates an existing audit log."""
-        try:
-            if not audit_id:
-                raise ControllerError("Audit ID must be provided.")
-
-            result = await s.execute(select(Audit).filter_by(id=audit_id))
-            audit = result.scalars().one_or_none()
-
-            if not audit:
-                raise ControllerError("Audit not found.", status_code=404)
-
-            if isinstance(data, dict):
-                update_data = data
-            else:
-                update_data = data.model_dump(exclude_unset=True)
-
-            for key, value in update_data.items():
-                setattr(audit, key, value)
-
-            s.add(audit)
-            await s.commit()
-            await s.refresh(audit)
-
-            logging.info("Successfully updated audit log with ID %d.", audit_id)
-            return to_dict(audit)
-        except ControllerError:
-            await s.rollback()
-            raise
-        except Exception as e:
-            await s.rollback()
-            raise ControllerError(str(e))
-
-    @staticmethod
-    async def delete_audit(s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int) -> dict[str, Any]:
-        """Deletes an audit log."""
-        try:
-            result = await s.execute(select(Audit).filter_by(id=audit_id))
-            audit = result.scalars().first()
-
-            if not audit:
-                raise ControllerError("Audit not found, it may have already been deleted.", status_code=404)
-
-            audit_dict = to_dict(audit)
-            await s.delete(audit)
-            await s.commit()
-
-            logging.info("Successfully deleted audit log with ID %d.", audit_id)
-            return audit_dict
-        except ControllerError:
-            await s.rollback()
-            raise
-        except Exception as e:
-            await s.rollback()
-            raise ControllerError(str(e))
-
-    @staticmethod
-    async def get_audit(s: AsyncSession = Depends(SQLALCH_AUTH), *, audit_id: int) -> dict[str, Any]:
-        """Retrieves a single audit log by its ID."""
-        try:
-            result = await s.execute(select(Audit).filter(Audit.id == audit_id))
-            audit = result.scalars().first()
-
-            if not audit:
-                raise ControllerError("Audit not found.", status_code=404)
-
-            logging.debug("Found audit with ID %d.", audit_id)
-            return to_dict(audit)
-        except ControllerError:
-            raise
+            # Delegate to parent, but handle DTO conversion first manually if needed, 
+            # or just call super().create with the dict.
+            # CRUDBase.create handles dicts.
+            
+            # STRICT TENANT ISOLATION: Override tenant_id if context is present
+            # (Handled by CRUDBase, but we ensure it's in the data if the caller didn't provide it
+            # and expected context to fill it. But Audit often comes from backend logic that might know the tenant.)
+            
+            return await super().create(obj_in=audit_data)
         except Exception as e:
             raise ControllerError(str(e))
 
-    @staticmethod
-    async def get_audits(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, tenant_id: int | None = None
-    ) -> List[dict[str, Any]]:
-        """Retrieves all audit logs."""
-        try:
-            query = select(Audit)
-            if tenant_id is not None:
-                query = query.filter(Audit.tenant_id == tenant_id)
-
-            result = await s.execute(query)
-            audits = result.scalars().all()
-
-            if not audits:
-                # If filtering by tenant and no audits, it's a 404 effectively for that view,
-                # but mostly just empty list is preferred for lists.
-                # But existing logic raises 404. Let's keep it consistent but maybe safer to return empty list?
-                # The existing code raises 404.
-                raise ControllerError("No audits found.", [], status_code=404)
-
-            logging.debug("Retrieved %d audit logs.", len(audits))
-            return to_dict(audits)
-        except ControllerError:
-            raise
-        except Exception as e:
-            raise ControllerError(str(e))

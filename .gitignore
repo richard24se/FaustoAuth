@@ -10,3 +10,4 @@ __pycache__
 *coverage*
 *debug_*
 *debug.txt
+*.log

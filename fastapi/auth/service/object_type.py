@@ -11,155 +11,72 @@ from fastapi import Depends
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .base import CRUDBase
 
-class ObjectTypeService:
+
+class ObjectTypeService(CRUDBase[ObjectType, ObjectTypeCreate, ObjectTypeUpdate]):
     """Object Type Service"""
 
-    @staticmethod
-    async def create_object_type(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, data: ObjectTypeCreate | dict[str, Any]
-    ) -> dict[str, Any]:
+    def __init__(self, session: AsyncSession):
+        super().__init__(ObjectType, session)
+
+    async def create(self, *, obj_in: ObjectTypeCreate | dict[str, Any]) -> dict[str, Any]:
         """Creates a new object type."""
         try:
-            if isinstance(data, dict):
-                obj_data = data
+            if isinstance(obj_in, dict):
+                obj_data = obj_in
                 name = obj_data.get("name")
             else:
-                obj_data = data.model_dump()
-                name = data.name
+                obj_data = obj_in.model_dump()
+                name = obj_in.name
 
-            result = await s.execute(select(ObjectType).filter(ObjectType.name == name))
+            result = await self.session.execute(select(ObjectType).filter(ObjectType.name == name))
             existing = result.scalars().first()
             if existing:
                 raise ControllerError(f"The object type '{name}' already exists.")
 
-            new_obj_type = ObjectType(**obj_data)
-            s.add(new_obj_type)
-            await s.commit()
-            await s.refresh(new_obj_type)
-            logging.info("Successfully created object type '%s'.", new_obj_type.name)
-            return to_dict(new_obj_type)
+            return await super().create(obj_in=obj_data)
         except ControllerError:
-            await s.rollback()
+            await self.session.rollback()
             raise
         except Exception as e:
-            await s.rollback()
+            await self.session.rollback()
             raise ControllerError(str(e))
 
-    @staticmethod
-    async def update_object_type(
-        s: AsyncSession = Depends(SQLALCH_AUTH),
+    async def update(
+        self,
         *,
-        object_type_id: int,
-        data: ObjectTypeUpdate | dict[str, Any],
+        id: int,
+        obj_in: ObjectTypeUpdate | dict[str, Any],
     ) -> dict[str, Any]:
         """Updates an existing object type."""
         try:
-            if not object_type_id:
-                raise ControllerError("Object type ID must be provided.")
-
-            result = await s.execute(
-                select(ObjectType).filter(ObjectType.id == object_type_id)
-            )
-            obj_type = result.scalars().first()
-            if not obj_type:
+            existing_obj = await self.get(id=id)
+            if not existing_obj:
                 raise ControllerError("Object type not found.", status_code=404)
 
-            if isinstance(data, dict):
-                update_data = data
+            if isinstance(obj_in, dict):
+                update_data = obj_in
                 name = update_data.get("name")
             else:
-                update_data = data.model_dump(exclude_unset=True)
-                name = data.name
+                update_data = obj_in.model_dump(exclude_unset=True)
+                name = obj_in.name
 
-            if name and name != obj_type.name:
-                result = await s.execute(
+            if name and name != existing_obj["name"]:
+                result = await self.session.execute(
                     select(ObjectType).filter(
-                        ObjectType.name == name, ObjectType.id != object_type_id
+                        ObjectType.name == name, ObjectType.id != id
                     )
                 )
                 existing = result.scalars().first()
                 if existing:
                     raise ControllerError(f"The object type '{name}' already exists.")
 
-            for key, value in update_data.items():
-                setattr(obj_type, key, value)
-
-            s.add(obj_type)
-            await s.commit()
-            await s.refresh(obj_type)
-
-            logging.info("Successfully updated object type with ID %d.", object_type_id)
-            return to_dict(obj_type)
+            return await super().update(id=id, obj_in=obj_in)
         except ControllerError:
-            await s.rollback()
+            await self.session.rollback()
             raise
         except Exception as e:
-            await s.rollback()
+            await self.session.rollback()
             raise ControllerError(str(e))
 
-    @staticmethod
-    async def delete_object_type(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, object_type_id: int
-    ) -> dict[str, Any]:
-        """Deletes an object type."""
-        try:
-            result = await s.execute(
-                select(ObjectType).filter(ObjectType.id == object_type_id)
-            )
-            obj_type = result.scalars().first()
-            if not obj_type:
-                raise ControllerError(
-                    "Object type not found, it may have already been deleted.",
-                    status_code=404
-                )
-
-            obj_type_dict = to_dict(obj_type)
-            await s.delete(obj_type)
-            await s.commit()
-            logging.info("Successfully deleted object type with ID %d.", object_type_id)
-            return obj_type_dict
-        except ControllerError:
-            await s.rollback()
-            raise
-        except Exception as e:
-            await s.rollback()
-            raise ControllerError(str(e))
-
-    @staticmethod
-    async def get_object_type(
-        s: AsyncSession = Depends(SQLALCH_AUTH), *, object_type_id: int
-    ) -> dict[str, Any]:
-        """Retrieves a single object type by its ID."""
-        try:
-            result = await s.execute(
-                select(ObjectType).filter(ObjectType.id == object_type_id)
-            )
-            obj_type = result.scalars().first()
-            if not obj_type:
-                raise ControllerError("Object type not found.", status_code=404)
-
-            logging.debug("Found object type with ID %d.", object_type_id)
-            return to_dict(obj_type)
-        except ControllerError:
-            raise
-        except Exception as e:
-            raise ControllerError(str(e))
-
-    @staticmethod
-    async def get_object_types(
-        s: AsyncSession = Depends(SQLALCH_AUTH),
-    ) -> List[dict[str, Any]]:
-        """Retrieves all object types."""
-        try:
-            result = await s.execute(select(ObjectType).order_by(desc(ObjectType.id)))
-            obj_types = result.scalars().all()
-            if not obj_types:
-                raise ControllerError("No object types found.", [], status_code=404)
-
-            logging.debug("Retrieved %d object types.", len(obj_types))
-            return to_dict(obj_types)
-        except ControllerError:
-            raise
-        except Exception as e:
-            raise ControllerError(str(e))

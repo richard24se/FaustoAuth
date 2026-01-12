@@ -59,10 +59,43 @@ You can run the FastAPI application using the `fastapi` CLI or `uvicorn`.
 
 ```bash
 cd fastapi
+# Standard dev run
 poetry run fastapi dev run.py
+
+# Custom Uvicorn command with debug logging on port 9024
+uvicorn run:app --reload --host 0.0.0.0 --port 9024 --log-level 'debug'
 ```
 
-The API will be available at `http://localhost:8000`.
+### Local Environment Setup
+
+To start the local environment services (PostgreSQL, PgAdmin, Redis):
+
+```bash
+docker compose -f api-dev.yml up db db_admin redis -d
+```
+
+### Running the Frontend
+
+To run the frontend application:
+
+```bash
+cd frontend
+npm install  # Install dependencies if not already installed
+npm run dev
+```
+
+The frontend will be available at `http://localhost:5173`.
+
+The API will be available at `http://localhost:8000` (or `http://localhost:9024` if using the custom command).
+
+### Testing
+
+To run tests with coverage reports (HTML and Terminal):
+
+```bash
+cd fastapi
+pytest --cov=. --cov-report=html --cov-report=term-missing
+```
 
 ### API Documentation
 

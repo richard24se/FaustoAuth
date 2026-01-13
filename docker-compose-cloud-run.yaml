@@ -1,0 +1,18 @@
+services:
+  fausto-auth:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=/api
+    ports:
+      - "8030:80"
+    environment:
+      - LITTLE_DATABASE=true
+      - ENABLE_REDIS=False
+      # Useful for locally testing correct URL generation if needed
+      - PUBLIC_URL=http://localhost:8080
+      # Ensure python output is sent straight to terminal (good for docker logs)
+      - PYTHONUNBUFFERED=1
+    # specific platform might be needed if user is on M1 mac etc, but assuming standard for now
+    # platform: linux/amd64 

@@ -45,7 +45,7 @@ async def test_strict_tenant_scoping(
     resp = await client.post("/role/", json={"name": "UserRoleA", "tenant_id": tenant_a_id}, headers=headers_god)
     role_a_id = resp.json()["data"]["id"]
 
-    user_a_data = {"username": "user_a", "password": "password123", "tenant_id": tenant_a_id, "id_role": role_a_id}
+    user_a_data = {"username": "user_a", "password": "password123", "tenant_id": tenant_a_id, "role_id": role_a_id}
     resp = await client.post("/user/", json=user_a_data, headers=headers_god)
     assert resp.status_code == 201
     # TODO: check if user_a_id is needed
@@ -63,7 +63,7 @@ async def test_strict_tenant_scoping(
         resp = await client.get("/object_types/", headers=headers_god)
         type_id = resp.json()["data"][0]["id"]
 
-    object_b_data = {"name": "ObjectInB", "id_object_type": type_id, "tenant_id": tenant_b_id}
+    object_b_data = {"name": "ObjectInB", "object_type_id": type_id, "tenant_id": tenant_b_id}
     resp = await client.post("/object/", json=object_b_data, headers=headers_god)
     assert resp.status_code == 201
     object_b_id = resp.json()["data"]["id"]
@@ -89,7 +89,7 @@ async def test_strict_tenant_scoping(
     # User A should verify they can create object in Tenant A
     object_a_data = {
         "name": "ObjectInA",
-        "id_object_type": type_id,
+        "object_type_id": type_id,
         # tenant_id might be inferred or required. Logic says strictly tenant_id=auth.tenant_id
         # user_a is in tenant_a.
         # If we send tenant_b_id, it should fail or coerce to tenant_a_id.
@@ -99,7 +99,7 @@ async def test_strict_tenant_scoping(
     assert resp.status_code == 201
 
     # Try to create object in Tenant B as User A
-    object_fail_data = {"name": "ObjectFail", "id_object_type": type_id, "tenant_id": tenant_b_id}
+    object_fail_data = {"name": "ObjectFail", "object_type_id": type_id, "tenant_id": tenant_b_id}
     resp = await client.post("/object/", json=object_fail_data, headers=headers_a)
     # Depending on implementation:
     # 1. It forces tenant_id to A (Successful creation in A)
@@ -143,7 +143,7 @@ async def test_strict_tenant_scoping(
         "username": "user_fail_b",
         "password": "password",
         "tenant_id": tenant_b_id,
-        "id_role": role_a_id,  # Belonging to Tenant A
+        "role_id": role_a_id,  # Belonging to Tenant A
     }
     resp = await client.post("/user/", json=user_fail_data, headers=headers_a)
     if resp.status_code == 201:

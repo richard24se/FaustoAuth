@@ -120,9 +120,9 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
             if username and obj_name:
                 query = (
                     query.join(RolePermission)
-                    .join(Object, Object.id == Permission.id_object)
-                    .join(Role, Role.id == RolePermission.id_role)
-                    .join(User, User.id_role == Role.id)
+                    .join(Object, Object.id == Permission.object_id)
+                    .join(Role, Role.id == RolePermission.role_id)
+                    .join(User, User.role_id == Role.id)
                     .filter(Object.name == obj_name, User.username == username)
                 )
                 query = self._apply_tenant_filter(query)
@@ -147,7 +147,7 @@ class PermissionService(CRUDBase[Permission, PermissionCreate, PermissionUpdate]
 
             elif role_id:
                 query = (
-                    query.join(RolePermission).filter(RolePermission.id_role == role_id).order_by(Permission.id.desc())
+                    query.join(RolePermission).filter(RolePermission.role_id == role_id).order_by(Permission.id.desc())
                 )
                 query = self._apply_tenant_filter(query)
                 result = await self.session.execute(query)

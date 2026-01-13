@@ -39,7 +39,7 @@ class AuditType(Base):
     __tablename__ = "audit_type"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(SmallInteger().with_variant(Integer, "sqlite"), primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     created_date: Mapped[datetime] = mapped_column(DateTime(True), server_default=func.now(), nullable=False)
     modificated_date: Mapped[Optional[datetime]] = mapped_column(DateTime(True), onupdate=func.now())
@@ -53,7 +53,7 @@ class ObjectType(Base):
     __tablename__ = "object_type"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(SmallInteger().with_variant(Integer, "sqlite"), primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     created_date: Mapped[datetime] = mapped_column(DateTime(True), server_default=func.now(), nullable=False)
     modificated_date: Mapped[Optional[datetime]] = mapped_column(DateTime(True), onupdate=func.now())
@@ -67,7 +67,7 @@ class PermissionType(Base):
     __tablename__ = "permission_type"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(SmallInteger().with_variant(Integer, "sqlite"), primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     created_date: Mapped[datetime] = mapped_column(DateTime(True), server_default=func.now(), nullable=False)
     modificated_date: Mapped[Optional[datetime]] = mapped_column(DateTime(True), onupdate=func.now())
@@ -105,7 +105,7 @@ class Role(Base):
     __tablename__ = "role"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(SmallInteger().with_variant(Integer, "sqlite"), primary_key=True)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     display_name: Mapped[Optional[str]] = mapped_column(String(50))
     tenant_id: Mapped[int] = mapped_column(
@@ -129,10 +129,10 @@ class Object(Base):
     __tablename__ = "object"
     __table_args__ = {"schema": SCHEMA}
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(SmallInteger().with_variant(Integer, "sqlite"), primary_key=True)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     display_name: Mapped[Optional[str]] = mapped_column(Text)
-    id_object_type: Mapped[int] = mapped_column(
+    object_type_id: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.object_type.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
@@ -169,7 +169,7 @@ class User(Base):
         ForeignKey(f"{SCHEMA}.tenant.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
-    id_role: Mapped[int] = mapped_column(
+    role_id: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.role.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
@@ -201,11 +201,11 @@ class Audit(Base):
         ForeignKey(f"{SCHEMA}.tenant.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
-    id_user: Mapped[int] = mapped_column(
+    user_id: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.user.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
-    id_audit_type: Mapped[int] = mapped_column(
+    audit_type_id: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.audit_type.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
@@ -230,11 +230,11 @@ class Permission(Base):
         ForeignKey(f"{SCHEMA}.tenant.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
-    id_permission_type: Mapped[int] = mapped_column(
+    permission_type_id: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.permission_type.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
-    id_object: Mapped[int] = mapped_column(
+    object_id: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.object.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
@@ -254,11 +254,11 @@ class RolePermission(Base):
     __table_args__ = {"schema": SCHEMA}
 
     id: Mapped[int] = mapped_column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True)
-    id_role: Mapped[int] = mapped_column(
+    role_id: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.role.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    id_permission: Mapped[int] = mapped_column(
+    permission_id: Mapped[int] = mapped_column(
         ForeignKey(f"{SCHEMA}.permission.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )

@@ -41,7 +41,7 @@ class RoleBase(BaseModel):
 class ObjectBase(BaseModel):
     name: str
     display_name: Optional[str] = None
-    id_object_type: int
+    object_type_id: int
     tenant_id: int
 
 
@@ -49,22 +49,22 @@ class UserBase(BaseModel):
     username: str
     names: Optional[str] = None
     surnames: Optional[str] = None
-    id_role: int
+    role_id: int
     tenant_id: int
 
 
 class PermissionBase(BaseModel):
     name: str = Field(..., max_length=50)
-    id_permission_type: int
-    id_object: int
+    permission_type_id: int
+    object_id: int
     tenant_id: int
 
 
 class AuditBase(BaseModel):
     data: Optional[str] = None
     input: Optional[str] = None
-    id_user: int
-    id_audit_type: int
+    user_id: int
+    audit_type_id: int
     ip_address: Optional[str] = None
     user_agent: Optional[str] = None
     status: Optional[str] = None
@@ -138,7 +138,7 @@ class RoleUpdate(BaseModel):
 class ObjectUpdate(BaseModel):
     name: Optional[str] = None
     display_name: Optional[str] = None
-    id_object_type: Optional[int] = None
+    object_type_id: Optional[int] = None
 
 
 class UserUpdate(BaseModel):
@@ -146,20 +146,20 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     names: Optional[str] = None
     surnames: Optional[str] = None
-    id_role: Optional[int] = None
+    role_id: Optional[int] = None
 
 
 class PermissionUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=50)
-    id_permission_type: Optional[int] = None
-    id_object: Optional[int] = None
+    permission_type_id: Optional[int] = None
+    object_id: Optional[int] = None
 
 
 class AuditUpdate(BaseModel):
     data: Optional[str] = None
     input: Optional[str] = None
-    id_user: Optional[int] = None
-    id_audit_type: Optional[int] = None
+    user_id: Optional[int] = None
+    audit_type_id: Optional[int] = None
     ip_address: Optional[str] = None
     user_agent: Optional[str] = None
     status: Optional[str] = None
@@ -248,6 +248,6 @@ class TokenResponse(BaseModel):
     username: str
     names: Optional[str] = None
     surnames: Optional[str] = None
-    id_role: int
+    role_id: int
     tenant_id: int
     scopes: list[str]

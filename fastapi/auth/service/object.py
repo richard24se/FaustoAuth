@@ -93,9 +93,9 @@ class ObjectService(CRUDBase[Object, ObjectCreate, ObjectUpdate]):
 
             query = (
                 select(Object)
-                .join(Permission, Permission.id_object == Object.id)
-                .join(RolePermission, RolePermission.id_permission == Permission.id)
-                .filter(RolePermission.id_role == role_id)
+                .join(Permission, Permission.object_id == Object.id)
+                .join(RolePermission, RolePermission.permission_id == Permission.id)
+                .filter(RolePermission.role_id == role_id)
                 .distinct()
             )
             query = self._apply_tenant_filter(query)

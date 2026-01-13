@@ -76,8 +76,11 @@ async def lifespan(app: FastAPI):
             await session.execute(text("SELECT 1"))  # Await execute
         logging.info("Database connection successful.")
         # Test Redis connection
-        await async_token_store.ping()
-        logging.info("Redis connection successful.")
+        if settings.ENABLE_REDIS and async_token_store:
+            await async_token_store.ping()
+            logging.info("Redis connection successful.")
+        else:
+            logging.info("Redis is disabled.")
         log_db_configuration()
 
         # Initialize SQLite if configured
@@ -94,7 +97,8 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logging.info("--- Shutting down Fausto Auth Service ---")
     await async_engine.dispose()  # Dispose of the async engine
-    await async_redis_pool.disconnect()
+    if settings.ENABLE_REDIS and async_redis_pool:
+        await async_redis_pool.disconnect()
     logging.info("Connections closed.")
 
 

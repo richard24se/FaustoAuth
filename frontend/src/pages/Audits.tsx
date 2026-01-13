@@ -19,7 +19,7 @@ export default function Audits() {
         isLoading={isLoading}
         columns={[
           { header: 'ID', accessorKey: 'id', width: '50px' },
-          { header: t('user'), accessorKey: 'id_user' }, // Ideally fetch user name
+          { header: t('user'), accessorKey: 'user_id' }, // Ideally fetch user name
           { 
             header: t('tenant'), 
             render: (r) => tenants.find((t) => t.id === r.tenant_id)?.name || r.tenant_id 

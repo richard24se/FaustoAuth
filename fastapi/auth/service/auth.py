@@ -120,8 +120,8 @@ class AuthService:
             if not password_verified:
                 # Audit FAILURE
                 auth_create_fail = AuditDTO(
-                    id_audit_type=1,  # Assume 1 = LOGIN
-                    id_user=user.id,
+                    audit_type_id=1,  # Assume 1 = LOGIN
+                    user_id=user.id,
                     tenant_id=user.tenant_id,
                     data="Login failed: Invalid password.",
                     status="FAILURE",
@@ -140,7 +140,7 @@ class AuthService:
             user_username = user.username
             user_names = user.names
             user_surnames = user.surnames
-            user_id_role = user.id_role
+            user_role_id = user.role_id
             user_tenant_id = user.tenant_id
             user_role_name = (user.role.name if user.role else None,)
 
@@ -153,8 +153,8 @@ class AuthService:
 
             # Audit SUCCESS
             auth_create = AuditDTO(
-                id_audit_type=1,  # Assume 1 = LOGIN
-                id_user=user_id,
+                audit_type_id=1,  # Assume 1 = LOGIN
+                user_id=user_id,
                 tenant_id=user_tenant_id,
                 data="User logged in successfully.",
                 status="SUCCESS",
@@ -184,7 +184,7 @@ class AuthService:
                 "username": user_username,
                 "names": user_names,
                 "surnames": user_surnames,
-                "id_role": user_id_role,
+                "role_id": user_role_id,
                 "tenant_id": user_tenant_id,
                 "scopes": scopes,
             }
@@ -217,8 +217,11 @@ class AuthService:
         """
         try:
             # Set the token value to "true" (revoked) in Redis
-            await async_token_store.set(token, "true", ex=settings.ACCESS_EXPIRES * 1.2)
-            logging.info("Revoked token.")
+            if settings.ENABLE_REDIS:
+                await async_token_store.set(token, "true", ex=settings.ACCESS_EXPIRES * 1.2)
+                logging.info("Revoked token.")
+            else:
+                logging.info("Redis disabled. Token revocation skipped (token remains valid until expiration).")
         except Exception as e:
             raise ControllerError(str(e))
 
@@ -233,6 +236,9 @@ class AuthService:
             ControllerError: If the token is revoked (403) or not found/expired (403).
         """
         try:
+            if not settings.ENABLE_REDIS:
+                return
+
             is_revoked = await async_token_store.get(token)
 
             if is_revoked == "true":
@@ -272,7 +278,7 @@ class AuthService:
             if payload.get("type") != "refresh":
                 raise ControllerError("An access token cannot be used for refresh.", status_code=403)
 
-            if await async_token_store.get(token) == "true":
+            if settings.ENABLE_REDIS and await async_token_store.get(token) == "true":
                 raise ControllerError("This refresh token has been revoked.", status_code=403)
 
             new_access_token = encode_auth_token(payload.get("identity"))

@@ -33,8 +33,8 @@ export default function Permissions() {
   const onEdit = (perm: Permission) => {
     setEditingPerm(perm);
     setValue('name', perm.name);
-    setValue('id_object', perm.id_object);
-    setValue('id_permission_type', perm.id_permission_type);
+    setValue('object_id', perm.object_id);
+    setValue('permission_type_id', perm.permission_type_id);
     setValue('tenant_id', perm.tenant_id);
     onOpen();
   };
@@ -47,8 +47,8 @@ export default function Permissions() {
   };
 
   const onSubmit = (data: any) => {
-    data.id_object = Number.parseInt(data.id_object);
-    data.id_permission_type = Number.parseInt(data.id_permission_type);
+    data.object_id = Number.parseInt(data.object_id);
+    data.permission_type_id = Number.parseInt(data.permission_type_id);
     data.tenant_id = Number.parseInt(data.tenant_id);
     if (editingPerm) {
       updatePermission({ id: editingPerm.id, data }, {
@@ -82,11 +82,11 @@ export default function Permissions() {
           { header: t('permissionName'), accessorKey: 'name' },
           {
             header: t('objectId'),
-            render: (p) => objects.find((o) => o.id === p.id_object)?.name || p.id_object,
+            render: (p) => objects.find((o) => o.id === p.object_id)?.name || p.object_id,
           },
           {
             header: t('permissionType'),
-            render: (p) => permissionTypes.find((pt) => pt.id === p.id_permission_type)?.name || p.id_permission_type,
+            render: (p) => permissionTypes.find((pt) => pt.id === p.permission_type_id)?.name || p.permission_type_id,
           },
           {
             header: t('tenant'),
@@ -118,7 +118,7 @@ export default function Permissions() {
                 <Field.Root required mb={4}>
                   <Field.Label>{t('permissionType')}</Field.Label>
                   <NativeSelect.Root>
-                    <NativeSelect.Field {...register('id_permission_type')} placeholder="Select Type">
+                    <NativeSelect.Field {...register('permission_type_id')} placeholder="Select Type">
                       {permissionTypes.map((pt) => (
                         <option key={pt.id} value={pt.id}>
                           {pt.name}
@@ -130,7 +130,7 @@ export default function Permissions() {
                 <Field.Root required mb={4}>
                   <Field.Label>{t('object')}</Field.Label>
                   <NativeSelect.Root>
-                    <NativeSelect.Field {...register('id_object')} placeholder="Select Object">
+                    <NativeSelect.Field {...register('object_id')} placeholder="Select Object">
                       {objects.map((obj) => (
                         <option key={obj.id} value={obj.id}>
                           {obj.name}

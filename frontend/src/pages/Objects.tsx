@@ -32,7 +32,7 @@ export default function Objects() {
     setEditingObj(obj);
     setValue('name', obj.name);
     setValue('display_name', obj.display_name);
-    setValue('id_object_type', obj.id_object_type);
+    setValue('object_type_id', obj.object_type_id);
     setValue('tenant_id', obj.tenant_id);
     onOpen();
   };
@@ -41,12 +41,12 @@ export default function Objects() {
     setEditingObj(null);
     reset();
     setValue('tenant_id', tenants[0]?.id || 1);
-    setValue('id_object_type', objectTypes[0]?.id || 1); // Default type
+    setValue('object_type_id', objectTypes[0]?.id || 1); // Default type
     onOpen();
   };
 
   const onSubmit = (data: any) => {
-    data.id_object_type = Number.parseInt(data.id_object_type);
+    data.object_type_id = Number.parseInt(data.object_type_id);
     data.tenant_id = Number.parseInt(data.tenant_id);
     if (editingObj) {
       updateObject({ id: editingObj.id, data }, {
@@ -80,7 +80,7 @@ export default function Objects() {
           { header: t('permissionName'), accessorKey: 'name' },
           {
             header: t('type') || 'Type',
-            render: (o) => objectTypes.find(ot => ot.id === o.id_object_type)?.name || o.id_object_type
+            render: (o) => objectTypes.find(ot => ot.id === o.object_type_id)?.name || o.object_type_id
           },
           {
             header: t('tenant'),
@@ -107,10 +107,14 @@ export default function Objects() {
                   <Field.Label>{t('permissionName')}</Field.Label>
                   <Input {...register('name')} />
                 </Field.Root>
+                <Field.Root mb={4}>
+                  <Field.Label>{t('displayName') || 'Display Name'}</Field.Label>
+                  <Input {...register('display_name')} />
+                </Field.Root>
                 <Field.Root required mb={4}>
                   <Field.Label>{t('objectType')}</Field.Label>
                   <NativeSelect.Root>
-                    <NativeSelect.Field {...register('id_object_type')} placeholder="Select type">
+                    <NativeSelect.Field {...register('object_type_id')} placeholder="Select type">
                       {objectTypes.map((ot) => (
                         <option key={ot.id} value={ot.id}>
                           {ot.name}

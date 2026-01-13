@@ -167,10 +167,10 @@ export default function RolePermissions() {
                 columns={[
                     { header: 'ID', accessorKey: 'id', width: '50px' },
                     { header: t('permissionName'), accessorKey: 'name' },
-                    { header: t('object'), render: (p) => p.object?.name || p.id_object },
+                    { header: t('object'), render: (p) => p.object?.name || p.object_id },
                     {
                         header: t('permissionType'),
-                        render: (p) => permissionTypes.find((pt) => pt.id === p.id_permission_type)?.name || p.id_permission_type,
+                        render: (p) => permissionTypes.find((pt) => pt.id === p.permission_type_id)?.name || p.permission_type_id,
                     },
                     {
                         header: t('actions'),

@@ -65,7 +65,7 @@ class RoleService(CRUDBase[Role, RoleCreate, RoleUpdate]):
 
             if permissions:
                 for perm_id in permissions:
-                    self.session.add(RolePermission(id_role=new_role.id, id_permission=perm_id))
+                    self.session.add(RolePermission(role_id=new_role.id, permission_id=perm_id))
 
             await self.session.commit()
             await self.session.refresh(new_role)
@@ -131,9 +131,9 @@ class RoleService(CRUDBase[Role, RoleCreate, RoleUpdate]):
             self.session.add(role)
 
             if permissions is not None:
-                await self.session.execute(delete(RolePermission).where(RolePermission.id_role == id))
+                await self.session.execute(delete(RolePermission).where(RolePermission.role_id == id))
                 for perm_id in permissions:
-                    self.session.add(RolePermission(id_role=id, id_permission=perm_id))
+                    self.session.add(RolePermission(role_id=id, permission_id=perm_id))
 
             await self.session.commit()
             await self.session.refresh(role)

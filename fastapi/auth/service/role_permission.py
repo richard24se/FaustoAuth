@@ -14,9 +14,7 @@ class RolePermissionService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_role_permission(
-        self, *, role_id: int
-    ) -> List[dict[str, Any]]:
+    async def get_role_permission(self, *, role_id: int) -> List[dict[str, Any]]:
         """Retrieves all permissions for a given role, grouped by the object they apply to.
 
         Args:
@@ -67,7 +65,7 @@ class RolePermissionService:
                     perm_dict.pop("object", None)
                     perm_dict.pop("permission_type", None)
                     perm_dict.pop("role_permissions", None)
-                    
+
                     objects_with_permissions[obj_id]["permissions"].append(perm_dict)
 
                 response_data = list(objects_with_permissions.values())
@@ -86,13 +84,13 @@ class RolePermissionService:
         try:
             result = await self.session.execute(
                 select(Permission)
-                .join(RolePermission, RolePermission.id_permission == Permission.id)
+                .join(RolePermission, RolePermission.permission_id == Permission.id)
                 .options(
                     selectinload(Permission.object).selectinload(Object.object_type),
                     selectinload(Permission.object).selectinload(Object.tenant),
                     selectinload(Permission.permission_type),
                 )
-                .filter(RolePermission.id_role == role_id)
+                .filter(RolePermission.role_id == role_id)
             )
             permissions = result.scalars().all()
 
@@ -118,16 +116,18 @@ class RolePermissionService:
                         "modificated_date": obj.modificated_date.isoformat() if obj.modificated_date else None,
                         "permissions": [],
                     }
-                
-                objects_with_permissions[obj_id]["permissions"].append({
-                    "id": perm.id,
-                    "name": perm.name,
-                    "id_object": perm.id_object,
-                    "id_permission_type": perm.id_permission_type,
-                    # Omit tenant_id from response for security
-                    "created_date": perm.created_date.isoformat() if perm.created_date else None,
-                    "modificated_date": perm.modificated_date.isoformat() if perm.modificated_date else None,
-                })
+
+                objects_with_permissions[obj_id]["permissions"].append(
+                    {
+                        "id": perm.id,
+                        "name": perm.name,
+                        "object_id": perm.object_id,
+                        "permission_type_id": perm.permission_type_id,
+                        # Omit tenant_id from response for security
+                        "created_date": perm.created_date.isoformat() if perm.created_date else None,
+                        "modificated_date": perm.modificated_date.isoformat() if perm.modificated_date else None,
+                    }
+                )
 
             response_data = list(objects_with_permissions.values())
             logging.debug(

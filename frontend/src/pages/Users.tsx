@@ -46,8 +46,8 @@ export default function Users() {
       return Array.isArray(user.role.name) ? user.role.name.join(', ') : user.role.name;
     }
     // Fallback to finding in roles list
-    const r = roles.find((role) => role.id === user.id_role);
-    return r ? r.name : user.id_role || '-';
+    const r = roles.find((role) => role.id === user.role_id);
+    return r ? r.name : user.role_id || '-';
   };
 
   // Define Columns
@@ -64,7 +64,7 @@ export default function Users() {
     setEditingUser(user);
     setValue('username', user.username);
     setValue('names', user.names);
-    setValue('id_role', user.id_role || user.role?.id);
+    setValue('role_id', user.role_id || user.role?.id);
     setValue('tenant_id', user.tenant_id);
     onOpen();
   };
@@ -78,7 +78,7 @@ export default function Users() {
   };
 
   const onSubmit = (data: any) => {
-    data.id_role = Number.parseInt(data.id_role);
+    data.role_id = Number.parseInt(data.role_id);
     data.tenant_id = Number.parseInt(data.tenant_id);
 
     if (editingUser) {
@@ -116,7 +116,7 @@ export default function Users() {
         onEdit={onEdit}
         onDelete={onDelete}
         customFilter={(u) =>
-          roleFilter ? u.id_role === roleFilter || u.role?.id === roleFilter : true
+          roleFilter ? u.role_id === roleFilter || u.role?.id === roleFilter : true
         }
         extraControls={
           <NativeSelect.Root maxW="200px">
@@ -168,7 +168,7 @@ export default function Users() {
                 <Field.Root required mb={4}>
                   <Field.Label>{t('role')}</Field.Label>
                   <NativeSelect.Root>
-                    <NativeSelect.Field {...register('id_role')} placeholder="Select role">
+                    <NativeSelect.Field {...register('role_id')} placeholder="Select role">
                       {roles.map((role) => (
                         <option key={role.id} value={role.id}>
                           {role.name}

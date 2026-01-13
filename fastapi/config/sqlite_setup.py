@@ -98,7 +98,7 @@ async def seed_data(session: AsyncSession):
         names="FaustoAuth",
         surnames="Administrator",
         tenant_id=1,
-        id_role=1,
+        role_id=1,
         created_date=fixed_date_user,
     )
     user_test = User(
@@ -108,7 +108,7 @@ async def seed_data(session: AsyncSession):
         names="Test",
         surnames="Test",
         tenant_id=1,
-        id_role=1,
+        role_id=1,
         created_date=fixed_date_user,
     )
     session.add(user_admin)
@@ -145,7 +145,7 @@ async def seed_data(session: AsyncSession):
         id=1,
         name="userControl",
         display_name="User control",
-        id_object_type=1,
+        object_type_id=1,
         tenant_id=1,
         created_date=datetime(2020, 6, 25, 1, 49, 55, 673365, tzinfo=pytz.UTC),
     )
@@ -153,7 +153,7 @@ async def seed_data(session: AsyncSession):
         id=2,
         name="everything",
         display_name="Everything",
-        id_object_type=11,
+        object_type_id=11,
         tenant_id=1,
         created_date=datetime(2020, 6, 25, 1, 49, 55, 673365, tzinfo=pytz.UTC),
     )
@@ -171,16 +171,16 @@ async def seed_data(session: AsyncSession):
     perm = Permission(
         id=1,
         name="User Manager",
-        id_permission_type=1,
-        id_object=1,
+        permission_type_id=1,
+        object_id=1,
         tenant_id=1,
         created_date=datetime(2020, 6, 25, 1, 52, 21, 867896, tzinfo=pytz.UTC),
     )
     perm_super = Permission(
         id=2,
         name="Super God",
-        id_permission_type=1,
-        id_object=2,
+        permission_type_id=1,
+        object_id=2,
         tenant_id=1,
         created_date=datetime(2020, 6, 25, 1, 52, 21, 867896, tzinfo=pytz.UTC),
     )
@@ -190,10 +190,10 @@ async def seed_data(session: AsyncSession):
 
     # 9. Role Permission
     role_perm = RolePermission(
-        id=1, id_permission=1, id_role=1, created_date=datetime(2020, 6, 25, 1, 53, 52, 809224, tzinfo=pytz.UTC)
+        id=1, permission_id=1, role_id=1, created_date=datetime(2020, 6, 25, 1, 53, 52, 809224, tzinfo=pytz.UTC)
     )
     role_perm_super = RolePermission(
-        id=2, id_permission=2, id_role=1, created_date=datetime(2020, 6, 25, 1, 53, 52, 809224, tzinfo=pytz.UTC)
+        id=2, permission_id=2, role_id=1, created_date=datetime(2020, 6, 25, 1, 53, 52, 809224, tzinfo=pytz.UTC)
     )
     session.add(role_perm)
     session.add(role_perm_super)

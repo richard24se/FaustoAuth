@@ -76,12 +76,15 @@ SQLALCH_AUTH = get_async_db
 # --- Redis Cache Setup ---
 
 # Asynchronous Redis connection pool.
-async_redis_pool = aioredis.ConnectionPool.from_url(
-    f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/0", decode_responses=True
-)
+async_redis_pool = None
+async_token_store = None
 
-# Asynchronous Redis client for token storage.
-async_token_store = aioredis.Redis(connection_pool=async_redis_pool)
+if settings.ENABLE_REDIS:
+    async_redis_pool = aioredis.ConnectionPool.from_url(
+        f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/0", decode_responses=True
+    )
+    # Asynchronous Redis client for token storage.
+    async_token_store = aioredis.Redis(connection_pool=async_redis_pool)
 
 
 async def get_async_redis_connection() -> aioredis.Redis:

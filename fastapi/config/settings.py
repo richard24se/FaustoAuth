@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     SQLITE_DB_NAME: str = "fausto.db"
 
     # --- Cache (Redis) ---
+    ENABLE_REDIS: bool = False
     REDIS_HOST: str = "localhost"
     # REDIS_HOST: str = "auth_cache"
     REDIS_PORT: int = 6379

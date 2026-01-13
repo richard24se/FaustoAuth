@@ -77,6 +77,17 @@ export default function Login() {
                     <Field.Label>{t('username')} (Email)</Field.Label>
                     <Input
                       type="text"
+                      variant="outline"
+                      borderWidth="1px"
+                      borderColor="gray.300"
+                      _dark={{
+                        borderColor: "gray.600",
+                        bg: "gray.900"
+                      }}
+                      _focus={{
+                        borderColor: "brand.500",
+                        outline: "none"
+                      }}
                       {...register('username', { required: 'Username is required' })}
                     />
                   </Field.Root>
@@ -84,6 +95,17 @@ export default function Login() {
                     <Field.Label>{t('password')}</Field.Label>
                     <Input
                       type="password"
+                      variant="outline"
+                      borderWidth="1px"
+                      borderColor="gray.300"
+                      _dark={{
+                        borderColor: "gray.600",
+                        bg: "gray.900"
+                      }}
+                      _focus={{
+                        borderColor: "brand.500",
+                        outline: "none"
+                      }}
                       {...register('password', { required: 'Password is required' })}
                     />
                   </Field.Root>

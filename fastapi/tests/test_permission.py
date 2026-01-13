@@ -14,7 +14,7 @@ async def test_create_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="test_object", id_object_type=obj_type.id, tenant_id=test_tenant)
+    obj = Object(name="test_object", object_type_id=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="test_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -26,8 +26,8 @@ async def test_create_permission(authenticated_client: AsyncClient, db_session: 
         "/permission/",
         json={
             "name": "new_permission",
-            "id_object": obj.id,
-            "id_permission_type": perm_type.id,
+            "object_id": obj.id,
+            "permission_type_id": perm_type.id,
             "tenant_id": test_tenant,
         },
     )
@@ -52,7 +52,7 @@ async def test_create_permission_duplicate(
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="dup_object", id_object_type=obj_type.id, tenant_id=test_tenant)
+    obj = Object(name="dup_object", object_type_id=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="dup_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -65,7 +65,7 @@ async def test_create_permission_duplicate(
     perm_type_id = perm_type.id
 
     # Create first permission
-    perm = Permission(name="dup_permission", id_object=obj_id, id_permission_type=perm_type_id, tenant_id=test_tenant)
+    perm = Permission(name="dup_permission", object_id=obj_id, permission_type_id=perm_type_id, tenant_id=test_tenant)
     db_session.add(perm)
     await db_session.commit()
 
@@ -73,8 +73,8 @@ async def test_create_permission_duplicate(
         "/permission/",
         json={
             "name": "dup_permission",
-            "id_object": obj_id,
-            "id_permission_type": perm_type_id,
+            "object_id": obj_id,
+            "permission_type_id": perm_type_id,
             "tenant_id": test_tenant,
         },
     )
@@ -91,7 +91,7 @@ async def test_list_permissions(authenticated_client: AsyncClient, db_session: A
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="list_object", id_object_type=obj_type.id, tenant_id=test_tenant)
+    obj = Object(name="list_object", object_type_id=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="list_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -99,7 +99,7 @@ async def test_list_permissions(authenticated_client: AsyncClient, db_session: A
     await db_session.refresh(obj)
     await db_session.refresh(perm_type)
 
-    perm = Permission(name="list_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant)
+    perm = Permission(name="list_permission", object_id=obj.id, permission_type_id=perm_type.id, tenant_id=test_tenant)
     db_session.add(perm)
     await db_session.commit()
 
@@ -118,7 +118,7 @@ async def test_read_permission(authenticated_client: AsyncClient, db_session: As
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="read_object", id_object_type=obj_type.id, tenant_id=test_tenant)
+    obj = Object(name="read_object", object_type_id=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="read_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -126,7 +126,7 @@ async def test_read_permission(authenticated_client: AsyncClient, db_session: As
     await db_session.refresh(obj)
     await db_session.refresh(perm_type)
 
-    perm = Permission(name="read_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant)
+    perm = Permission(name="read_permission", object_id=obj.id, permission_type_id=perm_type.id, tenant_id=test_tenant)
     db_session.add(perm)
     await db_session.commit()
     await db_session.refresh(perm)
@@ -155,7 +155,7 @@ async def test_update_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="update_object", id_object_type=obj_type.id, tenant_id=test_tenant)
+    obj = Object(name="update_object", object_type_id=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="update_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -164,7 +164,7 @@ async def test_update_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.refresh(perm_type)
 
     perm = Permission(
-        name="update_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant
+        name="update_permission", object_id=obj.id, permission_type_id=perm_type.id, tenant_id=test_tenant
     )
     db_session.add(perm)
     await db_session.commit()
@@ -199,7 +199,7 @@ async def test_delete_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.commit()
     await db_session.refresh(obj_type)
 
-    obj = Object(name="delete_object", id_object_type=obj_type.id, tenant_id=test_tenant)
+    obj = Object(name="delete_object", object_type_id=obj_type.id, tenant_id=test_tenant)
     perm_type = PermissionType(name="delete_type")
     db_session.add(obj)
     db_session.add(perm_type)
@@ -208,7 +208,7 @@ async def test_delete_permission(authenticated_client: AsyncClient, db_session: 
     await db_session.refresh(perm_type)
 
     perm = Permission(
-        name="delete_permission", id_object=obj.id, id_permission_type=perm_type.id, tenant_id=test_tenant
+        name="delete_permission", object_id=obj.id, permission_type_id=perm_type.id, tenant_id=test_tenant
     )
     db_session.add(perm)
     await db_session.commit()

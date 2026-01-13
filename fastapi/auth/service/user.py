@@ -133,10 +133,21 @@ class UserService(CRUDBase[User, UserCreate, UserUpdate]):
             if "password" in update_data and update_data["password"]:
                 update_data["password"] = await self._hash_password(update_data["password"])
 
+            # Map legacy id_role to role_id if necessary (or just assume Pydantic handled it)
+            # Since Pydantic model now has role_id, obj_in.model_dump() has role_id.
+            # But if a dict was passed with id_role, we might need a shim?
+            # Assuming callers respect new schema.
+
             for key, value in update_data.items():
                 setattr(user, key, value)
 
-            self.session.add(user)
+            # Map legacy id_role to role_id if necessary (or just assume Pydantic handled it)
+            # Since Pydantic model now has role_id, obj_in.model_dump() has role_id.
+            # But if a dict was passed with id_role, we might need a shim?
+            # Assuming callers respect new schema.
+
+            for key, value in update_data.items():
+                setattr(user, key, value)
             await self.session.commit()
             await self.session.refresh(user)
             logging.info("Successfully updated user ID %d.", id)

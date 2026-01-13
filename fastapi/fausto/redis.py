@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 from config.databases import async_token_store
+from config.settings import settings
 from fausto import ControllerError
 
 
@@ -17,6 +18,8 @@ async def redis_create_key(key: str, value: str, expire_delta: int | None = None
         str: A success message.
     """
     try:
+        if not settings.ENABLE_REDIS:
+            return "Redis disabled, skipped."
         await async_token_store.set(key, value, ex=expire_delta)
         logging.debug("Redis key '%s' created/updated.", key)
         return "Saved successful!"
@@ -35,6 +38,8 @@ async def redis_get_key(key: str) -> str | None:
         str | None: The value of the key, or None if the key does not exist.
     """
     try:
+        if not settings.ENABLE_REDIS:
+            return None
         value = await async_token_store.get(key)
         logging.debug("Redis key '%s' retrieved.", key)
         return value
@@ -53,6 +58,8 @@ async def redis_delete_key(key: str) -> str:
         str: A success message.
     """
     try:
+        if not settings.ENABLE_REDIS:
+            return "Redis disabled, skipped."
         await async_token_store.delete(key)
         logging.debug("Redis key '%s' deleted.", key)
         return "Deleted successful!"

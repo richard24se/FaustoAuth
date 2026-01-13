@@ -143,7 +143,7 @@ async def test_update_user_duplicate_username(
         password=pwd_context.hash("anotherpassword"),
         names="Another",
         surnames="User",
-        id_role=test_role,
+        role_id=test_role,
         tenant_id=test_tenant,  # Added tenant_id
     )
     db_session.add(another_user)
@@ -172,7 +172,7 @@ async def test_delete_user_success(
         password=pwd_context.hash("deletepass"),
         names="To",
         surnames="Delete",
-        id_role=test_role,
+        role_id=test_role,
         tenant_id=test_tenant,  # Added tenant_id
     )
     db_session.add(user_to_delete)

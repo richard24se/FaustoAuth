@@ -58,7 +58,7 @@ COPY auth.role (id, name, display_name, created_date, modificated_date, tenant_i
 -- Data for Name: user; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth."user" (id, username, password, names, surnames, created_date, modificated_date, id_role, tenant_id) FROM stdin;
+COPY auth."user" (id, username, password, names, surnames, created_date, modificated_date, role_id, tenant_id) FROM stdin;
 2	admin@faustoauth.app	$admin	FaustoAuth	Administrator	2020-06-25 02:14:50.36715+00	\N	1	1
 3	test@faustoauth.app	1234567	Test	Test	2020-06-25 02:14:50.36715+00	\N	1	1
 \.
@@ -68,7 +68,7 @@ COPY auth."user" (id, username, password, names, surnames, created_date, modific
 -- Data for Name: audit; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth.audit (id, data, created_date, modificated_date, input, id_user, id_audit_type, tenant_id, ip_address, user_agent, status) FROM stdin;
+COPY auth.audit (id, data, created_date, modificated_date, input, user_id, audit_type_id, tenant_id, ip_address, user_agent, status) FROM stdin;
 \.
 
 
@@ -104,7 +104,7 @@ COPY auth.object_type (id, name, created_date, modificated_date) FROM stdin;
 -- Data for Name: object; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth.object (id, name, created_date, modificated_date, id_object_type, display_name, tenant_id) FROM stdin;
+COPY auth.object (id, name, created_date, modificated_date, object_type_id, display_name, tenant_id) FROM stdin;
 1	userControl	2020-06-25 01:49:55.673365+00	\N	1	User control	1
 \.
 
@@ -122,7 +122,7 @@ COPY auth.permission_type (id, name, created_date, modificated_date) FROM stdin;
 -- Data for Name: permission; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth.permission (id, name, created_date, modificated_date, id_permission_type, id_object, tenant_id) FROM stdin;
+COPY auth.permission (id, name, created_date, modificated_date, permission_type_id, object_id, tenant_id) FROM stdin;
 1	Super God	2020-06-25 01:52:21.867896+00	\N	1	2	1
 2	User Manager	2020-06-25 01:52:21.867896+00	\N	1	1	1
 \.
@@ -132,7 +132,7 @@ COPY auth.permission (id, name, created_date, modificated_date, id_permission_ty
 -- Data for Name: role_permission; Type: TABLE DATA; Schema: auth; Owner: postgres
 --
 
-COPY auth.role_permission (id, created_date, id_permission, id_role) FROM stdin;
+COPY auth.role_permission (id, created_date, permission_id, role_id) FROM stdin;
 1	2020-06-25 01:53:52.809224+00	1	1
 2	2020-06-25 01:53:52.809224+00	2	1
 \.

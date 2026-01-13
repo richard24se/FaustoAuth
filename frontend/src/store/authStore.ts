@@ -48,22 +48,22 @@ export const useAuthStore = create<AuthState>((set) => {
       // It returns: { access_token, id, username, names, surnames, id_role, tenant_id } directly inside 'data'?
       // Wait, endpoint returns GenericResponse(data=TokenResponse(...))
 
-      const { access_token, username, names, id_role, tenant_id, id } = responseData.data; // Assuming wrapper
-
-      const newUser: User = {
-        id,
-        username,
-        names: names || '',
-        role: { name: '', id: id_role, tenant_id }, // We might need role name from token later
-        tenant_id,
-      };
+      const { access_token, username, names, role_id, tenant_id, id } = responseData.data; // Assuming wrapper
+  
+        const newUser: User = {
+          id,
+          username,
+          names: names || '',
+          role: { name: '', id: role_id, tenant_id }, // We might need role name from token later
+          tenant_id,
+        };
 
       localStorage.setItem('token', access_token);
 
       // Decode for extra info like Role Name if accessible
       try {
         const decoded: any = jwtDecode(access_token);
-        newUser.role = { id: id_role, name: decoded.role || '', tenant_id };
+        newUser.role = { id: role_id, name: decoded.role || '', tenant_id };
         newUser.scopes = decoded.scope ? decoded.scope.split(' ') : [];
       } catch (e) { }
 

@@ -125,7 +125,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         <HStack>
           <Image src={PhylaxLogo} boxSize="70px" alt="Phylax Logo" />
           <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
-            Phylax
+            {t('loginTitle')}
           </Text>
         </HStack>
         <IconButton
@@ -349,7 +349,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
       <HStack display={{ base: 'flex', md: 'none' }}>
         <Image src={PhylaxLogo} boxSize="24px" alt="Phylax Logo" />
         <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
-          Phylax
+          {t('loginTitle')}
         </Text>
       </HStack>
 

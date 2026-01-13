@@ -4,7 +4,7 @@ import { Box, Spinner, Center, Badge } from '@chakra-ui/react';
 import { useColorModeValue } from '../ui/color-mode';
 import { useUsers } from '@/hooks/useUsers';
 import { useRoles } from '@/hooks/useRoles';
-import { usePermissions } from '@/hooks/usePermissions';
+// import { usePermissions } from '@/hooks/usePermissions';
 // We need role-permission links. 
 // Assuming useRoles or usePermissions doesn't provide the link table directly.
 // We might need to fetch role-permissions. 
@@ -115,8 +115,8 @@ export const UserRoleGraph = () => {
         color: userColor
       });
 
-      if (user.role?.id || user.id_role) {
-        const rId = user.role?.id || user.id_role;
+      if (user.role?.id || user.role_id) {
+        const rId = user.role?.id || user.role_id;
         // Only link if role is in activeRoles
         if (activeRoles.find(r => r.id === rId)) {
           links.push({

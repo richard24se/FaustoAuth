@@ -175,6 +175,7 @@ async def test_client_fixture(
         patch("auth.service.auth.async_token_store", new=mock_redis),
         patch("fausto.redis.async_token_store", new=mock_redis),
         patch("fausto.sqlalch.async_sqlalch_wrapper", new=async_sqlalch_wrapper_mock),
+        patch("config.settings.settings.ENABLE_REDIS", new=True),
     ):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             try:
@@ -229,11 +230,11 @@ async def test_permission_super_god(db_session: AsyncSession, test_tenant: int):
 
     res = await db_session.execute(select(Object).filter_by(id=1))
     if not res.scalars().first():
-        obj = Object(id=1, name="system", id_object_type=1, tenant_id=test_tenant)
+        obj = Object(id=1, name="system", object_type_id=1, tenant_id=test_tenant)
         db_session.add(obj)
         await db_session.flush()
 
-    permission = Permission(id=None, name="super-god", id_permission_type=1, id_object=1, tenant_id=test_tenant)
+    permission = Permission(id=None, name="super-god", permission_type_id=1, object_id=1, tenant_id=test_tenant)
     db_session.add(permission)
     await db_session.commit()
     await db_session.refresh(permission)
@@ -263,7 +264,7 @@ async def test_super_role(db_session: AsyncSession, test_tenant: int, test_permi
     db_session.add(role)
     await db_session.flush()
 
-    role_perm = RolePermission(id_role=role.id, id_permission=test_permission_super_god)
+    role_perm = RolePermission(role_id=role.id, permission_id=test_permission_super_god)
     db_session.add(role_perm)
 
     await db_session.commit()
@@ -283,7 +284,7 @@ async def test_user(db_session: AsyncSession, test_role: int, test_tenant: int):
         password=hashed_password,
         names="Test",
         surnames="User",
-        id_role=test_role,  # Use test_role_id directly
+        role_id=test_role,  # Use test_role_id directly
         tenant_id=test_tenant,
     )
     db_session.add(user)
@@ -304,7 +305,7 @@ async def test_super_user(db_session: AsyncSession, test_super_role: int, test_t
         password=hashed_password,
         names="Super",
         surnames="User",
-        id_role=test_super_role,
+        role_id=test_super_role,
         tenant_id=test_tenant,
     )
     db_session.add(user)
@@ -326,7 +327,7 @@ def create_test_user_data():
             "password": "newpassword",
             "names": "New",
             "surnames": "User",
-            "id_role": test_role_id,
+            "role_id": test_role_id,
             "tenant_id": test_tenant_id,
         }
 
